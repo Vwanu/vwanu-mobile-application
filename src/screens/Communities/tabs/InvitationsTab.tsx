@@ -1,104 +1,84 @@
-import React from 'react'
-import { View, FlatList, TouchableOpacity, Image } from 'react-native'
+import React, { useState } from 'react'
 import { Ionicons } from '@expo/vector-icons'
+import { Popover } from '@ui-kitten/components'
+import { ActivityIndicator } from 'react-native-paper'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { View, FlatList, TouchableOpacity } from 'react-native'
+
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
-
-interface Invitation {
-  id: string
-  user: {
-    name: string
-    username: string
-    profilePicture?: string
-  }
-  invitedBy: string
-  date: string
-  status: 'pending' | 'approved' | 'rejected'
-}
+import Button from 'components/Button'
+import routes from 'navigation/routes'
+import useToggle from 'hooks/useToggle'
+import Filter from '../components/Filter'
+import ProfAvatar from 'components/ProfAvatar'
+import SearchBox from '../components/SearchBox'
+import { ProfileStackParams, Invitation } from '../../../../types'
+import { useFetchCommunityInvitationsQuery } from 'store/communities-api-slice'
 
 interface InvitationsTabProps {
-  communityId: string | number
+  communityId: string
 }
 
 const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
-  // TODO: Fetch actual invitations from API
-  const mockInvitations: Invitation[] = [
-    {
-      id: '1',
-      user: {
-        name: 'Alice Williams',
-        username: '@alicew',
-        profilePicture: 'https://i.pravatar.cc/150?img=5',
-      },
-      invitedBy: 'John Doe',
-      date: '2 hours ago',
-      status: 'pending',
-    },
-    {
-      id: '2',
-      user: {
-        name: 'Mike Brown',
-        username: '@mikeb',
-        profilePicture: 'https://i.pravatar.cc/150?img=6',
-      },
-      invitedBy: 'Jane Smith',
-      date: '1 day ago',
-      status: 'pending',
-    },
-  ]
+  const [isEditing, toggleEditing] = useToggle(false)
+  const [filter, setFilter] = useState<string | undefined>(undefined)
+  const navigation = useNavigation<StackNavigationProp<ProfileStackParams>>()
+  const {
+    data: invitations,
+    isFetching,
+    isLoading,
+  } = useFetchCommunityInvitationsQuery({ id: communityId, filter })
 
-  const handleApprove = (id: string) => {
-    console.log('Approve invitation:', id)
-    // TODO: Call API to approve
-  }
-
-  const handleReject = (id: string) => {
-    console.log('Reject invitation:', id)
-    // TODO: Call API to reject
+  const handleCancelInvitation = (id: string) => {
+    console.log('Cancel invitation:', id)
   }
 
   const renderInvitation = ({ item }: { item: Invitation }) => (
     <View style={tw`bg-white p-4 border-b border-gray-100`}>
-      <View style={tw`flex-row items-start`}>
-        <Image
-          source={{ uri: item.user.profilePicture }}
-          style={tw`w-12 h-12 rounded-full`}
+      <View style={tw`flex-row items-start justify-between`}>
+        <ProfAvatar
+          name={`${item.user.firstName} ${item.user?.lastName?.[0] || ''}`}
+          source={item.user.profilePicture || ''}
+          size={45}
+          subtitle={`Invited by ${item.invitedBy.firstName} ${
+            item.invitedBy?.lastName?.[0] || ''
+          }`}
+          userId={item.user.id}
         />
-        <View style={tw`flex-1 ml-3`}>
-          <View style={tw`flex-row items-center justify-between`}>
-            <View>
-              <Text style={tw`font-semibold text-base`}>{item.user.name}</Text>
-              <Text style={tw`text-gray-600 text-sm`}>
-                {item.user.username}
-              </Text>
-            </View>
-            <Text style={tw`text-gray-400 text-xs`}>{item.date}</Text>
-          </View>
 
-          <Text style={tw`text-gray-600 text-sm mt-1`}>
-            Invited by <Text style={tw`font-medium`}>{item.invitedBy}</Text>
-          </Text>
-
-          {item.status === 'pending' && (
-            <View style={tw`flex-row mt-3 gap-2`}>
-              <TouchableOpacity
-                style={tw`flex-1 bg-blue-500 py-2 rounded-full items-center`}
-                onPress={() => handleApprove(item.id)}
-              >
-                <Text style={tw`text-white font-semibold text-sm`}>
-                  Approve
-                </Text>
+        <View style={tw`items-end`}>
+          <Text style={tw`text-gray-400 text-xs`}>{item.date}</Text>
+          <Popover
+            visible={isEditing}
+            anchor={() => (
+              <TouchableOpacity onPress={toggleEditing}>
+                <Ionicons name="ellipsis-horizontal-outline" size={15} />
               </TouchableOpacity>
-              <TouchableOpacity
-                style={tw`flex-1 bg-gray-200 py-2 rounded-full items-center`}
-                onPress={() => handleReject(item.id)}
-              >
-                <Text style={tw`text-gray-700 font-semibold text-sm`}>
-                  Reject
-                </Text>
-              </TouchableOpacity>
+            )}
+            onBackdropPress={toggleEditing}
+            backdropStyle={tw`bg-black/2`}
+          >
+            <View style={tw`items-start`}>
+              <Button
+                title="View Profile"
+                appearance="ghost"
+                onPress={() => {
+                  navigation.navigate(routes.PROFILE, {
+                    profileId: item.user.id || '',
+                  })
+                }}
+                accessoryLeft={<Ionicons name="person" size={15} />}
+              />
+              <Button
+                title="Cancel Invitation"
+                appearance="ghost"
+                onPress={() => handleCancelInvitation(item.id)}
+                accessoryLeft={<Ionicons name="close" size={15} />}
+              />
             </View>
-          )}
+          </Popover>
         </View>
       </View>
     </View>
@@ -115,20 +95,40 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
         No Pending Invitations
       </Text>
       <Text style={tw`text-gray-600 text-center text-sm`}>
-        When members request to join, they'll appear here for approval
+        When invitation are sent, they'll appear here
       </Text>
     </View>
   )
+  const StatusFilter = ['Pending', 'Approved', 'Rejected']
+  const StatusFilterItems = StatusFilter.map((status, index) => ({
+    id: index,
+    name: status,
+  }))
 
   return (
     <View style={tw`flex-1 bg-gray-50`}>
+      <View style={tw`flex-row items-center justify-around px-2`}>
+        <SearchBox
+          onSearch={console.log}
+          style={tw`flex-grow-1`}
+          placeholder="Search invitations..."
+        />
+        <Filter
+          style={tw``}
+          items={StatusFilterItems}
+          onSelect={(item) => {
+            setFilter(item.name)
+          }}
+        />
+      </View>
+      {isFetching || (isLoading && <ActivityIndicator />)}
       <FlatList
-        data={mockInvitations}
+        data={invitations?.data}
         renderItem={renderInvitation}
         keyExtractor={(item) => item.id}
         ListEmptyComponent={EmptyState}
         contentContainerStyle={
-          mockInvitations.length === 0 ? tw`flex-1` : tw`pb-4`
+          invitations?.data.length === 0 ? tw`flex-1` : tw`pb-4`
         }
       />
     </View>

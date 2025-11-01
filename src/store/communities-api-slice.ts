@@ -1,41 +1,11 @@
 import apiSlice from './api-slice'
-import { CommunityInterface, CommunityPrivacyType, User } from '../../types'
 import { HttpMethods } from '../config'
-
-// Types for the community API
-interface Interest {
-  id: number
-  name: string
-}
-
-interface CreateCommunityRequest {
-  name: string
-  description: string
-  coverPicture?: string
-  interests: Interest[]
-  privacyType: CommunityPrivacyType
-  requireApproval: boolean
-}
-
-interface CreateCommunityResponse {
-  id: number
-  name: string
-  description: string
-  coverPicture?: string
-  interests: Interest[]
-  privacyType: CommunityPrivacyType
-  requireApproval: boolean
-  memberCount: number
-  createdAt: string
-  updatedAt: string
-}
-
-interface FetchCommunitiesResponse {
-  data: CommunityInterface[]
-  total: number
-  page: number
-  limit: number
-}
+import {
+  CommunityInterface,
+  User,
+  PaginatedResponse,
+  Invitation,
+} from '../../types'
 
 interface FetchCommunitiesParams {
   page?: number
@@ -45,18 +15,9 @@ interface FetchCommunitiesParams {
   userId?: string
 }
 
-interface Member extends User {
-  role: 'admin' | 'moderator' | 'member'
+type CommunityCreationProps = Partial<CommunityInterface> & {
+  coverPicture?: string
 }
-
-interface FetchCommunityMembersResponse {
-  data: Member[]
-  total: number
-  page: number
-  limit: number
-}
-
-type CommunityCreationProps = CreateCommunityRequest & { coverPicture?: string }
 
 const _toFormData = (values: Partial<CommunityCreationProps>): FormData => {
   const formData = new FormData()
@@ -99,7 +60,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Create a new community
     createCommunity: builder.mutation<
-      CreateCommunityResponse,
+      CommunityInterface,
       Partial<CommunityCreationProps>
     >({
       query: (communityData) => {
@@ -119,7 +80,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
 
     // Fetch communities with optional filters
     fetchCommunities: builder.query<
-      FetchCommunitiesResponse,
+      PaginatedResponse<CommunityInterface>,
       FetchCommunitiesParams
     >({
       query: ({ page = 1, limit = 10, search, interestId, userId } = {}) => {
@@ -160,8 +121,8 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
 
     // Update community (for future use)
     updateCommunity: builder.mutation<
-      CreateCommunityResponse,
-      { id: number; data: Partial<CreateCommunityRequest> }
+      CommunityInterface,
+      { id: number; data: Partial<CommunityInterface> }
     >({
       query: ({ id, data }) => ({
         url: `/communities/${id}`,
@@ -197,15 +158,32 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Community', id }],
     }),
-    fetchCommunityMembers: builder.query<FetchCommunityMembersResponse, string>(
-      {
-        query: (id) => ({
-          url: `/community_users?communityId=${id}`,
-          method: 'GET',
-        }),
-        providesTags: (result, error, id) => [{ type: 'Community', id }],
-      }
-    ),
+    fetchCommunityMembers: builder.query<
+      PaginatedResponse<User>,
+      { id: string; filter?: string }
+    >({
+      query: ({ id, filter }) => ({
+        params: {
+          filter,
+        },
+        url: `/communities/${id}/members`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
+    fetchCommunityInvitations: builder.query<
+      PaginatedResponse<Invitation>,
+      { id: string; filter?: string }
+    >({
+      query: ({ id, filter }) => ({
+        params: {
+          filter,
+        },
+        url: `/communities/${id}/invitations`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
   }),
 })
 
@@ -219,6 +197,7 @@ export const {
   useJoinCommunityMutation,
   useLeaveCommunityMutation,
   useFetchCommunityMembersQuery,
+  useFetchCommunityInvitationsQuery,
 } = communitiesApiSlice
 
 export default communitiesApiSlice

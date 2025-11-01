@@ -1,103 +1,59 @@
-import React from 'react'
-import { View, FlatList, TouchableOpacity, Image } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import tw from 'lib/tailwind'
-import Text from 'components/Text'
-// import { useFetchCommunityMembersQuery } from '../../../store/communities-api-slice'
+import React, { useEffect, useState } from 'react'
+import { View, FlatList } from 'react-native'
+import CommunityMember from '../components/CommunityMember'
 
-interface Member {
-  id: string
-  name: string
-  username: string
-  profilePicture?: string
-  role: 'admin' | 'moderator' | 'member'
-}
+import tw from 'lib/tailwind'
+import { useFetchCommunityMembersQuery } from '../../../store/communities-api-slice'
+
+const roles = [
+  { name: 'Member', id: 1 },
+  { name: 'Moderator', id: 2 },
+  { name: 'Admin', id: 3 },
+  { name: 'Owner', id: 4 },
+]
+
+import SearchBox from '../components/SearchBox'
+import { ActivityIndicator } from 'react-native-paper'
+import Filter from '../components/Filter'
 
 interface MembersTabProps {
   communityId: string
+  onError?: (error: any) => void
 }
 
-const MembersTab: React.FC<MembersTabProps> = ({ communityId }) => {
-  //   const { data: members, isLoading, error } = useFetchCommunityMembersQuery(communityId)
-  // TODO: Fetch actual members from API
-  const mockMembers: Member[] = [
-    {
-      id: '1',
-      name: 'John Doe',
-      username: '@johndoe',
-      role: 'admin',
-      profilePicture: 'https://i.pravatar.cc/150?img=1',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      username: '@janesmith',
-      role: 'moderator',
-      profilePicture: 'https://i.pravatar.cc/150?img=2',
-    },
-    {
-      id: '3',
-      name: 'Bob Johnson',
-      username: '@bobjohnson',
-      role: 'member',
-      profilePicture: 'https://i.pravatar.cc/150?img=3',
-    },
-  ]
+const MembersTab: React.FC<MembersTabProps> = ({ communityId, onError }) => {
+  const [filter, setFilter] = useState<string | undefined>(undefined)
+  const {
+    data: members,
+    isLoading,
+    error,
+  } = useFetchCommunityMembersQuery({ id: communityId, filter })
 
-  const getRoleBadgeColor = (role: Member['role']) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-500'
-      case 'moderator':
-        return 'bg-blue-500'
-      default:
-        return 'bg-gray-400'
+  console.log(members)
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching community members:', error)
+      onError && onError(error)
     }
+  }, [error])
+
+  const handleFilter = (item: any) => {
+    console.log(item)
+    setFilter(item.id.toString())
   }
 
-  const renderMember = ({ item }: { item: Member }) => (
-    <TouchableOpacity
-      style={tw`flex-row items-center p-4 bg-white border-b border-gray-100`}
-    >
-      <Image
-        source={{ uri: item.profilePicture }}
-        style={tw`w-12 h-12 rounded-full`}
-      />
-      <View style={tw`flex-1 ml-3`}>
-        <View style={tw`flex-row items-center`}>
-          <Text style={tw`font-semibold text-base`}>{item.name}</Text>
-          {item.role !== 'member' && (
-            <View
-              style={tw`${getRoleBadgeColor(
-                item.role
-              )} px-2 py-0.5 rounded-full ml-2`}
-            >
-              <Text style={tw`text-white text-xs font-medium uppercase`}>
-                {item.role}
-              </Text>
-            </View>
-          )}
-        </View>
-        <Text style={tw`text-gray-600 text-sm`}>{item.username}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-    </TouchableOpacity>
-  )
-
   return (
-    <View style={tw`flex-1 bg-gray-50`}>
-      <View style={tw`bg-white p-4 border-b border-gray-200`}>
-        <View
-          style={tw`flex-row items-center bg-gray-100 rounded-full px-4 py-2`}
-        >
-          <Ionicons name="search" size={20} color="#6B7280" />
-          <Text style={tw`ml-2 text-gray-500`}>Search members...</Text>
-        </View>
+    <View>
+      <View style={tw`flex-row items-center justify-around px-2`}>
+        <SearchBox onSearch={console.log} style={tw`flex-grow-1`} />
+        <Filter style={tw``} items={roles} onSelect={handleFilter} />
       </View>
-
+      {isLoading && (
+        <ActivityIndicator size="large" color="#0000ff" style={tw`my-4`} />
+      )}
       <FlatList
-        data={mockMembers}
-        renderItem={renderMember}
+        data={members?.data || []}
+        renderItem={({ item }) => <CommunityMember item={item} />}
         keyExtractor={(item) => item.id}
         contentContainerStyle={tw`pb-4`}
       />
