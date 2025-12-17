@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import Post from 'components/Post'
 import { View } from 'react-native'
 import tw from 'lib/tailwind'
-import NoPost from 'components/NoPost'
+import NoPost from 'components/EmptyList'
 import Separator from 'components/Separator'
 import { useFetchPostsQuery } from 'store/post'
 import TimelineSkeletone from './TimelineSkeletone'
@@ -32,7 +32,7 @@ const PostList: React.FC<Props> = ({ communityId }) => {
 
   const fetchPosts = useCallback(
     async ({ limit, skip }: PaginationParams) => {
-      console.log('fetchPosts called with:', { limit, skip })
+      // console.log('fetchPosts called with:', { limit, skip })
       try {
         // Create a new query with updated pagination parameters
         const queryParams = {
@@ -52,9 +52,9 @@ const PostList: React.FC<Props> = ({ communityId }) => {
         // For load more, return empty array to prevent duplicates
         // The real solution would be to implement proper server-side pagination
         if (skip > 0) {
-          console.log(
-            'Load more requested, returning empty to prevent duplicates'
-          )
+          // console.log(
+          //   'Load more requested, returning empty to prevent duplicates'
+          // )
           return { data: [], total: posts.data.data.length }
         }
 

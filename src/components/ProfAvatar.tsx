@@ -44,7 +44,7 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
         <Text style={tw`font-semibold`}>{props.name}</Text>
         {props.subtitle ? (
           <LongText
-            textStyles={`font-thin`}
+            textStyles={`font-thin ${props.subtitleParams?.textStyles}`}
             text={props?.subtitle}
             maxLength={props?.subtitleParams?.maxLength}
             showMoreText={props?.subtitleParams?.showMoreText}

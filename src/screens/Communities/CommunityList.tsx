@@ -15,7 +15,7 @@ import { useFetchCommunitiesQuery } from '../../store/communities-api-slice'
 import { useDebounce } from '../../hooks/useDebounce'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../store'
-import EmptyPost from 'components/NoPost'
+import EmptyPost from 'components/EmptyList'
 
 interface Props {
   communityListType: 'mine' | 'others'

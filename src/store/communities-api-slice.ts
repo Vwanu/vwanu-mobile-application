@@ -5,7 +5,9 @@ import {
   User,
   PaginatedResponse,
   Invitation,
+  CommunityRole,
 } from '../../types'
+import CreateCommunity from 'screens/Communities/CreateCommunity'
 
 interface FetchCommunitiesParams {
   page?: number
@@ -142,7 +144,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Join community (for future use)
-    joinCommunity: builder.mutation<{ success: boolean }, number>({
+    joinCommunity: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
         url: `/communities/${id}/join`,
         method: 'POST',
@@ -159,7 +161,11 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (result, error, id) => [{ type: 'Community', id }],
     }),
     fetchCommunityMembers: builder.query<
-      PaginatedResponse<User>,
+      PaginatedResponse<{
+        communityId: String
+        user: User
+        communityRole: CommunityRole
+      }>,
       { id: string; filter?: string }
     >({
       query: ({ id, filter }) => ({
@@ -184,6 +190,64 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
     }),
+    fetchJoinCommunityRequest: builder.query<
+      PaginatedResponse<{}>,
+      { id: string; filter: string | undefined }
+    >({
+      query: ({ id, filter }) => ({
+        params: {
+          filter,
+        },
+        url: `/communities/${id}/joinRequest`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
+
+    // Fetch community roles (general, not community-specific)
+    fetchCommunityRoles: builder.query<PaginatedResponse<CommunityRole>, void>({
+      query: () => ({
+        url: '/community-roles',
+        method: HttpMethods.GET,
+      }),
+      providesTags: ['Community'],
+    }),
+
+    // Send invitations to users with role
+    sendCommunityInvitations: builder.mutation<
+      { success: boolean; message?: string },
+      { id: string; userIds: string[]; roleId: string }
+    >({
+      query: ({ id, userIds, roleId }) => ({
+        url: `/communities/${id}/invitations`,
+        method: HttpMethods.POST,
+        body: { userIds, roleId },
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Community', id }],
+    }),
+
+    // Delete community invitation
+    deleteCommunityInvitation: builder.mutation<
+      Invitation,
+      { invitationId: string; communityId: string }
+    >({
+      query: ({ invitationId, communityId }) => ({
+        url: `/communities/${communityId}/invitations/${invitationId}`,
+        method: HttpMethods.DELETE,
+      }),
+      invalidatesTags: ['Community'],
+    }),
+
+    updateCommunityInvitation: builder.mutation<
+      Invitation,
+      { invitationId: string; communityId: string; response: boolean }
+    >({
+      query: ({ invitationId, communityId, response }) => ({
+        url: `/communities/${communityId}/invitations/${invitationId}`,
+        body: { response },
+        method: HttpMethods.PATCH,
+      }),
+    }),
   }),
 })
 
@@ -198,6 +262,11 @@ export const {
   useLeaveCommunityMutation,
   useFetchCommunityMembersQuery,
   useFetchCommunityInvitationsQuery,
+  useFetchJoinCommunityRequestQuery,
+  useFetchCommunityRolesQuery,
+  useSendCommunityInvitationsMutation,
+  useDeleteCommunityInvitationMutation,
+  useUpdateCommunityInvitationMutation,
 } = communitiesApiSlice
 
 export default communitiesApiSlice

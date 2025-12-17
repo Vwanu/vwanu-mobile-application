@@ -8,7 +8,7 @@ import Text from 'components/Text'
 import { Ionicons } from '@expo/vector-icons'
 
 interface Item {
-  id: number
+  id: string
   name: string
   icon?: React.ReactNode | string
 }

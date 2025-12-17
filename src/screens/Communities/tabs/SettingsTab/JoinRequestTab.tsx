@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { Popover } from '@ui-kitten/components'
 import { ActivityIndicator } from 'react-native-paper'
@@ -11,17 +11,27 @@ import Text from 'components/Text'
 import Button from 'components/Button'
 import routes from 'navigation/routes'
 import useToggle from 'hooks/useToggle'
-import Filter from '../components/Filter'
+import Filter from '../../components/Filter'
 import ProfAvatar from 'components/ProfAvatar'
-import SearchBox from '../components/SearchBox'
-import { ProfileStackParams, Invitation } from '../../../../types'
-import { useFetchCommunityInvitationsQuery } from 'store/communities-api-slice'
+import SearchBox from '../../components/SearchBox'
+import { ProfileStackParams, Invitation } from '../../../../../types'
+import { useFetchJoinCommunityRequestQuery } from 'store/communities-api-slice'
+import NoPost from 'components/EmptyList'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { SerializedError } from '@reduxjs/toolkit'
 
 interface InvitationsTabProps {
   communityId: string
+  onError: (
+    error: FetchBaseQueryError | SerializedError,
+    onRefetch?: () => void
+  ) => void
 }
 
-const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
+const InvitationsTab: React.FC<InvitationsTabProps> = ({
+  communityId,
+  onError,
+}) => {
   const [isEditing, toggleEditing] = useToggle(false)
   const [filter, setFilter] = useState<string | undefined>(undefined)
   const navigation = useNavigation<StackNavigationProp<ProfileStackParams>>()
@@ -29,27 +39,38 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
     data: invitations,
     isFetching,
     isLoading,
-  } = useFetchCommunityInvitationsQuery({ id: communityId, filter })
+    error,
+    refetch,
+  } = useFetchJoinCommunityRequestQuery({ id: communityId, filter })
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching join requests:', error)
+      onError(error, refetch)
+    }
+  }, [error, refetch])
 
   const handleCancelInvitation = (id: string) => {
-    console.log('Cancel invitation:', id)
+    console.log('Accepted request:', id)
   }
 
   const renderInvitation = ({ item }: { item: Invitation }) => (
     <View style={tw`bg-white p-4 border-b border-gray-100`}>
       <View style={tw`flex-row items-start justify-between`}>
         <ProfAvatar
-          name={`${item.user.firstName} ${item.user?.lastName?.[0] || ''}`}
-          source={item.user.profilePicture || ''}
+          name={`${item.guest.firstName} ${item.guest?.lastName?.[0] || ''}`}
+          source={item.guest.profilePicture || ''}
           size={45}
-          subtitle={`Invited by ${item.invitedBy.firstName} ${
-            item.invitedBy?.lastName?.[0] || ''
+          subtitle={`Invited by ${item.host.firstName} ${
+            item.host?.lastName?.[0] || ''
           }`}
-          userId={item.user.id}
+          userId={item.guest.id}
         />
 
         <View style={tw`items-end`}>
-          <Text style={tw`text-gray-400 text-xs`}>{item.date}</Text>
+          <Text style={tw`text-gray-400 text-xs`}>
+            {new Date(item.updatedAt).toLocaleDateString()}
+          </Text>
           <Popover
             visible={isEditing}
             anchor={() => (
@@ -66,16 +87,16 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
                 appearance="ghost"
                 onPress={() => {
                   navigation.navigate(routes.PROFILE, {
-                    profileId: item.user.id || '',
+                    profileId: item.guest.id || '',
                   })
                 }}
                 accessoryLeft={<Ionicons name="person" size={15} />}
               />
               <Button
-                title="Cancel Invitation"
+                title="Accept Request"
                 appearance="ghost"
                 onPress={() => handleCancelInvitation(item.id)}
-                accessoryLeft={<Ionicons name="close" size={15} />}
+                accessoryLeft={<Ionicons name="checkmark" size={15} />}
               />
             </View>
           </Popover>
@@ -84,21 +105,6 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
     </View>
   )
 
-  const EmptyState = () => (
-    <View style={tw`flex-1 items-center justify-center p-8`}>
-      <View
-        style={tw`w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4`}
-      >
-        <Ionicons name="mail-open-outline" size={40} color="#9CA3AF" />
-      </View>
-      <Text style={tw`text-gray-900 font-semibold text-lg mb-2`}>
-        No Pending Invitations
-      </Text>
-      <Text style={tw`text-gray-600 text-center text-sm`}>
-        When invitation are sent, they'll appear here
-      </Text>
-    </View>
-  )
   const StatusFilter = ['Pending', 'Approved', 'Rejected']
   const StatusFilterItems = StatusFilter.map((status, index) => ({
     id: index,
@@ -123,12 +129,17 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({ communityId }) => {
       </View>
       {isFetching || (isLoading && <ActivityIndicator />)}
       <FlatList
-        data={invitations?.data}
+        data={(invitations?.data || []) as Invitation[]}
         renderItem={renderInvitation}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={EmptyState}
+        ListEmptyComponent={
+          <NoPost
+            title="No Pending Join request"
+            subtitle="When request to join are received, they'll appear here"
+          />
+        }
         contentContainerStyle={
-          invitations?.data.length === 0 ? tw`flex-1` : tw`pb-4`
+          (invitations?.data?.length || 0) === 0 ? tw`flex-1` : tw`pb-4`
         }
       />
     </View>

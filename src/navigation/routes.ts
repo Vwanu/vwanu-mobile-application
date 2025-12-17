@@ -30,6 +30,7 @@ enum routes {
   FIND_FRIEND = 'FIND_FRIEND',
   PRIVACY_TERMS = 'PRIVACY_TERMS',
   GUIDELINES = 'GUIDELINES',
+  CREATE_COMMUNITY = 'CreateCommunity',
 }
 
 export default routes

@@ -1,18 +1,35 @@
 import apiSlice from './api-slice'
-import { Profile } from '../../types'
+import { Profile, PaginatedResponse } from '../../types'
 import { endpoints, HttpMethods } from '../config'
 
 interface UpdateProfile extends Partial<Profile> {
   [key: string]: any
 }
 
+interface FetchProfilesParams {
+  search?: string
+}
+
 const Profiles = apiSlice.injectEndpoints({
   endpoints: (build) => ({
-    fetchProfiles: build.query<Profile[], void>({
-      query: () => ({
-        url: endpoints.USERS,
-        method: HttpMethods.GET,
-      }),
+    fetchProfiles: build.query<
+      PaginatedResponse<Profile>,
+      FetchProfilesParams | void
+    >({
+      query: (params) => {
+        const queryParams: Record<string, string> = {}
+
+        // Add search param if provided
+        if (params && typeof params === 'object' && params.search?.trim()) {
+          queryParams.search = params.search.trim()
+        }
+
+        return {
+          url: endpoints.USERS,
+          method: HttpMethods.GET,
+          params: queryParams,
+        }
+      },
       providesTags: ['Profile'],
     }),
     fetchProfile: build.query<Profile, string>({
