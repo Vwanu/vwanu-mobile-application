@@ -146,7 +146,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
     // Join community (for future use)
     joinCommunity: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
-        url: `/communities/${id}/join`,
+        url: `/communities/${id}/joinRequest`,
         method: 'POST',
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Community', id }],

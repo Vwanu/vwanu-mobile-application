@@ -61,8 +61,8 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({
           name={`${item.guest.firstName} ${item.guest?.lastName?.[0] || ''}`}
           source={item.guest.profilePicture || ''}
           size={45}
-          subtitle={`Invited by ${item.host.firstName} ${
-            item.host?.lastName?.[0] || ''
+          subtitle={`Invited by ${item?.host?.firstName} ${
+            item?.host?.lastName?.[0] || ''
           }`}
           userId={item.guest.id}
         />
@@ -127,6 +127,7 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({
           }}
         />
       </View>
+      <>{console.log('Invitations:', invitations?.data?.[0])}</>
       {isFetching || (isLoading && <ActivityIndicator />)}
       <FlatList
         data={(invitations?.data || []) as Invitation[]}
