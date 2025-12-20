@@ -14,6 +14,7 @@ import CommunitiesScreen from '../screens/Communities'
 import CommunityDetailScreen from '../screens/Communities/CommunityDetail'
 import CreateCommunityScreen from '../screens/Communities/CreateCommunity'
 import CommunitySettingsScreen from '../screens/Communities/CommunitySettings'
+import routes from './routes'
 
 // Types
 import { CommunityStackParams } from '../../types'
@@ -43,7 +44,7 @@ const CommunityNavigator: React.FC = () => (
       }}
     />
     <Stack.Screen
-      name="CreateCommunity"
+      name={routes.CREATE_COMMUNITY}
       component={CreateCommunityScreen}
       options={{
         headerShown: false,

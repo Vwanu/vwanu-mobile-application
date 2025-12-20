@@ -8,6 +8,7 @@ export interface Tab {
   id: string
   label: string
   icon?: string
+  disabled?: boolean
 }
 
 interface TabBarProps {
@@ -38,28 +39,34 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) => {
 
   const renderTab = ({ item }: { item: Tab }) => {
     const isActive = activeTab === item.id
+    const isDisabled = item.disabled
 
     return (
       <TouchableOpacity
+        disabled={isDisabled}
         onPress={() => onTabChange(item.id)}
         activeOpacity={0.7}
         style={tw`mr-3 px-5 py-2.5 ${
           isActive
-            ? 'border-0 border-b-2 border-b-blue-500'
-            : 'border-0 border-b-2 border-b-white'
-        }`}
+            ? 'border-b-2 border-b-blue-500'
+            : 'border-b-2 border-b-transparent'
+        } ${isDisabled ? 'opacity-40' : ''}`}
       >
         <View style={tw`flex-row items-center`}>
           {item.icon && (
             <Ionicons
               name={item.icon as any}
               size={20}
-              color={isActive ? '#3B82F6' : '#6B7280'}
+              color={isDisabled ? '#9CA3AF' : isActive ? '#3B82F6' : '#6B7280'}
             />
           )}
           <Text
             style={tw`font-medium ${item.icon ? 'ml-2' : ''} ${
-              isActive ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300'
+              isDisabled
+                ? 'text-gray-400'
+                : isActive
+                ? 'text-blue-500'
+                : 'text-gray-700 dark:text-gray-300'
             }`}
           >
             {item.label}

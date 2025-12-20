@@ -11,7 +11,8 @@
     "prepare": "husky install",
     "pre-commit": "lint-staged",
     "postinstall": "rndebugger://set-debugger-loc?host=localhost&port=19001",
-    "generate-types": "node scripts/generateTypes.js"
+    "generate-types": "node scripts/generateTypes.js",
+    "commit": "cz"
   },
   "lint": "eslint .",
   "lint-staged": {

@@ -268,7 +268,7 @@ const CustomField = forwardRef<TextInput, CustomFieldProps>(
           setFieldValue(name, text)
           onChangeText(text)
         }}
-        style={tw`flex-1 rounded-lg border-0 ${
+        style={tw`flex-1 rounded-lg border-transparent ${
           isDarkMode ? 'bg-gray-300' : 'bg-transparent'
         }`}
       />

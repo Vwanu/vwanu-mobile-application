@@ -5,6 +5,7 @@ import TabBar, { Tab } from './TabBar'
 
 export interface TabContent extends Tab {
   component: React.ReactNode
+  show: boolean
 }
 
 interface TabsProps {
@@ -28,7 +29,14 @@ const Tabs: React.FC<TabsProps> = ({ tabs, defaultTab, onTabChange }) => {
   return (
     <View style={tw`flex-1`}>
       <TabBar
-        tabs={tabs.map(({ id, label, icon }) => ({ id, label, icon }))}
+        tabs={tabs
+          .filter((tab) => tab.show)
+          .map(({ id, label, icon, disabled }) => ({
+            id,
+            label,
+            icon,
+            disabled,
+          }))}
         activeTab={activeTab}
         onTabChange={handleTabChange}
       />

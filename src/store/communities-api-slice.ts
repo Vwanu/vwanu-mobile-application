@@ -1,41 +1,13 @@
 import apiSlice from './api-slice'
-import { CommunityInterface, CommunityPrivacyType, User } from '../../types'
 import { HttpMethods } from '../config'
-
-// Types for the community API
-interface Interest {
-  id: number
-  name: string
-}
-
-interface CreateCommunityRequest {
-  name: string
-  description: string
-  coverPicture?: string
-  interests: Interest[]
-  privacyType: CommunityPrivacyType
-  requireApproval: boolean
-}
-
-interface CreateCommunityResponse {
-  id: number
-  name: string
-  description: string
-  coverPicture?: string
-  interests: Interest[]
-  privacyType: CommunityPrivacyType
-  requireApproval: boolean
-  memberCount: number
-  createdAt: string
-  updatedAt: string
-}
-
-interface FetchCommunitiesResponse {
-  data: CommunityInterface[]
-  total: number
-  page: number
-  limit: number
-}
+import {
+  CommunityInterface,
+  User,
+  PaginatedResponse,
+  Invitation,
+  CommunityRole,
+} from '../../types'
+import CreateCommunity from 'screens/Communities/CreateCommunity'
 
 interface FetchCommunitiesParams {
   page?: number
@@ -45,18 +17,9 @@ interface FetchCommunitiesParams {
   userId?: string
 }
 
-interface Member extends User {
-  role: 'admin' | 'moderator' | 'member'
+type CommunityCreationProps = Partial<CommunityInterface> & {
+  coverPicture?: string
 }
-
-interface FetchCommunityMembersResponse {
-  data: Member[]
-  total: number
-  page: number
-  limit: number
-}
-
-type CommunityCreationProps = CreateCommunityRequest & { coverPicture?: string }
 
 const _toFormData = (values: Partial<CommunityCreationProps>): FormData => {
   const formData = new FormData()
@@ -99,7 +62,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Create a new community
     createCommunity: builder.mutation<
-      CreateCommunityResponse,
+      CommunityInterface,
       Partial<CommunityCreationProps>
     >({
       query: (communityData) => {
@@ -119,7 +82,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
 
     // Fetch communities with optional filters
     fetchCommunities: builder.query<
-      FetchCommunitiesResponse,
+      PaginatedResponse<CommunityInterface>,
       FetchCommunitiesParams
     >({
       query: ({ page = 1, limit = 10, search, interestId, userId } = {}) => {
@@ -160,8 +123,8 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
 
     // Update community (for future use)
     updateCommunity: builder.mutation<
-      CreateCommunityResponse,
-      { id: number; data: Partial<CreateCommunityRequest> }
+      CommunityInterface,
+      { id: number; data: Partial<CommunityInterface> }
     >({
       query: ({ id, data }) => ({
         url: `/communities/${id}`,
@@ -181,7 +144,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
     }),
 
     // Join community (for future use)
-    joinCommunity: builder.mutation<{ success: boolean }, number>({
+    joinCommunity: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
         url: `/communities/${id}/join`,
         method: 'POST',
@@ -197,15 +160,94 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Community', id }],
     }),
-    fetchCommunityMembers: builder.query<FetchCommunityMembersResponse, string>(
-      {
-        query: (id) => ({
-          url: `/community_users?communityId=${id}`,
-          method: 'GET',
-        }),
-        providesTags: (result, error, id) => [{ type: 'Community', id }],
-      }
-    ),
+    fetchCommunityMembers: builder.query<
+      PaginatedResponse<{
+        communityId: String
+        user: User
+        communityRole: CommunityRole
+      }>,
+      { id: string; filter?: string }
+    >({
+      query: ({ id, filter }) => ({
+        params: {
+          filter,
+        },
+        url: `/communities/${id}/members`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
+    fetchCommunityInvitations: builder.query<
+      PaginatedResponse<Invitation>,
+      { id: string; filter?: string }
+    >({
+      query: ({ id, filter }) => ({
+        params: {
+          filter,
+        },
+        url: `/communities/${id}/invitations`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
+    fetchJoinCommunityRequest: builder.query<
+      PaginatedResponse<{}>,
+      { id: string; filter: string | undefined }
+    >({
+      query: ({ id, filter }) => ({
+        params: {
+          filter,
+        },
+        url: `/communities/${id}/joinRequest`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
+
+    // Fetch community roles (general, not community-specific)
+    fetchCommunityRoles: builder.query<PaginatedResponse<CommunityRole>, void>({
+      query: () => ({
+        url: '/community-roles',
+        method: HttpMethods.GET,
+      }),
+      providesTags: ['Community'],
+    }),
+
+    // Send invitations to users with role
+    sendCommunityInvitations: builder.mutation<
+      { success: boolean; message?: string },
+      { id: string; userIds: string[]; roleId: string }
+    >({
+      query: ({ id, userIds, roleId }) => ({
+        url: `/communities/${id}/invitations`,
+        method: HttpMethods.POST,
+        body: { userIds, roleId },
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Community', id }],
+    }),
+
+    // Delete community invitation
+    deleteCommunityInvitation: builder.mutation<
+      Invitation,
+      { invitationId: string; communityId: string }
+    >({
+      query: ({ invitationId, communityId }) => ({
+        url: `/communities/${communityId}/invitations/${invitationId}`,
+        method: HttpMethods.DELETE,
+      }),
+      invalidatesTags: ['Community'],
+    }),
+
+    updateCommunityInvitation: builder.mutation<
+      Invitation,
+      { invitationId: string; communityId: string; response: boolean }
+    >({
+      query: ({ invitationId, communityId, response }) => ({
+        url: `/communities/${communityId}/invitations/${invitationId}`,
+        body: { response },
+        method: HttpMethods.PATCH,
+      }),
+    }),
   }),
 })
 
@@ -219,6 +261,12 @@ export const {
   useJoinCommunityMutation,
   useLeaveCommunityMutation,
   useFetchCommunityMembersQuery,
+  useFetchCommunityInvitationsQuery,
+  useFetchJoinCommunityRequestQuery,
+  useFetchCommunityRolesQuery,
+  useSendCommunityInvitationsMutation,
+  useDeleteCommunityInvitationMutation,
+  useUpdateCommunityInvitationMutation,
 } = communitiesApiSlice
 
 export default communitiesApiSlice

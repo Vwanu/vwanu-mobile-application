@@ -1,88 +1,72 @@
 import React from 'react'
-import { View, ScrollView, TouchableOpacity, Switch } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
+import { Ionicons } from '@expo/vector-icons'
+import SettingItem from 'components/SettingItem'
+import SettingHeader from 'components/SettingHeadear'
+import { View, ScrollView, TouchableOpacity, Switch } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import routes from 'navigation/routes'
+import JoinRequestTab from './JoinRequestTab'
 
-interface SettingsTabProps {
-  communityId: string
-}
+import { CommunityStackParams } from '../../../../../types'
+import Button from 'components/Button'
 
-const SettingsTab: React.FC<SettingsTabProps> = ({ communityId }) => {
+const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true)
   const [postsEnabled, setPostsEnabled] = React.useState(true)
+  const [showJoinRequests, setShowJoinRequests] = React.useState(false)
+  const navigation = useNavigation<StackNavigationProp<CommunityStackParams>>()
 
-  const SettingItem = ({
-    icon,
-    title,
-    subtitle,
-    onPress,
-    rightElement,
-  }: {
-    icon: string
-    title: string
-    subtitle?: string
-    onPress?: () => void
-    rightElement?: React.ReactNode
-  }) => (
-    <TouchableOpacity
-      style={tw`flex-row items-center p-4 bg-white border-b border-gray-100`}
-      onPress={onPress}
-      disabled={!onPress}
-    >
-      <View
-        style={tw`w-10 h-10 bg-gray-100 rounded-full items-center justify-center`}
-      >
-        <Ionicons name={icon as any} size={20} color="#6B7280" />
+  // Show join requests view if active
+  if (showJoinRequests) {
+    return (
+      <View style={tw`flex-1 bg-gray-50`}>
+        {/* Back Button Header */}
+        <View style={tw`bg-white px-2 pt-2`}>
+          <Button
+            appearance="ghost"
+            accessoryRight={() => <Ionicons name="arrow-back" size={20} />}
+            onPress={() => setShowJoinRequests(false)}
+          />
+        </View>
+        {/* Join Request Content */}
+        <JoinRequestTab communityId={communityId} onError={onError} />
       </View>
-      <View style={tw`flex-1 ml-3`}>
-        <Text style={tw`font-semibold text-base`}>{title}</Text>
-        {subtitle && (
-          <Text style={tw`text-gray-600 text-sm mt-0.5`}>{subtitle}</Text>
-        )}
-      </View>
-      {rightElement || (
-        <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-      )}
-    </TouchableOpacity>
-  )
+    )
+  }
 
   return (
     <ScrollView style={tw`flex-1 bg-gray-50`}>
       {/* Community Settings */}
       <View style={tw`mt-4`}>
-        <Text
-          style={tw`px-4 py-2 text-xs font-semibold text-gray-500 uppercase`}
-        >
-          Community Settings
-        </Text>
+        <SettingHeader title="Community Settings" />
         <SettingItem
           icon="information-circle-outline"
           title="Community Info"
           subtitle="Edit name, description, and cover photo"
-          onPress={() => console.log('Edit info')}
+          onPress={() =>
+            navigation.navigate(routes.CREATE_COMMUNITY, { communityId })
+          }
         />
-        <SettingItem
+        {/* <SettingItem
           icon="people-outline"
           title="Privacy"
           subtitle="Public community"
           onPress={() => console.log('Privacy settings')}
-        />
+        /> */}
         <SettingItem
           icon="shield-checkmark-outline"
           title="Member Approval"
-          subtitle="Automatically approve members"
-          onPress={() => console.log('Approval settings')}
+          subtitle="Manage join requests"
+          onPress={() => setShowJoinRequests(true)}
         />
       </View>
 
       {/* Notifications */}
       <View style={tw`mt-6`}>
-        <Text
-          style={tw`px-4 py-2 text-xs font-semibold text-gray-500 uppercase`}
-        >
-          Notifications
-        </Text>
+        <SettingHeader title="Notifications" />
         <SettingItem
           icon="notifications-outline"
           title="Push Notifications"
@@ -106,11 +90,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ communityId }) => {
 
       {/* Moderation */}
       <View style={tw`mt-6`}>
-        <Text
-          style={tw`px-4 py-2 text-xs font-semibold text-gray-500 uppercase`}
-        >
-          Moderation
-        </Text>
+        <SettingHeader title="Moderation" />
         <SettingItem
           icon="flag-outline"
           title="Reported Content"
@@ -127,11 +107,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ communityId }) => {
 
       {/* Danger Zone */}
       <View style={tw`mt-6 mb-8`}>
-        <Text
-          style={tw`px-4 py-2 text-xs font-semibold text-gray-500 uppercase`}
-        >
-          Danger Zone
-        </Text>
+        <SettingHeader title="Danger zone" />
         <TouchableOpacity
           style={tw`flex-row items-center p-4 bg-white border-b border-gray-100`}
         >
