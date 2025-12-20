@@ -28,17 +28,27 @@ const shadowStyle = {
 
 interface PostInputProps {
   communityId?: string
+  canCreatePost?: boolean
 }
 
-const PostInput: React.FC<PostInputProps> = ({ communityId }) => {
+const PostInput: React.FC<PostInputProps> = ({
+  communityId,
+  canCreatePost = true,
+}) => {
   const { userId } = useSelector((state: RootState) => state.auth)
   const { data: user } = useFetchProfileQuery(userId!)
   const { isDarkMode } = useTheme()
   const [creatingPost, toggleCreatingPost] = useToggle(false)
   const [openBottomSheet, toggleOpenBottomSheet] = useToggle(false)
 
+  const handlePress = () => {
+    if (canCreatePost) {
+      toggleCreatingPost()
+    }
+  }
+
   return (
-    <View style={[tw`px-1`, shadowStyle]}>
+    <View style={[tw`px-1 ${!canCreatePost ? 'opacity-50' : ''}`, shadowStyle]}>
       <View style={tw`flex flex-row my-2`}>
         <Avatar.Image
           source={{
@@ -52,13 +62,19 @@ const PostInput: React.FC<PostInputProps> = ({ communityId }) => {
           <Input
             editable={false}
             autoFocus
-            placeholder="What's on your mind?"
-            onPressIn={() => toggleCreatingPost()}
+            placeholder={
+              canCreatePost
+                ? "What's on your mind?"
+                : 'Join this community to create posts'
+            }
+            onPressIn={handlePress}
             style={tw`border-[${
               isDarkMode ? 'white' : (tw.color('text-primary') as string)
-            }] border-[1px] bg-white rounded-2xl mb-0`}
-            accessoryRight={<Img />}
-            disabled={true}
+            }] border-[1px] ${
+              canCreatePost ? 'bg-white' : 'bg-gray-100'
+            } rounded-2xl mb-0`}
+            accessoryRight={canCreatePost ? <Img /> : undefined}
+            disabled={!canCreatePost}
           />
         </View>
       </View>

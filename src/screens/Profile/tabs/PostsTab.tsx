@@ -8,7 +8,7 @@ import { View, FlatList } from 'react-native'
 // Components
 import Text from '../../../components/Text'
 import Post from '../../../components/Post'
-import NoPost from '../../../components/NoPost'
+import NoPost from '../../../components/EmptyList'
 
 // Hooks and utilities
 import tw from '../../../lib/tailwind'

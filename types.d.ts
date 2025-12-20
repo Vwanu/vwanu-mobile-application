@@ -1,4 +1,6 @@
 import routes from './src/navigation/routes'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { SerializedError } from '@reduxjs/toolkit'
 
 // Import generated types from backend API
 export * from './src/types/generatedTypes'
@@ -11,6 +13,13 @@ type Id = string | number
 export type BackendUser = UserInterface
 export type BackendPost = PostInterface
 export type BackendProfile = ProfileInterface
+
+type PaginatedResponse<T> = {
+  limit: number
+  skip: number
+  total: number
+  data: T[]
+}
 interface ListItem {
   label: string
   value: string
@@ -52,9 +61,10 @@ export interface User {
   nextCompletionStep: NextCompletionStep
   id: string
   email: string
+  role?: 'admin' | 'moderator' | 'member'
 }
 
-interface Profile extends User {
+export interface Profile extends User {
   dob?: Date
   gender?: string
   bio?: string
@@ -132,7 +142,7 @@ export type BottomTabParms = {
 export type CommunityStackParams = {
   Communities: undefined
   CommunityDetail: { communityId: string }
-  CreateCommunity: undefined
+  CreateCommunity: { communityId?: string }
   CommunitySettings: { communityId: string }
 }
 
@@ -166,7 +176,7 @@ export interface CommunityInterface {
   name: string
   profilePicture: string
   createdAt: string
-  id: number
+  id: string
   interests?: Interest[]
   canInvite: string
   canPost: string
@@ -177,10 +187,27 @@ export interface CommunityInterface {
   members: User[]
   numAdmins: number
   numMembers: number
-  pendingInvitation: null
   privacyType: string
   profilePicture: string
   updatedAt: Date
   isCreateCard?: boolean
   isMember?: Member
+  pendingInvitation?: Invitation
+  pendingJoinRequest: boolean
+}
+
+export interface Invitation {
+  id: string
+  status: 'pending' | 'approved' | 'rejected'
+  guest: Partial<User> & { profilePicture: string }
+  host: Partial<User> & { profilePicture: string }
+  response?: boolean
+  updatedAt: Date
+  communityRole: CommunityRole
+}
+
+export interface CommunityRole {
+  id: string
+  name: string
+  roleAccessLevel: number
 }
