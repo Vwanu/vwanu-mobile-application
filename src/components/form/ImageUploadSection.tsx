@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, TouchableOpacity, ImageBackground, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
@@ -14,6 +14,14 @@ interface Props {
 const ImageUploadSection: React.FC<Props> = ({ name }) => {
   const [imageUri, setImageUri] = useState<string | null>(null)
   const { setFieldValue, values } = useFormikContext()
+
+  // Initialize imageUri from Formik values when value exists (for edit mode)
+  useEffect(() => {
+    const fieldValue = (values as any)[name]
+    if (fieldValue && !imageUri) {
+      setImageUri(fieldValue)
+    }
+  }, [(values as any)[name]])
   const onImageSelected = (uri: string) => {
     setImageUri(uri)
     setFieldValue(name, uri)
