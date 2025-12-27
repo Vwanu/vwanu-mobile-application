@@ -7,7 +7,6 @@ import {
   Invitation,
   CommunityRole,
 } from '../../types'
-import CreateCommunity from 'screens/Communities/CreateCommunity'
 
 interface FetchCommunitiesParams {
   page?: number

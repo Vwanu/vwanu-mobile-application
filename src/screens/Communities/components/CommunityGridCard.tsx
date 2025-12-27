@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { View, ImageBackground, TouchableOpacity } from 'react-native'
@@ -20,7 +20,7 @@ type NavigationProp = StackNavigationProp<CommunityStackParams, 'Communities'>
 
 interface Props {
   community: CommunityInterface
-  size?: 'small' | 'large'
+  size?: 'small' | 'large' | 'extra-small'
   onCommunityPress?: () => void
   style?: any
   displayDetails?: boolean
@@ -62,7 +62,6 @@ const CommunityGridCard: React.FC<Props> = ({
   const handleUpdateInvitation = (invitationId: string, response: boolean) => {
     updateCommunity({ invitationId, communityId: community.id, response })
   }
-  const height = size === 'small' ? 48 : 80
   const amountOfMembers = community?.numMembers + community?.numAdmins
 
   const loading = loadingJoin || loadingUpdated
@@ -72,11 +71,24 @@ const CommunityGridCard: React.FC<Props> = ({
     if (error) onError?.(error)
   }, [error])
 
+  const computeStyle = useMemo(() => {
+    return size === 'small'
+      ? tw`rounded-2xl overflow-hidden h-48 w-48`
+      : size === 'extra-small'
+      ? tw`rounded-2xl overflow-hidden h-32 w-48`
+      : tw`rounded-3xl overflow-hidden h-80 w-full`
+  }, [size, style])
+
+  const computeTitleStyle = useMemo(() => {
+    return size === 'small'
+      ? tw`text-white text-base font-bold mb-2 leading-5`
+      : size === 'extra-small'
+      ? tw`text-white font-bold my-2 leading-4`
+      : tw`text-white text-2xl font-bold mb-2 leading-6`
+  }, [size])
+
   return (
-    <TouchableOpacity
-      style={[tw`rounded-3xl overflow-hidden h-${height} w-full `, style]}
-      onPress={handlePress}
-    >
+    <TouchableOpacity style={[computeStyle, style]} onPress={handlePress}>
       <ImageBackground
         source={{ uri: community?.profilePicture }}
         style={tw`w-full h-full`}
@@ -125,33 +137,37 @@ const CommunityGridCard: React.FC<Props> = ({
 
           {/* Bottom section with community info */}
           <View>
-            <Text
-              category={size === 'small' ? 'p1' : 'h4'}
-              style={tw`text-white pt-3 font-bold ${
-                size === 'small' ? 'text-base' : 'text-2xl'
-              } mb-2 leading-5`}
-            >
-              {community?.name}
-            </Text>
-
             <LongText
-              text={community.description}
-              maxLength={size === 'small' ? 10 : 150}
-              showMoreText=">>"
-              showLessText="Show less"
-              style={tw`text-white -mt-5`}
+              text={community?.name}
+              textStyles={computeTitleStyle}
+              maxLength={
+                size == 'extra-small' ? 50 : size == 'small' ? 20 : undefined
+              }
+              showShowMoreText={size === 'extra-small' ? false : true}
             />
+
+            {size !== 'extra-small' ? (
+              <LongText
+                text={community.description}
+                maxLength={size === 'small' ? 10 : 150}
+                showMoreText=">>"
+                showLessText="Show less"
+                style={tw`text-white -mt-5`}
+              />
+            ) : null}
 
             <View style={tw`flex-row items-center justify-between mt-5`}>
               <View style={tw`flex-row items-center`}>
                 <AvatarGroup avatars={community.members || []} size={25} />
                 {amountOfMembers && (
                   <Text style={tw`text-white text-xs ml-2`}>
-                    {new Intl.NumberFormat('en-US', {
-                      trailingZeroDisplay: 'stripIfInteger',
-                      minimumFractionDigits: 2,
-                    }).format(amountOfMembers)}{' '}
-                    member {amountOfMembers > 1 ? 's+' : ''}
+                    {amountOfMembers < 100
+                      ? amountOfMembers
+                      : new Intl.NumberFormat('en-US', {
+                          notation: 'compact',
+                          compactDisplay: 'short',
+                        }).format(amountOfMembers) + '+'}{' '}
+                    member{amountOfMembers > 1 ? 's' : ''}
                   </Text>
                 )}
               </View>
@@ -198,18 +214,24 @@ const CommunityGridCard: React.FC<Props> = ({
                         </TouchableOpacity>
                       </View>
                     ) : (
-                      <TouchableOpacity
-                        disabled={community.pendingJoinRequest}
-                        onPress={() => {
-                          handleJoinCommunity(community.id)
-                        }}
-                      >
-                        <Text style={tw`text-black font-semibold text-xs`}>
-                          {community.pendingJoinRequest
-                            ? 'Pending Request'
-                            : 'Join'}
-                        </Text>
-                      </TouchableOpacity>
+                      <>
+                        {size != 'extra-small' ? (
+                          <TouchableOpacity
+                            disabled={community.pendingJoinRequest}
+                            onPress={() => {
+                              handleJoinCommunity(community.id)
+                            }}
+                          >
+                            <Text
+                              style={tw`text-black font-semibold text-xs bg-white bg-opacity-90 px-3 py-1 rounded-full`}
+                            >
+                              {community.pendingJoinRequest
+                                ? 'Pending Request'
+                                : 'Join'}
+                            </Text>
+                          </TouchableOpacity>
+                        ) : null}
+                      </>
                     )
                   }
                 </View>
