@@ -1,63 +1,85 @@
-import Text from 'components/Text'
 import React from 'react'
-import { View, FlatList } from 'react-native'
+import routes from 'navigation/routes'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { View, FlatList, ActivityIndicator } from 'react-native'
+import { CompositeNavigationProp } from '@react-navigation/native'
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 
 import tw from 'lib/tailwind'
+import Text from 'components/Text'
 import Link from 'components/Link'
-import routes from 'navigation/routes'
-import Community from 'components/community'
-import {
-  mockCommunities,
-  MockCommunityInterface,
-} from '../../../data/mockCommunities'
+import { FeedStackParams, BottomTabParms } from '../../../../types'
+import { useFetchCommunitiesQuery } from 'store/communities-api-slice'
+import CommunityGridCard from 'screens/Communities/components/CommunityGridCard'
+
+type NavigationProp = CompositeNavigationProp<
+  StackNavigationProp<FeedStackParams, 'Feed'>,
+  BottomTabNavigationProp<BottomTabParms>
+>
 
 const CommunityList = () => {
-  // For now, use mock data. In the future, uncomment the API call below:
-  // const {
-  //   data: communities = [],
-  //   isFetching,
-  //   refetch,
-  // } = useFetchCommunityQuery()
+  const navigation = useNavigation<NavigationProp>()
+  const {
+    data: communities = [],
+    isFetching,
+    isLoading,
+  } = useFetchCommunitiesQuery({
+    page: 1,
+    limit: 10,
+  })
 
-  const communities = mockCommunities
-
-  const renderCommunityItem = ({ item }: { item: MockCommunityInterface }) => (
-    <Community
-      id={item.id}
-      name={item.name}
-      backgroundImage={item.backgroundImage}
-      interests={item.interests}
-      createdAt={item.createdAt}
-      memberCount={item.memberCount}
-      isCreateCard={item.isCreateCard}
-      isMember={item.isMember}
-    />
-  )
-
-  const renderSeparator = () => <View style={tw`w-3`} />
+  const handleCommunityPress = (communityId: string) => {
+    navigation.navigate(routes.COMMUNITY, {
+      screen: 'CommunityDetail',
+      params: { communityId },
+    })
+  }
 
   return (
     <>
-      <View
-        style={tw`flex flex-row justify-between items-center
+      {isFetching || isLoading ? (
+        <ActivityIndicator />
+      ) : (
+        <>
+          {
+            // @ts-ignore
+            communities?.data.length > 0 && (
+              <>
+                <View
+                  style={tw`flex flex-row justify-between items-center
       mt-2 mb-3`}
-      >
-        <Text category="h5" style={tw`text-gray-500 font-thin`}>
-          Communities
-        </Text>
-        <Link text="see All" to={routes.COMMUNITY} />
-      </View>
-      <View style={tw`mb-4`}>
-        <FlatList
-          data={communities}
-          renderItem={renderCommunityItem}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          ItemSeparatorComponent={renderSeparator}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={tw`px-1`}
-        />
-      </View>
+                >
+                  <Text category="h5" style={tw`text-gray-500 font-thin`}>
+                    Communities
+                  </Text>
+                  <Link text="see All" to={routes.COMMUNITY} />
+                </View>
+                <View style={tw`mb-4`}>
+                  <FlatList
+                    /* @ts-ignore */
+                    data={communities?.data}
+                    renderItem={({ item }) => (
+                      <CommunityGridCard
+                        community={item}
+                        size="extra-small"
+                        onCommunityPress={() =>
+                          handleCommunityPress(item.id.toString())
+                        }
+                      />
+                    )}
+                    keyExtractor={(item) => item.id.toString()}
+                    horizontal
+                    ItemSeparatorComponent={() => <View style={tw`w-1`} />}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={tw`px-1`}
+                  />
+                </View>
+              </>
+            )
+          }
+        </>
+      )}
     </>
   )
 }

@@ -12,7 +12,6 @@ import { Ionicons } from '@expo/vector-icons'
 import Text from 'components/Text'
 import Screen from 'components/screen'
 import tw from 'lib/tailwind'
-import { mockCommunities } from '../../data/mockCommunities'
 import { CommunityStackParams } from '../../../types'
 
 type CommunitySettingsRouteProp = RouteProp<
@@ -42,6 +41,32 @@ const CommunitySettings = () => {
   const navigation = useNavigation<NavigationProp>()
   const { communityId } = route.params
 
+  const mockCommunities = [
+    {
+      id: 1,
+      name: 'Nature Lovers',
+      backgroundImage:
+        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop',
+      interests: [
+        { id: 1, name: 'Nature' },
+        { id: 2, name: 'Travel' },
+        { id: 3, name: 'Photography' },
+      ],
+      memberCount: 1250,
+    },
+    {
+      id: 2,
+      name: 'Cultural Explorers',
+      backgroundImage:
+        'https://images.unsplash.com/photo-1494526585095-c41746248156?w=800&h=600&fit=crop',
+      interests: [
+        { id: 4, name: 'Culture' },
+        { id: 5, name: 'History' },
+        { id: 6, name: 'Art' },
+      ],
+      memberCount: 870,
+    },
+  ]
   // Find the community data
   const community =
     mockCommunities.find((c) => c.id === parseInt(communityId)) ||

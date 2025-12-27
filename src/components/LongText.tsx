@@ -1,5 +1,11 @@
 import React from 'react'
-import { TouchableOpacity, View, TextProps } from 'react-native'
+import {
+  TouchableOpacity,
+  View,
+  TextProps,
+  TextStyle,
+  StyleProp,
+} from 'react-native'
 import Text from './Text'
 import tw from '../lib/tailwind'
 import useToggle from '../hooks/useToggle'
@@ -9,7 +15,7 @@ interface LongTextProps extends TextProps {
   maxLength?: number
   showMoreText?: string
   showLessText?: string
-  textStyles?: string // For tailwind styles
+  textStyles?: StyleProp<TextStyle>
   showShowMoreText?: boolean
 }
 
@@ -18,7 +24,7 @@ const LongText: React.FC<LongTextProps> = ({
   maxLength = 150,
   showMoreText = 'Show more',
   showLessText = 'Show less',
-  textStyles = '',
+  textStyles = {},
   showShowMoreText = true,
   ...textProps
 }) => {
@@ -38,7 +44,7 @@ const LongText: React.FC<LongTextProps> = ({
 
   return (
     <View style={tw`flex flex-row flex-wrap items-center`}>
-      <Text style={tw`${textStyles}`} {...textProps}>
+      <Text style={textStyles} {...textProps}>
         {displayText}
       </Text>
       {toggleButton}

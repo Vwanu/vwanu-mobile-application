@@ -16,7 +16,7 @@ import type {
   PostProps as PostPropsType,
   Media as MediaType,
 } from './types'
-
+import { StackNavigationProp } from '@react-navigation/stack'
 declare global {
   // Redux store types
   type RootState = StoreRootState
@@ -41,5 +41,16 @@ declare global {
   type Media = MediaType
 }
 
+type CommunityStackParams = {
+  Communities: undefined
+  CommunityDetail: { communityId: string }
+  CreateCommunity: { communityId?: string }
+  CommunitySettings: { communityId: string }
+}
+
+type CommunityNavigationProp = StackNavigationProp<
+  CommunityStackParams,
+  'CreateCommunity'
+>
 // This export is necessary to make this file a module
 export {}
