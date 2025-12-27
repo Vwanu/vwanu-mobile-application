@@ -49,6 +49,11 @@ const BottomTabBar: React.FC<TabBarProps> = ({ navigation, state }) => {
         screen: routes.PROFILE,
         params: { profileId: undefined },
       })
+    } else if (routeName === routes.COMMUNITY) {
+      // Always navigate to Communities list when Community tab is pressed
+      navigation.navigate(routeName, {
+        screen: 'Communities',
+      })
     } else {
       navigation.navigate(routeName)
     }

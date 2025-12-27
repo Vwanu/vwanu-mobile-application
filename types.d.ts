@@ -1,6 +1,7 @@
 import routes from './src/navigation/routes'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { SerializedError } from '@reduxjs/toolkit'
+import { NavigatorScreenParams } from '@react-navigation/native'
 
 // Import generated types from backend API
 export * from './src/types/generatedTypes'
@@ -132,18 +133,18 @@ export type ProfileStackParams = {
   AboutSettings: undefined
 }
 
-export type BottomTabParms = {
-  [routes.TIMELINE]: undefined
-  [routes.ACCOUNT]: undefined | { profileId: string }
-  [routes.INBOX]: undefined
-  [routes.COMMUNITY]: undefined
-}
-
 export type CommunityStackParams = {
   Communities: undefined
   CommunityDetail: { communityId: string }
   CreateCommunity: { communityId?: string }
   CommunitySettings: { communityId: string }
+}
+
+export type BottomTabParms = {
+  [routes.TIMELINE]: undefined
+  [routes.ACCOUNT]: undefined | { profileId: string }
+  [routes.INBOX]: undefined
+  [routes.COMMUNITY]: NavigatorScreenParams<CommunityStackParams> | undefined
 }
 
 export interface Message {

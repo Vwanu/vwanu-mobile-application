@@ -7,7 +7,6 @@ import {
   Invitation,
   CommunityRole,
 } from '../../types'
-import CreateCommunity from 'screens/Communities/CreateCommunity'
 
 interface FetchCommunitiesParams {
   page?: number
@@ -18,14 +17,14 @@ interface FetchCommunitiesParams {
 }
 
 type CommunityCreationProps = Partial<CommunityInterface> & {
-  coverPicture?: string
+  profilePicture?: string
 }
 
 const _toFormData = (values: Partial<CommunityCreationProps>): FormData => {
   const formData = new FormData()
-  formData.append('name', values.name || '')
-  formData.append('description', values.description || '')
-  formData.append('privacyType', values.privacyType || 'public')
+  values.name && formData.append('name', values.name)
+  values.description && formData.append('description', values.description)
+  values.privacyType && formData.append('privacyType', values.privacyType)
 
   if (values.interests) {
     values.interests.forEach((interest) => {
@@ -33,8 +32,9 @@ const _toFormData = (values: Partial<CommunityCreationProps>): FormData => {
     })
   }
 
-  if (values.coverPicture) {
-    const filename = values.coverPicture.split('/').pop() || 'coverPicture.jpg'
+  if (values.profilePicture) {
+    const filename =
+      values.profilePicture.split('/').pop() || 'profilePicture.jpg'
     let mimeType = 'image/jpeg' // default
 
     // Determine mime type based on file extension
@@ -47,13 +47,12 @@ const _toFormData = (values: Partial<CommunityCreationProps>): FormData => {
     }
 
     const imageBlob = {
-      uri: values.coverPicture,
+      uri: values.profilePicture,
       type: mimeType,
       name: filename,
     } as any
-    formData.append('coverPicture', imageBlob)
+    formData.append('profilePicture', imageBlob)
   }
-  console.log('🚀 formData:', formData)
   return formData
 }
 
@@ -121,16 +120,23 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Community', id }],
     }),
 
-    // Update community (for future use)
+    // Update community
     updateCommunity: builder.mutation<
       CommunityInterface,
-      { id: number; data: Partial<CommunityInterface> }
+      Partial<CommunityCreationProps> & { id: string }
     >({
-      query: ({ id, data }) => ({
-        url: `/communities/${id}`,
-        method: 'PUT',
-        body: data,
-      }),
+      query: ({ id, ...data }) => {
+        const formData = _toFormData(data)
+        return {
+          url: `/communities/${id}`,
+          method: 'PATCH',
+          body: formData,
+          prepareHeaders: (headers: Headers) => {
+            headers.set('Content-Type', 'multipart/form-data')
+            return headers
+          },
+        }
+      },
       invalidatesTags: (result, error, { id }) => [{ type: 'Community', id }],
     }),
 
@@ -146,7 +152,7 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
     // Join community (for future use)
     joinCommunity: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({
-        url: `/communities/${id}/join`,
+        url: `/communities/${id}/joinRequest`,
         method: 'POST',
       }),
       invalidatesTags: (result, error, id) => [{ type: 'Community', id }],

@@ -1,25 +1,34 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 
+import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import Screen from 'components/screen'
-import tw from 'lib/tailwind'
-import { CommunityStackParams, CommunityPrivacyType } from '../../../types'
+import { CommunityStackParams, CommunityInterface } from '../../../types'
 import ImageUploadSection from '../../components/form/ImageUploadSection'
 import InterestSelector from '../../components/form/InterestSelector'
-import PrivacySettings from './components/PrivacySettings'
-import { useCreateCommunityMutation } from '../../store/communities-api-slice'
+import {
+  useCreateCommunityMutation,
+  useFetchCommunityQuery,
+  useUpdateCommunityMutation,
+} from '../../store/communities-api-slice'
 import { Field, Form } from 'components/form'
 import * as Yup from 'yup'
 import FormHeader from 'components/form/FormHeader'
 import FormContent from 'components/form/FormContent'
 import { InferType } from 'yup'
-import { AppDispatch } from 'store'
-import { useDispatch } from 'react-redux'
+import { isEqual } from 'lodash'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { SerializedError } from '@reduxjs/toolkit'
 
 type NavigationProp = StackNavigationProp<
+  CommunityStackParams,
+  'CreateCommunity'
+>
+
+type CreateCommunityRouteProp = RouteProp<
   CommunityStackParams,
   'CreateCommunity'
 >
@@ -27,7 +36,7 @@ type NavigationProp = StackNavigationProp<
 const ValidationSchema = Yup.object().shape({
   name: Yup.string().required('Name is required'),
   description: Yup.string().required('Description is required'),
-  coverPicture: Yup.string().nullable(),
+  profilePicture: Yup.string().nullable(),
   interests: Yup.array()
     .of(Yup.string().required())
     .min(1, 'Please select at least one interest')
@@ -38,56 +47,129 @@ const ValidationSchema = Yup.object().shape({
 })
 
 const CreateCommunity = () => {
-  const dispatch = useDispatch<AppDispatch>()
   const navigation = useNavigation<NavigationProp>()
+  const route = useRoute<CreateCommunityRouteProp>()
+  const [unifiedError, setUnifiedError] = React.useState<
+    FetchBaseQueryError | SerializedError | null
+  >(null)
 
-  const [createCommunity, { isLoading, error }] = useCreateCommunityMutation()
-  // const {setFieldValue, values} = useFormikContext<InferType<typeof ValidationSchema>>()
+  // Extract communityId from route params and determine mode
+  const { communityId } = route.params || {}
+  const isEditMode = !!communityId
 
-  const initialValues: InferType<typeof ValidationSchema> = {
-    name: `Community ${Math.random().toString(36).substring(2, 15)}`,
-    description: `Describe your community... ${Math.random()
-      .toString(36)
-      .substring(2, 15)}`,
-    coverPicture: '',
-    interests: [],
-    // privacyType: 'public',
-    // requireApproval: false,
+  // Fetch existing community data if in edit mode
+  const {
+    data: existingCommunity,
+    isLoading: isFetchingCommunity,
+    error: fetchError,
+  } = useFetchCommunityQuery(communityId || '', {
+    skip: !isEditMode,
+  })
+
+  // Mutation hooks
+  const [createCommunity, { isLoading: isCreating, error: createError }] =
+    useCreateCommunityMutation()
+  const [updateCommunity, { isLoading: isUpdating, error: updateError }] =
+    useUpdateCommunityMutation()
+
+  // Unified loading and error states
+  const isLoading = isEditMode ? isFetchingCommunity || isUpdating : isCreating
+  const error = fetchError || createError || updateError
+
+  // Transform API data to form values based on mode
+  const initialValues = useMemo(() => {
+    if (isEditMode && existingCommunity) {
+      return {
+        name: existingCommunity.name,
+        description: existingCommunity.description,
+        profilePicture: existingCommunity.profilePicture || '',
+        interests:
+          existingCommunity.interests?.map((interest) =>
+            interest.id.toString()
+          ) || [],
+      }
+    }
+    return {
+      name: '',
+      description: '',
+      profilePicture: '',
+      interests: [],
+    }
+  }, [isEditMode, existingCommunity])
+
+  const getEditChangedFields = (
+    formData: InferType<typeof ValidationSchema>,
+    existingCommunity: CommunityInterface
+  ) => {
+    const changes: any = {}
+    // Compare name
+    if (formData.name !== existingCommunity.name) {
+      changes.name = formData.name
+    }
+    // Compare description
+    if (formData.description !== existingCommunity.description) {
+      changes.description = formData.description
+    }
+    // Compare profilePicture (form) with profilePicture (API)
+    if (formData.profilePicture !== existingCommunity.profilePicture) {
+      changes.profilePicture = formData.profilePicture
+    }
+    // Compare interests - extract IDs from existing community first
+    const existingInterestIds =
+      existingCommunity.interests?.map((i) => i.id.toString()) || []
+    const formInterestIds = formData.interests || []
+
+    // Use lodash isEqual for deep array comparison (order-independent)
+    if (
+      !isEqual([...existingInterestIds].sort(), [...formInterestIds].sort())
+    ) {
+      changes.interests = formData.interests
+    }
+
+    return changes
   }
-
-  console.log('🚀 values:', createCommunity)
+  const handleSubmit = async (formData: InferType<typeof ValidationSchema>) => {
+    if (isEditMode && communityId && existingCommunity) {
+      await updateCommunity({
+        id: communityId,
+        ...getEditChangedFields(formData, existingCommunity),
+      })
+        .then(() => navigation.replace('CommunityDetail', { communityId }))
+        .catch((err) => {
+          setUnifiedError(err)
+        })
+    } else {
+      // @ts-ignore
+      await createCommunity(formData)
+        .then((result) => {
+          navigation.replace('CommunityDetail', {
+            // @ts-ignore
+            communityId: result.data?.id,
+          })
+        })
+        .catch((err) => {
+          setUnifiedError(err)
+        })
+    }
+  }
   return (
-    <Screen loading={isLoading} error={error as any}>
+    <Screen loading={isLoading} error={unifiedError as any}>
       <View style={tw`flex-1 bg-gray-50 px-3`}>
         <Form
           validationSchema={ValidationSchema}
           initialValues={initialValues}
           style={tw`flex-1`}
-          onSubmit={(formData: any) => {
-            createCommunity(formData)
-              .unwrap()
-              .then((createdCommunity: any) => {
-                if (createdCommunity && createdCommunity.id) {
-                  navigation.replace('CommunityDetail', {
-                    communityId: createdCommunity.id,
-                  })
-                }
-              })
-              .catch((err: any) => {
-                console.error('❌ Failed to create community:', err)
-                console.error('Error details:', JSON.stringify(err, null, 2))
-              })
-          }}
+          onSubmit={handleSubmit}
         >
           <FormHeader
             onClose={() => navigation.goBack()}
             isLoading={isLoading}
-            submitTitle="Create"
-            submittingText="Creating..."
+            submitTitle={isEditMode ? 'Update' : 'Create'}
+            submittingText={isEditMode ? 'Updating...' : 'Creating...'}
           />
 
           <FormContent>
-            <ImageUploadSection name="coverPicture" />
+            <ImageUploadSection name="profilePicture" />
 
             <Text category="h6" style={tw`font-semibold text-lg mb-4`}>
               Basic Information
