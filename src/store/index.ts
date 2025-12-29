@@ -8,6 +8,7 @@ import { uiReducer } from './ui-slice'
 import profileReducer from './profiles'
 import logger from '../middleware/logger'
 import authReducer, { AuthSessionService } from './auth-slice'
+import { NotificationSubscriptionManager } from '../services/subscriptions'
 
 export const store = configureStore({
   reducer: {
@@ -29,6 +30,9 @@ export const store = configureStore({
 
 // Initialize AuthSessionService with store's dispatch
 AuthSessionService.setDispatch(store.dispatch)
+
+// Initialize NotificationSubscriptionManager with store's dispatch
+NotificationSubscriptionManager.setDispatch(store.dispatch)
 
 setupListeners(store.dispatch)
 
