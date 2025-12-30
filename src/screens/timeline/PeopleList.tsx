@@ -1,89 +1,90 @@
-import React, { useState, useCallback } from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import React, { useState, useCallback, useEffect } from 'react'
 import { View, FlatList, ActivityIndicator, RefreshControl } from 'react-native'
+
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import UserCard from './components/UserCard'
-import { mockUsers, MockUser } from 'data/mockUsers'
-import { Ionicons } from '@expo/vector-icons'
+import { useFetchProfilesQuery } from 'store/profiles'
 import SearchBox from 'screens/Communities/components/SearchBox'
 
 const ITEMS_PER_PAGE = 10
 
 const PeopleList: React.FC = () => {
-  const [users, setUsers] = useState<MockUser[]>(mockUsers)
-  const [displayedUsers, setDisplayedUsers] = useState<MockUser[]>(
-    mockUsers.slice(0, ITEMS_PER_PAGE)
-  )
-  const [page, setPage] = useState(1)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [skip, setSkip] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [allUsers, setAllUsers] = useState<Profile[]>([])
 
-  const handleFollowToggle = useCallback(
-    (userId: string, newFollowingState: boolean) => {
-      // Update the user's follow state in both the main list and displayed list
-      const updateUserFollowState = (userList: MockUser[]) =>
-        userList.map((user) =>
-          user.id === userId
-            ? { ...user, isFollowing: newFollowingState }
-            : user
-        )
+  // Fetch profiles from API with pagination
+  const {
+    data: profilesData,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useFetchProfilesQuery({
+    search: searchQuery,
+    $limit: ITEMS_PER_PAGE,
+    $skip: skip,
+    // $sort: { createdAt: -1 } as const,
+  })
 
-      setUsers((prev) => updateUserFollowState(prev))
-      setDisplayedUsers((prev) => updateUserFollowState(prev))
-    },
-    []
-  )
+  // Accumulate users when new data arrives
+  useEffect(() => {
+    if (profilesData?.data) {
+      if (skip === 0) {
+        // Fresh load or search - replace all users
+        setAllUsers(profilesData.data)
+      } else {
+        // Loading more - append new users
+        setAllUsers((prev) => [...prev, ...profilesData.data])
+      }
+
+      // Check if we've reached the end
+      const totalLoaded = skip + profilesData.data.length
+      setHasMore(totalLoaded < profilesData.total)
+    }
+  }, [profilesData])
+
+  // Reset pagination when search query changes
+  useEffect(() => {
+    setSkip(0)
+    setAllUsers([])
+    setHasMore(true)
+  }, [searchQuery])
 
   const loadMoreUsers = useCallback(() => {
-    if (isLoadingMore || displayedUsers.length >= users.length) {
+    if (isFetching || !hasMore) {
       return
     }
 
-    setIsLoadingMore(true)
+    // Load next page
+    setSkip((prev) => prev + ITEMS_PER_PAGE)
+  }, [isFetching, hasMore])
 
-    // Simulate loading delay
-    setTimeout(() => {
-      const nextPage = page + 1
-      const startIndex = page * ITEMS_PER_PAGE
-      const endIndex = nextPage * ITEMS_PER_PAGE
-      const newUsers = users.slice(startIndex, endIndex)
+  const handleRefresh = useCallback(async () => {
+    setSkip(0)
+    setAllUsers([])
+    setHasMore(true)
+    await refetch()
+  }, [refetch])
 
-      setDisplayedUsers((prev) => [...prev, ...newUsers])
-      setPage(nextPage)
-      setIsLoadingMore(false)
-    }, 500)
-  }, [isLoadingMore, displayedUsers.length, users.length, page, users])
-
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-
-    // Simulate refresh delay
-    setTimeout(() => {
-      setDisplayedUsers(users.slice(0, ITEMS_PER_PAGE))
-      setPage(1)
-      setIsRefreshing(false)
-    }, 1000)
-  }, [users])
-
-  const renderUser = useCallback(
-    ({ item }: { item: MockUser }) => (
-      <UserCard user={item} onFollowToggle={handleFollowToggle} />
-    ),
-    [handleFollowToggle]
-  )
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query)
+  }, [])
 
   const renderFooter = useCallback(() => {
-    if (!isLoadingMore) return null
+    if (!isFetching || skip === 0) return null
 
     return (
       <View style={tw`py-4 items-center`}>
         <ActivityIndicator size="small" color="#3B82F6" />
       </View>
     )
-  }, [isLoadingMore])
+  }, [isFetching, skip])
 
   const renderEmpty = useCallback(() => {
-    if (isRefreshing) return null
+    if (isLoading || isFetching) return null
 
     return (
       <View style={tw`flex-1 items-center justify-center py-20`}>
@@ -94,21 +95,33 @@ const PeopleList: React.FC = () => {
           No users found
         </Text>
         <Text style={tw`text-sm text-gray-500 dark:text-gray-400 mt-2`}>
-          Try refreshing the list
+          {searchQuery ? 'Try a different search' : 'Try refreshing the list'}
         </Text>
       </View>
     )
-  }, [isRefreshing])
+  }, [isLoading, isFetching, searchQuery])
 
-  const keyExtractor = useCallback((item: MockUser) => item.id, [])
+  // Show loading indicator on initial load
+  if (isLoading) {
+    return (
+      <View
+        style={tw`flex-1 bg-gray-50 dark:bg-gray-900 items-center justify-center`}
+      >
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={tw`text-gray-500 dark:text-gray-400 mt-4`}>
+          Loading users...
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <View style={tw`flex-1 bg-gray-50 dark:bg-gray-900`}>
-      <SearchBox />
+      <SearchBox onSearch={handleSearch} />
       <FlatList
-        data={displayedUsers}
-        renderItem={renderUser}
-        keyExtractor={keyExtractor}
+        data={allUsers}
+        renderItem={({ item }) => <UserCard user={item} />}
+        keyExtractor={(item: Profile) => item.id}
         onEndReached={loadMoreUsers}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
@@ -116,7 +129,7 @@ const PeopleList: React.FC = () => {
         contentContainerStyle={tw`p-3 pb-34`}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
+            refreshing={isFetching && skip === 0}
             onRefresh={handleRefresh}
             tintColor="#3B82F6"
             colors={['#3B82F6']}

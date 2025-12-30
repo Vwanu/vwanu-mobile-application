@@ -63,14 +63,10 @@ export interface User {
   id: string
   email: string
   role?: 'admin' | 'moderator' | 'member'
+  online?: boolean
+  last_seen?: Date
 }
 
-export interface Profile extends User {
-  dob?: Date
-  gender?: string
-  bio?: string
-  location?: string
-}
 export type Notice = 'public' | 'private' | 'network'
 
 // Community privacy types
