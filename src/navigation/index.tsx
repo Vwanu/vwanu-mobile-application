@@ -21,6 +21,12 @@ import {
   signOutUser,
 } from '../store/auth-slice'
 import { useTokenMonitoring } from '../hooks/useTokenMonitoring'
+import { WebSocketManagerFeathers } from '../services/websocket-manager-feathers'
+import { NotificationSubscriptionManager } from '../services/subscriptions'
+// Import WebSocket test utility (only loads in development)
+if (__DEV__) {
+  require('../services/websocket-test')
+}
 
 interface GeneralError {
   className: string
@@ -92,6 +98,32 @@ const Routes: React.FC = () => {
       dispatch(checkExistingSession())
     }
   }, [dispatch, isInitializing])
+
+  // Initialize Feathers WebSocket connection when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log(
+        '🔌 User authenticated, initializing Feathers WebSocket connection'
+      )
+
+      // Initialize Feathers WebSocket connection
+      WebSocketManagerFeathers.initialize()
+        .then(() => {
+          // Start global notification subscription
+          NotificationSubscriptionManager.startGlobalSubscription()
+        })
+        .catch((error) => {
+          console.error('❌ Failed to initialize Feathers WebSocket:', error)
+        })
+
+      // Cleanup on unmount or when authentication changes
+      return () => {
+        console.log('🔌 Disconnecting Feathers WebSocket on auth state change')
+        NotificationSubscriptionManager.stopGlobalSubscription()
+        WebSocketManagerFeathers.disconnect()
+      }
+    }
+  }, [isAuthenticated])
 
   // Optimized debug logging (only in development)
   // useEffect(() => {

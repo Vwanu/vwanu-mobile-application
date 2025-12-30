@@ -15,6 +15,7 @@ import ProfileNotFound from './ProfileNotFound'
 import { abbreviateNumber } from 'lib/numberFormat'
 import { useFetchProfileQuery } from 'store/profiles'
 import ConnectionStatus, { ConnectionState } from './ConnectionStatus'
+import NotificationIndicator from 'components/NotificationIndicator'
 
 interface ProfileHeaderProps {
   profileId: string
@@ -100,20 +101,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
           size={50}
         />
 
-        {/* Show settings icon for own profile, ConnectionStatus for others */}
         {userId === user?.id ? (
-          <TouchableOpacity
-            onPress={() => {
-              // @ts-ignore
-              navigation.navigate('Settings')
-            }}
-          >
-            <Ionicons
-              name="settings-outline"
-              size={20}
-              color={isDarkMode ? 'white' : 'black'}
-            />
-          </TouchableOpacity>
+          <View style={tw`flex-row items-center gap-4`}>
+            {/* Notification Bell */}
+            <NotificationIndicator />
+
+            {/* Settings Icon */}
+            <TouchableOpacity
+              onPress={() => {
+                // @ts-ignore
+                navigation.navigate('Settings')
+              }}
+            >
+              <Ionicons
+                name="settings-outline"
+                size={20}
+                color={isDarkMode ? 'white' : 'black'}
+              />
+            </TouchableOpacity>
+          </View>
         ) : (
           <ConnectionStatus
             targetUserId={user?.id || ''}

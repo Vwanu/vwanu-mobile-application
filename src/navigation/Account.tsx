@@ -4,6 +4,7 @@ import { ProfileStackParams } from '../../types'
 
 import Profile from 'screens/Profile'
 import SinglePostScreen from '../screens/timeline/SinglePost.screen'
+import Notifications from '../screens/Notifications'
 import Settings from '../screens/Settings'
 import NotificationSettings from '../screens/Settings/NotificationSettings'
 import AccountSettings from '../screens/Settings/AccountSettings'
@@ -24,6 +25,11 @@ const Account: React.FC<{}> = () => (
   >
     <Stack.Screen name={routes.PROFILE} component={Profile} />
     <Stack.Screen name="SinglePost" component={SinglePostScreen} />
+    <Stack.Screen
+      name="Notifications"
+      component={Notifications}
+      options={{ title: 'Notifications' }}
+    />
     <Stack.Screen name="Settings" component={Settings} />
     <Stack.Screen
       name="NotificationSettings"
