@@ -9,6 +9,7 @@ import PostInput from 'components/CreatePost/PostInput'
 import TimelineSkeletone from './TimelineSkeletone'
 import TimelineHeader from './TimelineHeader'
 import TimelineTabs from './components/TimelineTabs'
+import PeopleList from './PeopleList'
 
 const Timeline = () => {
   const [activeTab, setActiveTab] = useState('main')
@@ -36,12 +37,8 @@ const Timeline = () => {
           </View>
         )}
 
-        {/* People Tab Placeholder */}
-        {activeTab === 'people' && (
-          <View style={tw`flex-1 items-center justify-center`}>
-            {/* Placeholder for People tab content */}
-          </View>
-        )}
+        {/* People Tab */}
+        {activeTab === 'people' && <PeopleList />}
 
         {/* Blogs Tab Placeholder */}
         {activeTab === 'blogs' && (
