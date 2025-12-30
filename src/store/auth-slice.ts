@@ -3,6 +3,8 @@ import { AppDispatch, RootState } from 'store'
 import axios from 'axios'
 import { Profile } from '../../types'
 import { AuthTokenService } from '../lib/authTokenService'
+import { WebSocketManagerFeathers } from '../services/websocket-manager-feathers'
+import { NotificationSubscriptionManager } from '../services/subscriptions'
 
 import {
   confirmSignUp,
@@ -336,6 +338,14 @@ export const signOutUser = createAsyncThunk(
   'auth/signOut',
   async (_, { rejectWithValue }) => {
     try {
+      // Stop notification subscription
+      console.log('📡 Stopping notification subscription before sign out')
+      NotificationSubscriptionManager.stopGlobalSubscription()
+
+      // Disconnect Feathers WebSocket before signing out
+      console.log('🔌 Disconnecting Feathers WebSocket before sign out')
+      WebSocketManagerFeathers.disconnect()
+
       // Sign out from Cognito and clear tokens from secure storage
       await AuthTokenService.forceSignOut()
 

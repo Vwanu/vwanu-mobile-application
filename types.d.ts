@@ -124,6 +124,7 @@ export type FeedStackParams = Record<string, object | undefined> & {
 export type ProfileStackParams = {
   [routes.PROFILE]: { profileId: string } | undefined
   SinglePost: { postId: string; isCommenting?: boolean }
+  Notifications: undefined
   Settings: undefined
   NotificationSettings: undefined
   AccountSettings: undefined
@@ -142,7 +143,7 @@ export type CommunityStackParams = {
 
 export type BottomTabParms = {
   [routes.TIMELINE]: undefined
-  [routes.ACCOUNT]: undefined | { profileId: string }
+  [routes.ACCOUNT]: NavigatorScreenParams<ProfileStackParams> | undefined
   [routes.INBOX]: undefined
   [routes.COMMUNITY]: NavigatorScreenParams<CommunityStackParams> | undefined
 }
@@ -192,7 +193,7 @@ export interface CommunityInterface {
   profilePicture: string
   updatedAt: Date
   isCreateCard?: boolean
-  isMember?: Member
+  IsMember?: Member
   pendingInvitation?: Invitation
   pendingJoinRequest: boolean
 }
@@ -211,4 +212,56 @@ export interface CommunityRole {
   id: string
   name: string
   roleAccessLevel: number
+}
+
+// Notification types
+export type NotificationType =
+  | 'like'
+  | 'comment'
+  | 'follow'
+  | 'community_invite'
+  | 'community_join_request'
+  | 'community_post'
+  | 'mention'
+  | 'system'
+
+export interface NotificationInterface {
+  id: string
+  type: NotificationType
+  title: string
+  message: string
+  read: boolean
+  createdAt: Date
+  updatedAt: Date
+  userId: string
+  entityId: string
+  entityName: 'Post' | 'Like' | 'Comment' | 'CommunityInvite'
+  fromUser: Partial<User> & { profilePicture: string }
+  metadata?: {
+    postId?: string
+    communityId?: string
+    commentId?: string
+    [key: string]: any
+  }
+}
+
+export interface NotificationSettings {
+  emailNotifications: boolean
+  pushNotifications: boolean
+  communityInvites: boolean
+  communityPosts: boolean
+  likes: boolean
+  comments: boolean
+  follows: boolean
+  mentions: boolean
+}
+
+export interface FetchNotificationsParams {
+  page?: number
+  limit?: number
+  unreadOnly?: boolean
+}
+
+export interface MarkNotificationsReadParams {
+  notificationIds: string[]
 }

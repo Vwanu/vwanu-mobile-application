@@ -1,0 +1,14 @@
+reviews:
+  auto_title_instructions: |
+    Generate a concise, descriptive PR title based on the changes in this pull request.
+    Follow these guidelines:
+    - Use conventional commit format: type(scope): description
+    - Common types: feat, fix, refactor, docs, test, chore, style, perf
+    - Keep the title under 72 characters
+    - Be specific about what changed
+    - Use imperative mood (e.g., "add" not "added")
+
+    Examples:
+    - feat(auth): add OAuth2 login support
+    - fix(community): resolve member invitation bug
+    - refactor(ui): simplify navigation component
