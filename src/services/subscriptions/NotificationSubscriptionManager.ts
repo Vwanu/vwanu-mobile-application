@@ -20,7 +20,6 @@ export class NotificationSubscriptionManager {
    */
   static setDispatch(dispatch: AppDispatch) {
     this.dispatch = dispatch
-    console.log('📡 NotificationSubscriptionManager: Dispatch set')
   }
 
   /**
@@ -30,7 +29,6 @@ export class NotificationSubscriptionManager {
    */
   static startGlobalSubscription() {
     if (this.unsubscribe) {
-      console.log('⚠️ Notification subscription already active')
       return
     }
 
@@ -39,16 +37,12 @@ export class NotificationSubscriptionManager {
       return
     }
 
-    console.log('📡 Starting global notification subscription...')
-
     // Subscribe to Feathers service 'created' event
     this.unsubscribe =
       WebSocketManagerFeathers.subscribeToService<NotificationInterface>(
         'notifications',
         'created',
-        (notification) => {
-          console.log('🔔 New notification received:', notification)
-
+        () => {
           // Invalidate RTK Query cache tags to trigger refetch
           if (this.dispatch) {
             this.dispatch(
@@ -60,8 +54,6 @@ export class NotificationSubscriptionManager {
           }
         }
       )
-
-    console.log('✅ Global notification subscription started')
   }
 
   /**
@@ -70,7 +62,6 @@ export class NotificationSubscriptionManager {
    */
   static stopGlobalSubscription() {
     if (this.unsubscribe) {
-      console.log('📡 Stopping global notification subscription...')
       this.unsubscribe()
       this.unsubscribe = null
     }
