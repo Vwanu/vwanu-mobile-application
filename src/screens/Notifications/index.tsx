@@ -14,6 +14,7 @@ import {
   useDeleteNotificationMutation,
 } from 'store/notifications-api-slice'
 import { NotificationInterface } from '../../../types'
+import Screen from 'components/screen'
 
 /**
  * Notifications Screen
@@ -191,7 +192,7 @@ const NotificationsScreen: React.FC = () => {
     </View>
   )
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return (
       <View style={tw`flex-1 bg-white dark:bg-gray-900`}>
         {renderHeader()}
@@ -203,26 +204,28 @@ const NotificationsScreen: React.FC = () => {
   }
 
   return (
-    <View style={tw`flex-1 bg-white dark:bg-gray-900`}>
-      <FlatList
-        data={notifications?.data || []}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NotificationItem
-            notification={item}
-            onPress={handleNotificationPress}
-            onDelete={handleDeleteNotification}
-          />
-        )}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyState}
-        refreshControl={
-          <RefreshControl refreshing={isFetching} onRefresh={refetch} />
-        }
-        showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[0]}
-      />
-    </View>
+    <Screen>
+      <View style={tw`flex-1 bg-white dark:bg-gray-900`}>
+        <FlatList
+          data={notifications?.data || []}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <NotificationItem
+              notification={item}
+              onPress={handleNotificationPress}
+              onDelete={handleDeleteNotification}
+            />
+          )}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={renderEmptyState}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          }
+          showsVerticalScrollIndicator={false}
+          stickyHeaderIndices={[0]}
+        />
+      </View>
+    </Screen>
   )
 }
 
