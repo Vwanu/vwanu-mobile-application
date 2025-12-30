@@ -193,7 +193,7 @@ export interface CommunityInterface {
   profilePicture: string
   updatedAt: Date
   isCreateCard?: boolean
-  isMember?: Member
+  IsMember?: Member
   pendingInvitation?: Invitation
   pendingJoinRequest: boolean
 }
