@@ -8,6 +8,9 @@ interface UpdateProfile extends Partial<Profile> {
 
 interface FetchProfilesParams {
   search?: string
+  $limit?: number
+  $skip?: number
+  $sort?: Record<string, 1 | -1>
 }
 
 const Profiles = apiSlice.injectEndpoints({
@@ -17,11 +20,24 @@ const Profiles = apiSlice.injectEndpoints({
       FetchProfilesParams | void
     >({
       query: (params) => {
-        const queryParams: Record<string, string> = {}
+        const queryParams: Record<string, any> = {}
 
-        // Add search param if provided
-        if (params && typeof params === 'object' && params.search?.trim()) {
-          queryParams.search = params.search.trim()
+        if (params && typeof params === 'object') {
+          // Add search param if provided
+          if (params.search?.trim()) {
+            queryParams.search = params.search.trim()
+          }
+
+          // Add pagination params
+          if (params.$limit !== undefined) {
+            queryParams.$limit = params.$limit
+          }
+          if (params.$skip !== undefined) {
+            queryParams.$skip = params.$skip
+          }
+          if (params.$sort) {
+            queryParams.$sort = JSON.stringify(params.$sort)
+          }
         }
 
         return {

@@ -15,9 +15,15 @@ interface TabBarProps {
   tabs: Tab[]
   activeTab: string
   onTabChange: (tabId: string) => void
+  iconOnly?: boolean
 }
 
-const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) => {
+const TabBar: React.FC<TabBarProps> = ({
+  tabs,
+  activeTab,
+  onTabChange,
+  iconOnly = false,
+}) => {
   const flatListRef = useRef<FlatList>(null)
 
   // Auto-scroll to center the selected tab
@@ -48,7 +54,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) => {
         activeOpacity={0.7}
         style={tw`mr-3 px-5 py-2.5 ${
           isActive
-            ? 'border-b-2 border-b-blue-500'
+            ? 'border-b-2 border-primary'
             : 'border-b-2 border-b-transparent'
         } ${isDisabled ? 'opacity-40' : ''}`}
       >
@@ -56,21 +62,23 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) => {
           {item.icon && (
             <Ionicons
               name={item.icon as any}
-              size={20}
+              size={iconOnly ? 24 : 20}
               color={isDisabled ? '#9CA3AF' : isActive ? '#3B82F6' : '#6B7280'}
             />
           )}
-          <Text
-            style={tw`font-medium ${item.icon ? 'ml-2' : ''} ${
-              isDisabled
-                ? 'text-gray-400'
-                : isActive
-                ? 'text-blue-500'
-                : 'text-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {item.label}
-          </Text>
+          {!iconOnly && (
+            <Text
+              style={tw`font-medium ${item.icon ? 'ml-2' : ''} ${
+                isDisabled
+                  ? 'text-gray-400'
+                  : isActive
+                  ? 'text-primary'
+                  : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {item.label}
+            </Text>
+          )}
         </View>
       </TouchableOpacity>
     )
@@ -85,7 +93,7 @@ const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) => {
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={tw`px-4 py-2`}
+        contentContainerStyle={tw`px-4 `}
         onScrollToIndexFailed={(info) => {
           // Fallback if scrollToIndex fails
           const wait = new Promise((resolve) => setTimeout(resolve, 500))

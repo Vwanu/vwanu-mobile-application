@@ -20,10 +20,13 @@ interface ProfAvatarProps {
     showLessText?: string
     textStyles?: string
   }
+  showOnlineStatus?: boolean
+  online?: boolean
 }
 
 const ProfAvatar: React.FC<ProfAvatarProps> = ({
   layout = 'row',
+  showOnlineStatus = false,
   ...props
 }) => {
   const handleLongPress = () => {
@@ -39,7 +42,16 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
       delayLongPress={800}
       disabled={!props.userId || !props.onLongPress}
     >
-      <Avatar.Image size={props.size} source={{ uri: props.source }} />
+      <View>
+        <Avatar.Image size={props.size} source={{ uri: props.source }} />
+        {showOnlineStatus && props.online !== undefined && (
+          <View
+            style={tw`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${
+              props.online ? 'bg-green-500' : 'bg-gray-400'
+            }`}
+          />
+        )}
+      </View>
       <View style={tw`ml-2 flex justify-center`}>
         <Text style={tw`font-semibold`}>{props.name}</Text>
         {props.subtitle ? (
