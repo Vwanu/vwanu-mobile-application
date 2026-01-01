@@ -16,6 +16,12 @@ import { abbreviateNumber } from 'lib/numberFormat'
 import { useFetchProfileQuery } from 'store/profiles'
 import ConnectionStatus, { ConnectionState } from './ConnectionStatus'
 import NotificationIndicator from 'components/NotificationIndicator'
+import {
+  useAcceptFriendRequestMutation,
+  useDeclineFriendRequestMutation,
+  useSendFriendRequestMutation,
+} from 'store/friends-api-slice'
+import { ActivityIndicator } from 'react-native-paper'
 
 interface ProfileHeaderProps {
   profileId: string
@@ -27,53 +33,58 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
   const user = useFetchProfileQuery(props.profileId).data
   const { userId } = useSelector((state: RootState) => state.auth)
 
+  const [sendFriendRequest, { isLoading }] = useSendFriendRequestMutation()
+  const [acceptFriendRequest, { isLoading: isAccepting }] =
+    useAcceptFriendRequestMutation()
+  const [declineFriendRequest, { isLoading: isDeclining }] =
+    useDeclineFriendRequestMutation()
+
   if (!user) {
     return <ProfileNotFound />
   }
 
   // Determine connection state between current user and profile being viewed
   const getConnectionState = (): ConnectionState => {
+    if (isAccepting || isDeclining) {
+      return ConnectionState.LOADING
+    }
     if (userId === user?.id) {
       return ConnectionState.SELF
     }
-
-    // TODO: Replace with actual API calls to check friendship status
-    // For now, using mock logic based on user ID patterns
-    const targetId = parseInt(user?.id || '0')
-    const currentId = parseInt(userId || '0')
-
-    // Mock logic - replace with real friendship status check
-    if (targetId % 4 === 0) {
-      return ConnectionState.FRIENDS
-    } else if (targetId % 4 === 1) {
-      return ConnectionState.REQUEST_RECEIVED
-    } else if (targetId % 4 === 2) {
-      return ConnectionState.REQUEST_SENT
-    } else {
+    if (!user.friendship) {
       return ConnectionState.NOT_CONNECTED
+    }
+    if (user.friendship.status === 1) return ConnectionState.FRIENDS
+    else if (user.friendship.status === 0) {
+      switch (user.friendship.targetId) {
+        case user.id:
+          return ConnectionState.REQUEST_SENT
+        case userId:
+          return ConnectionState.REQUEST_RECEIVED
+        default:
+          break
+      }
     }
   }
 
   const connectionState = getConnectionState()
 
-  const handleSendRequest = async () => {
-    // TODO: Implement send friend request API call
-    console.log('Send friend request to user:', user?.id)
+  const handleSendFriendRequest = async () => {
+    sendFriendRequest({ targetId: user?.id as string })
   }
 
   const handleAcceptRequest = async () => {
-    // TODO: Implement accept friend request API call
-    console.log('Accept friend request from user:', user?.id)
+    acceptFriendRequest({
+      requestId: user?.friendship?.id as string,
+      targetId: user?.id as string,
+    })
   }
 
   const handleDeclineRequest = async () => {
-    // TODO: Implement decline friend request API call
-    console.log('Decline friend request from user:', user?.id)
-  }
-
-  const handleCancelRequest = async () => {
-    // TODO: Implement cancel friend request API call
-    console.log('Cancel friend request to user:', user?.id)
+    declineFriendRequest({
+      requestId: user?.friendship?.id as string,
+      targetId: user?.id as string,
+    })
   }
 
   const handleStartChat = async () => {
@@ -121,17 +132,23 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
             </TouchableOpacity>
           </View>
         ) : (
-          <ConnectionStatus
-            targetUserId={user?.id || ''}
-            currentUserId={userId || ''}
-            connectionState={connectionState}
-            onSendRequest={handleSendRequest}
-            onAcceptRequest={handleAcceptRequest}
-            onDeclineRequest={handleDeclineRequest}
-            onCancelRequest={handleCancelRequest}
-            onStartChat={handleStartChat}
-            onUnfriend={handleUnfriend}
-          />
+          <>
+            {isLoading ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <ConnectionStatus
+                targetUserId={user?.id || ''}
+                currentUserId={userId || ''}
+                connectionState={connectionState}
+                onSendRequest={handleSendFriendRequest}
+                onAcceptRequest={handleAcceptRequest}
+                onDeclineRequest={handleDeclineRequest}
+                onStartChat={handleStartChat}
+                onUnfriend={handleUnfriend}
+                isLoading={isAccepting || isDeclining}
+              />
+            )}
+          </>
         )}
       </View>
       {/* Bio */}

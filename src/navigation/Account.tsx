@@ -5,6 +5,7 @@ import { ProfileStackParams } from '../../types'
 import Profile from 'screens/Profile'
 import SinglePostScreen from '../screens/timeline/SinglePost.screen'
 import Notifications from '../screens/Notifications'
+import FriendRequests from '../screens/FriendRequests'
 import Settings from '../screens/Settings'
 import NotificationSettings from '../screens/Settings/NotificationSettings'
 import AccountSettings from '../screens/Settings/AccountSettings'
@@ -29,6 +30,11 @@ const Account: React.FC<{}> = () => (
       name="Notifications"
       component={Notifications}
       options={{ title: 'Notifications' }}
+    />
+    <Stack.Screen
+      name="FriendRequests"
+      component={FriendRequests}
+      options={{ title: 'Friend Requests' }}
     />
     <Stack.Screen name="Settings" component={Settings} />
     <Stack.Screen
