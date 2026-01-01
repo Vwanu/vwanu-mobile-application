@@ -4,6 +4,7 @@ import { View } from 'react-native'
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import NotificationIndicator from 'components/NotificationIndicator'
+import FriendRequestIndicator from 'components/FriendRequestIndicator'
 
 const TimelineHeader: React.FC = () => (
   <View
@@ -12,7 +13,10 @@ const TimelineHeader: React.FC = () => (
     {/* App Name */}
     <Text style={tw`text-2xl font-bold text-primary`}>Vwanu</Text>
 
-    <NotificationIndicator />
+    <View style={tw`flex-row items-center`}>
+      <FriendRequestIndicator />
+      <NotificationIndicator />
+    </View>
   </View>
 )
 

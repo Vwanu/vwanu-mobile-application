@@ -1,11 +1,10 @@
 import React from 'react'
-import { View, TouchableOpacity, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Button } from '@ui-kitten/components'
+import { View, TouchableOpacity, Alert } from 'react-native'
 
 import tw from '../../lib/tailwind'
-import Text from '../../components/Text'
 import { useTheme } from '../../hooks/useTheme'
+import { ActivityIndicator } from 'react-native-paper'
 
 export enum ConnectionState {
   FRIENDS = 'friends',
@@ -13,18 +12,19 @@ export enum ConnectionState {
   REQUEST_RECEIVED = 'request_received',
   NOT_CONNECTED = 'not_connected',
   SELF = 'self',
+  LOADING = 'loading',
 }
 
 interface ConnectionStatusProps {
   targetUserId: string
   currentUserId: string
+  isLoading?: boolean
   connectionState: ConnectionState
-  onSendRequest?: () => void
-  onAcceptRequest?: () => void
-  onDeclineRequest?: () => void
+  onSendRequest: () => void
+  onAcceptRequest: () => void
+  onDeclineRequest: () => void
   onCancelRequest?: () => void
   onStartChat?: () => void
-  onUnfriend?: () => void
 }
 
 /**
@@ -41,7 +41,6 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   onDeclineRequest,
   onCancelRequest,
   onStartChat,
-  onUnfriend,
 }) => {
   const { isDarkMode } = useTheme()
 
@@ -60,46 +59,6 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       // TODO: Navigate to chat screen
       console.log('Navigate to chat with user:', targetUserId)
     }
-  }
-
-  const handleSendRequest = () => {
-    if (onSendRequest) {
-      onSendRequest()
-    } else {
-      // TODO: Send friend request API call
-      console.log('Send friend request to:', targetUserId)
-    }
-  }
-
-  const handleAcceptRequest = () => {
-    if (onAcceptRequest) {
-      onAcceptRequest()
-    } else {
-      // TODO: Accept friend request API call
-      console.log('Accept friend request from:', targetUserId)
-    }
-  }
-
-  const handleDeclineRequest = () => {
-    Alert.alert(
-      'Decline Friend Request',
-      'Are you sure you want to decline this friend request?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: () => {
-            if (onDeclineRequest) {
-              onDeclineRequest()
-            } else {
-              // TODO: Decline friend request API call
-              console.log('Decline friend request from:', targetUserId)
-            }
-          },
-        },
-      ]
-    )
   }
 
   const handleCancelRequest = () => {
@@ -124,63 +83,25 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     )
   }
 
-  const handleUnfriend = () => {
-    Alert.alert(
-      'Unfriend User',
-      'Are you sure you want to remove this person from your friends?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Unfriend',
-          style: 'destructive',
-          onPress: () => {
-            if (onUnfriend) {
-              onUnfriend()
-            } else {
-              // TODO: Unfriend API call
-              console.log('Unfriend user:', targetUserId)
-            }
-          },
-        },
-      ]
-    )
-  }
-
   const renderConnectionContent = () => {
     switch (connectionState) {
+      case ConnectionState.LOADING:
+        return <ActivityIndicator size="small" />
       case ConnectionState.FRIENDS:
         return (
-          <View style={tw`flex-row items-center`}>
-            {/* Chat Button */}
-            <TouchableOpacity
-              onPress={handleChatPress}
-              style={tw`p-2 mr-2 rounded-full ${
-                isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
-              }`}
-              accessibilityLabel="Start chat"
-            >
-              <Ionicons
-                name="chatbubble-outline"
-                size={20}
-                color={isDarkMode ? '#60A5FA' : '#2563EB'}
-              />
-            </TouchableOpacity>
-
-            {/* Friends Menu */}
-            <TouchableOpacity
-              onPress={handleUnfriend}
-              style={tw`p-2 rounded-full ${
-                isDarkMode ? 'bg-green-900' : 'bg-green-100'
-              }`}
-              accessibilityLabel="Friends options"
-            >
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={20}
-                color={isDarkMode ? '#34D399' : '#059669'}
-              />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            onPress={handleChatPress}
+            style={tw`p-2 mr-2 rounded-full ${
+              isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
+            }`}
+            accessibilityLabel="Start chat"
+          >
+            <Ionicons
+              name="chatbubble-outline"
+              size={20}
+              color={isDarkMode ? '#60A5FA' : '#2563EB'}
+            />
+          </TouchableOpacity>
         )
 
       case ConnectionState.REQUEST_RECEIVED:
@@ -188,7 +109,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           <View style={tw`flex-row items-center`}>
             {/* Accept Button */}
             <TouchableOpacity
-              onPress={handleAcceptRequest}
+              onPress={() => onAcceptRequest()}
               style={tw`p-2 mr-2 rounded-full ${
                 isDarkMode ? 'bg-green-900' : 'bg-green-100'
               }`}
@@ -203,7 +124,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
             {/* Decline Button */}
             <TouchableOpacity
-              onPress={handleDeclineRequest}
+              onPress={() => onDeclineRequest()}
               style={tw`p-2 rounded-full ${
                 isDarkMode ? 'bg-red-900' : 'bg-red-100'
               }`}
@@ -243,7 +164,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       case ConnectionState.NOT_CONNECTED:
         return (
           <TouchableOpacity
-            onPress={handleSendRequest}
+            onPress={() => onSendRequest()}
             style={tw`p-2 rounded-full ${
               isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
             }`}
@@ -262,34 +183,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     }
   }
 
-  const getStatusText = () => {
-    switch (connectionState) {
-      case ConnectionState.FRIENDS:
-        return 'Friends'
-      case ConnectionState.REQUEST_RECEIVED:
-        return 'Friend request received'
-      case ConnectionState.REQUEST_SENT:
-        return 'Friend request sent'
-      case ConnectionState.NOT_CONNECTED:
-        return 'Not connected'
-      default:
-        return ''
-    }
-  }
-
-  return (
-    <View style={tw`items-center`}>
-      {renderConnectionContent()}
-      {/* Status Text (optional, can be hidden if you prefer icon-only) */}
-      <Text
-        style={tw`text-xs mt-1 ${
-          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-        }`}
-      >
-        {getStatusText()}
-      </Text>
-    </View>
-  )
+  return <View style={tw`items-center`}>{renderConnectionContent()}</View>
 }
 
 export default ConnectionStatus
