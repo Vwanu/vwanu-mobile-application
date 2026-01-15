@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ViewToken,
+  Keyboard,
 } from 'react-native'
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -29,9 +30,7 @@ import { Form, Field, Submit } from 'components/form'
 type MessageScreenRouteProp = RouteProp<ChatStackParams, 'Message'>
 
 const validationSchema = object().shape({
-  messageText: string()
-    .label('Message Text')
-    .required('Message text is required'),
+  messageText: string().label('Message Text'),
 })
 type FormValues = InferType<typeof validationSchema>
 
@@ -41,11 +40,11 @@ const formValues: FormValues = {
 const Message: React.FC = () => {
   const navigation = useNavigation()
   const route = useRoute<MessageScreenRouteProp>()
-  const formRef = useRef<View>(null)
   const flatListRef = useRef<FlatList>(null)
-  const markedAsReadRef = useRef<Set<string>>(new Set())
   const { user, conversationId } = route.params
   const currentUserId = useSelector((state: RootState) => state.auth.userId)
+  const [hasText, setHasText] = React.useState(false)
+
   const {
     data: messagesData,
     isLoading,
@@ -54,9 +53,8 @@ const Message: React.FC = () => {
   const [createMessage] = useCreateMessageMutation()
   const [markMessageAsRead] = useMarkMessageAsReadMutation()
 
-  // Viewability config for detecting messages in viewport
   const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50, // Item is considered visible when 50% is shown
+    itemVisiblePercentThreshold: 60, // Item is considered visible when 50% is shown
   }).current
 
   // Handle marking messages as read when they come into view
@@ -69,9 +67,8 @@ const Message: React.FC = () => {
           message &&
           message.user?.id !== currentUserId &&
           !message.id.startsWith('temp-') &&
-          !markedAsReadRef.current.has(message.id)
+          !message.readDate
         ) {
-          markedAsReadRef.current.add(message.id)
           markMessageAsRead({
             conversationId,
             messageId: message.id,
@@ -81,7 +78,6 @@ const Message: React.FC = () => {
     },
     [conversationId, currentUserId, markMessageAsRead]
   )
-
   // Auto-scroll to end when new messages arrive
   useEffect(() => {
     if (messagesData?.data?.length) {
@@ -103,10 +99,12 @@ const Message: React.FC = () => {
     }
     createMessage({
       conversationId,
-      messageText: values.messageText,
+      messageText: values.messageText || '',
       user: currentUser as any,
     })
     resetForm()
+    setHasText(false)
+    Keyboard.dismiss()
   }
 
   const renderedSeparatorSet = new Set<string>()
@@ -121,7 +119,6 @@ const Message: React.FC = () => {
       </View>
     )
   }
-
   return (
     <Screen loading={isLoading || isFetching}>
       <View
@@ -143,8 +140,11 @@ const Message: React.FC = () => {
           />
         </View>
       </View>
-
-      <View style={tw`bg-white p-2 flex-1`}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+        style={tw`flex-1`}
+      >
         <FlatList
           ref={flatListRef}
           data={messagesData?.data || []}
@@ -164,39 +164,47 @@ const Message: React.FC = () => {
               isMessageFromCurrentUser={item.user.id === currentUserId}
             />
           )}
+          contentContainerStyle={tw`p-3 pb-10`}
+          style={tw`flex-1 mb-3`}
         />
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 140 : 0}
-        >
-          <Form
-            validationSchema={validationSchema}
-            initialValues={formValues}
-            onSubmit={handleSubmit}
-          >
-            <View style={tw`flex flex-row items-center`} ref={formRef}>
-              <Field
-                label="Type your message..."
-                key="messageText"
-                style={tw`mb-2 rounded-lg border border-gray-300 px-3 py-2`}
-                name="messageText"
-                style={tw`flex-1`}
-              />
 
-              <Submit
-                appearance="ghost"
-                accessoryRight={() => (
-                  <MaterialCommunityIcons
-                    name="send"
-                    size={24}
-                    color={'#D1D5DB'}
-                  />
-                )}
-              />
-            </View>
-          </Form>
-        </KeyboardAvoidingView>
-      </View>
+        <Form
+          validationSchema={validationSchema}
+          initialValues={formValues}
+          onSubmit={handleSubmit}
+        >
+          <View
+            style={tw`flex flex-row items-center justify-center align-middle`}
+          >
+            <Field
+              label="Type your message..."
+              key="messageText"
+              style={tw`mb-2 rounded-lg border border-gray-300 px-3 py-2 flex-1`}
+              name="messageText"
+              onTextUpdate={(text) => {
+                setTimeout(() => {
+                  setHasText(!!text)
+                }, 100)
+              }}
+              autoCorrect={true}
+            />
+
+            <Submit
+              disabled={!hasText}
+              style={tw`ml-2 p-2`}
+              appearance="ghost"
+              accessoryRight={() => (
+                <MaterialCommunityIcons
+                  name="send"
+                  size={24}
+                  color={hasText ? '#3B82F6' : '#D1D5DB'} // color if we have text : blue-500 else gray-300
+                />
+              )}
+            />
+          </View>
+        </Form>
+        {/* </View> */}
+      </KeyboardAvoidingView>
     </Screen>
   )
 }
