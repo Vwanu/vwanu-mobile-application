@@ -152,9 +152,11 @@ export type BottomTabParms = {
 
 export interface Message {
   id: string
+  conversationId: string
   messageText: string
   createdAt: string
   user: User
+  readDate: string
 }
 
 // Base conversation properties shared by both types

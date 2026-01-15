@@ -75,7 +75,7 @@ const Chat: React.FC = () => {
   }
 
   const filteredConversations = getFilteredConversations()
-  console.log('Filtered Conversations:', filteredConversations)
+  //   console.log('Filtered Conversations:', filteredConversations)
 
   return (
     <Screen loading={isLoading || isCreatingConversation}>
@@ -109,7 +109,7 @@ const Chat: React.FC = () => {
                     const conversation = await createDirectConversation({
                       userId: user.id,
                     })
-                    console.log('Created conversation:', conversation)
+                    // console.log('Created conversation:', conversation)
                     // @ts-ignore
                     handleConversationPress(user, conversation?.data?.id)
                   } catch (error) {}
@@ -145,6 +145,7 @@ const Chat: React.FC = () => {
             )}
             renderItem={({ item }) => {
               return <Conversation conversation={item} />
+              //   return <Text>Jello</Text>
             }}
           />
         )}

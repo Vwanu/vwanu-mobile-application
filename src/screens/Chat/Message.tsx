@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useEffect, useCallback } from 'react'
 import { InferType, object, string } from 'yup'
 import {
   View,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ViewToken,
 } from 'react-native'
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -20,7 +21,9 @@ import ProfAvatar from 'components/ProfAvatar'
 import {
   useFetchMessagesQuery,
   useCreateMessageMutation,
+  useMarkMessageAsReadMutation,
 } from 'store/conversation-api-slice'
+import { Message as MessageType } from '../../../types'
 import { Form, Field, Submit } from 'components/form'
 
 type MessageScreenRouteProp = RouteProp<ChatStackParams, 'Message'>
@@ -39,6 +42,8 @@ const Message: React.FC = () => {
   const navigation = useNavigation()
   const route = useRoute<MessageScreenRouteProp>()
   const formRef = useRef<View>(null)
+  const flatListRef = useRef<FlatList>(null)
+  const markedAsReadRef = useRef<Set<string>>(new Set())
   const { user, conversationId } = route.params
   const currentUserId = useSelector((state: RootState) => state.auth.userId)
   const {
@@ -47,15 +52,74 @@ const Message: React.FC = () => {
     isFetching,
   } = useFetchMessagesQuery({ conversationId })
   const [createMessage] = useCreateMessageMutation()
+  const [markMessageAsRead] = useMarkMessageAsReadMutation()
 
-  //   console.log('Messages data:', messagesData)
+  // Viewability config for detecting messages in viewport
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50, // Item is considered visible when 50% is shown
+  }).current
 
-  const handleSubmit = (values: FormValues) => {
-    // console.log('Form submitted with values:', values)
+  // Handle marking messages as read when they come into view
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      viewableItems.forEach((viewableItem) => {
+        const message = viewableItem.item as MessageType
+        // Only mark messages from other users that haven't been marked yet
+        if (
+          message &&
+          message.user?.id !== currentUserId &&
+          !message.id.startsWith('temp-') &&
+          !markedAsReadRef.current.has(message.id)
+        ) {
+          markedAsReadRef.current.add(message.id)
+          markMessageAsRead({
+            conversationId,
+            messageId: message.id,
+          })
+        }
+      })
+    },
+    [conversationId, currentUserId, markMessageAsRead]
+  )
+
+  // Auto-scroll to end when new messages arrive
+  useEffect(() => {
+    if (messagesData?.data?.length) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true })
+      }, 100)
+    }
+  }, [messagesData?.data?.length])
+
+  const handleSubmit = (
+    values: FormValues,
+    { resetForm }: { resetForm: () => void }
+  ) => {
+    const currentUser = {
+      id: currentUserId || '',
+      firstName: 'Me',
+      lastName: '',
+      profilePicture: '',
+    }
     createMessage({
       conversationId,
       messageText: values.messageText,
+      user: currentUser as any,
     })
+    resetForm()
+  }
+
+  const renderedSeparatorSet = new Set<string>()
+  const dateSeparator = (messageDate: string) => {
+    if (renderedSeparatorSet.has(messageDate)) return null
+    renderedSeparatorSet.add(messageDate)
+    return (
+      <View style={tw`px-3 py-2 bg-gray-100 my-1`}>
+        <Text appearance="hint" category="c1" style={tw`text-center my-1`}>
+          {messageDate}
+        </Text>
+      </View>
+    )
   }
 
   return (
@@ -79,18 +143,20 @@ const Message: React.FC = () => {
           />
         </View>
       </View>
-      <View style={tw`px-3 py-2 bg-gray-100`}>
-        <Text appearance="hint" category="c1" style={tw`text-center`}>
-          Yesterday
-        </Text>
-      </View>
+
       <View style={tw`bg-white p-2 flex-1`}>
         <FlatList
+          ref={flatListRef}
           data={messagesData?.data || []}
+          extraData={messagesData?.data?.length}
           keyExtractor={(item) => item.id.toString()}
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onViewableItemsChanged}
           ItemSeparatorComponent={(e) => {
-            // console.log('Rendering separator', e)
-            return <View style={tw`my-2`} />
+            const newDateSeparator = dateSeparator(
+              new Date(e.leadingItem.createdAt || '').toDateString()
+            )
+            return newDateSeparator ?? <View style={tw`mt-2`} />
           }}
           renderItem={({ item }) => (
             <ChatBubble

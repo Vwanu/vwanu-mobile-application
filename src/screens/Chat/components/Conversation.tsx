@@ -64,7 +64,7 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
               }`.trim() || 'Unknown User'
         }
         size={50}
-        subtitle={lastMessage?.content ?? ''}
+        subtitle={lastMessage?.messageText ?? ''}
       />
 
       <View style={tw`items-end`}>
