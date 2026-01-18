@@ -56,6 +56,7 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
         user={isGroup ? ({} as User) : (getOtherUser as User)}
         size={40}
         subtitle={lastMessage?.messageText ?? ''}
+        disableDefaultNavigation
       />
 
       <View style={tw`items-end`}>

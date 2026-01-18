@@ -19,7 +19,6 @@ import ProfAvatar from './ProfAvatar'
 import PrivacyNotice from './PrivacyNotice'
 import { PostProps, UpdatePost, ProfileStackParams } from '../../types'
 import { RootState } from '../store'
-import nameToPicture from 'lib/nameToPicture'
 import { useTheme } from 'hooks/useTheme'
 import routes from '../navigation/routes'
 

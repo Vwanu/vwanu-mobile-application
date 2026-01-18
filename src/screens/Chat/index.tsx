@@ -154,7 +154,7 @@ const Chat: React.FC = () => {
                   size={40}
                   user={user}
                   style={tw`absolute right-2 top-2`}
-                  disablePress
+                  disableDefaultNavigation
                 />
               </TouchableOpacity>
             ))
