@@ -63,14 +63,10 @@ export interface User {
   id: string
   email: string
   role?: 'admin' | 'moderator' | 'member'
+  online?: boolean
+  last_seen?: Date
 }
 
-export interface Profile extends User {
-  dob?: Date
-  gender?: string
-  bio?: string
-  location?: string
-}
 export type Notice = 'public' | 'private' | 'network'
 
 // Community privacy types
@@ -125,6 +121,7 @@ export type ProfileStackParams = {
   [routes.PROFILE]: { profileId: string } | undefined
   SinglePost: { postId: string; isCommenting?: boolean }
   Notifications: undefined
+  FriendRequests: undefined
   Settings: undefined
   NotificationSettings: undefined
   AccountSettings: undefined
@@ -264,4 +261,33 @@ export interface FetchNotificationsParams {
 
 export interface MarkNotificationsReadParams {
   notificationIds: string[]
+}
+
+// Friend Request Types
+export type FriendRequestStatus = 'pending' | 'accepted' | 'declined'
+
+export interface FriendRequestInterface {
+  id: string
+  userId: string
+  targetId: string
+  status: FriendRequestStatus
+  createdAt: Date
+  updatedAt: Date
+  user: Partial<User> & { profilePicture?: string }
+  target: Partial<User> & { profilePicture?: string }
+}
+
+export interface FetchFriendRequestsParams {
+  userId?: string
+  targetId?: string
+  status?: FriendRequestStatus
+}
+
+export interface SendFriendRequestParams {
+  targetId: string
+}
+
+export interface RespondToFriendRequestParams {
+  requestId: string
+  action: 'accept' | 'decline'
 }

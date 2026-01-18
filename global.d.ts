@@ -52,5 +52,35 @@ type CommunityNavigationProp = StackNavigationProp<
   CommunityStackParams,
   'CreateCommunity'
 >
+
+type User = {
+  firstName: string
+  lastName: string
+  createdAt: Date
+  profilePicture:
+    | string
+    | {
+        original: string
+        medium: string
+        small: string
+        tiny: string
+      }
+  amountOfFollower: number
+  amountOfFollowing: number
+  amountOfFriends: number
+  nextCompletionStep: NextCompletionStep
+  id: string
+  email: string
+  role?: 'admin' | 'moderator' | 'member'
+  online?: boolean
+  updatedAt?: Date // last seen date
+}
+
+export interface Profile extends User {
+  dob?: Date
+  gender?: string
+  about?: string
+  location?: string
+}
 // This export is necessary to make this file a module
 export {}
