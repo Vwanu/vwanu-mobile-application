@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { View, FlatList, TouchableOpacity } from 'react-native'
@@ -8,14 +8,16 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import Input from 'components/Input'
 import Screen from 'components/screen'
+import ProfAvatar from 'components/ProfAvatar'
 import TabBar, { Tab } from 'components/Tabs/TabBar'
-import { useFetchProfilesQuery } from 'store/profiles'
-import { ChatStackParams, User } from '../../../types'
 import Conversation from './components/Conversation'
+import { ChatStackParams, User } from '../../../types'
+import { useFetchFriendsQuery } from 'store/friends-api-slice'
 import {
   useFetchConversationsQuery,
   useCreateDirectConversationMutation,
 } from 'store/conversation-api-slice'
+import sortBy from 'lodash/sortBy'
 
 type ChatScreenNavigationProp = StackNavigationProp<ChatStackParams, 'Chat'>
 
@@ -31,7 +33,7 @@ const Chat: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const { data, isLoading, isFetching, refetch } = useFetchConversationsQuery()
   const { data: profilesData, isLoading: isLoadingProfiles } =
-    useFetchProfilesQuery(
+    useFetchFriendsQuery(
       {
         search: searchQuery,
       },
@@ -39,12 +41,40 @@ const Chat: React.FC = () => {
         skip: !searchQuery.length,
       }
     )
+  const [localSearchFilter, setLocalSearchFilter] = useState('')
 
-  const [createDirectConversation, { isLoading: isCreatingConversation }] =
+  const [createDirectConversation, createdConversationResult] =
     useCreateDirectConversationMutation()
   const [activeTab, setActiveTab] = useState('all')
 
   const conversations = data?.data || []
+  // Compute filtered conversations based on tab and search filter
+  const filteredConversations = useMemo(() => {
+    let result = conversations
+
+    // Apply tab filter
+    switch (activeTab) {
+      case 'unread':
+        result = result.filter((c) => c.amountOfUnreadMessages > 0)
+        break
+      case 'groups':
+        result = result.filter((c) => c.type === 'group')
+        break
+    }
+
+    // Apply local search filter
+    if (localSearchFilter) {
+      result = result.filter((conversation) =>
+        conversation.users.some((user) => {
+          const fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
+          return fullName.includes(localSearchFilter.toLowerCase())
+        })
+      )
+    }
+
+    return result
+  }, [conversations, activeTab, localSearchFilter])
+
   const handleConversationPress = (
     user: Partial<User>,
     conversationId: string
@@ -59,32 +89,38 @@ const Chat: React.FC = () => {
     setActiveTab(tabId)
   }
 
-  // Mock filtering based on tab selection
-  const getFilteredConversations = () => {
-    switch (activeTab) {
-      case 'unread':
-        // Filter conversations with unread messages
-        return conversations.filter((c) => c.amountOfUnreadMessages > 0)
-      case 'groups':
-        // Filter group conversations
-        return conversations.filter((c) => c.type === 'group')
-      case 'all':
-      default:
-        return conversations
+  const handleSearchConversation = (text: string) => {
+    setLocalSearchFilter(text)
+
+    // If no local matches found after filtering, trigger API search for friends
+    const localMatches = conversations.filter((conversation) =>
+      conversation.users.some((user) => {
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase()
+        return fullName.includes(text.toLowerCase())
+      })
+    )
+
+    if (localMatches.length === 0 && text.length > 0) {
+      setSearchQuery(text) // Triggers friend search API
+    } else {
+      setSearchQuery('') // Clear friend search
     }
   }
-
-  const filteredConversations = getFilteredConversations()
-  //   console.log('Filtered Conversations:', filteredConversations)
-
   return (
-    <Screen loading={isLoading || isCreatingConversation}>
+    <Screen
+      loading={isLoading || createdConversationResult.isLoading}
+      error={
+        createdConversationResult.isError
+          ? (createdConversationResult.error as any).data.error
+          : undefined
+      }
+    >
       <View style={tw`bg-white p-2`}>
         <Text style={tw`mb-2 text-lg font-bold`}>Conversation</Text>
         <Input
           placeholder="Search"
           iconLeft={<Ionicons name="search" size={24} color="black" />}
-          onChangeText={(text) => setSearchQuery(text)}
+          onChangeText={handleSearchConversation}
         />
       </View>
 
@@ -105,19 +141,21 @@ const Chat: React.FC = () => {
                 style={tw`py-2`}
                 onPress={async () => {
                   setSearchQuery('')
-                  try {
-                    const conversation = await createDirectConversation({
-                      userId: user.id,
-                    })
-                    // console.log('Created conversation:', conversation)
-                    // @ts-ignore
-                    handleConversationPress(user, conversation?.data?.id)
-                  } catch (error) {}
+                  setLocalSearchFilter('')
+                  const convo = await createDirectConversation({
+                    userId: user.id,
+                  })
+
+                  if ('error' in convo || !convo.data) return
+                  handleConversationPress(user, convo.data.id)
                 }}
               >
-                <Text
-                  style={tw`text-blue-500`}
-                >{`${user.firstName} ${user.lastName}`}</Text>
+                <ProfAvatar
+                  size={40}
+                  source={user.profilePicture}
+                  name={`${user.firstName} ${user.lastName}`}
+                  style={tw`absolute right-2 top-2`}
+                />
               </TouchableOpacity>
             ))
           )}
@@ -145,7 +183,6 @@ const Chat: React.FC = () => {
             )}
             renderItem={({ item }) => {
               return <Conversation conversation={item} />
-              //   return <Text>Jello</Text>
             }}
           />
         )}

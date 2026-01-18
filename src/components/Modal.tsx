@@ -49,10 +49,7 @@ const AppModal: React.FC<AppModalProps> = ({
           <View style={tw`items-center `}>
             {withMenu ? (
               <View style={tw` w-full flex items-center`}>
-                <View
-                  style={tw` w-full flex flex-row justify-between 
-                justify-items-between `}
-                >
+                <View style={tw` w-full flex flex-row justify-between`}>
                   <Button
                     title={cancelText || 'close'}
                     appearance="ghost"

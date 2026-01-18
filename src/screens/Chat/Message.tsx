@@ -26,6 +26,7 @@ import {
 } from 'store/conversation-api-slice'
 import { Message as MessageType } from '../../../types'
 import { Form, Field, Submit } from 'components/form'
+import { isToday } from 'date-fns'
 
 type MessageScreenRouteProp = RouteProp<ChatStackParams, 'Message'>
 
@@ -109,6 +110,10 @@ const Message: React.FC = () => {
 
   const renderedSeparatorSet = new Set<string>()
   const dateSeparator = (messageDate: string) => {
+    if (isToday(new Date(messageDate))) {
+      if (renderedSeparatorSet.size === 0) return
+      else messageDate = 'Today'
+    }
     if (renderedSeparatorSet.has(messageDate)) return null
     renderedSeparatorSet.add(messageDate)
     return (

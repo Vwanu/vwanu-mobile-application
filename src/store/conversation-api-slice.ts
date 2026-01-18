@@ -1,4 +1,3 @@
-import { fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import apiSlice from './api-slice'
 import { HttpMethods } from '../config'
 import { WebSocketManagerFeathers } from '../services/websocket-manager-feathers'
@@ -9,7 +8,6 @@ import {
   EntityCreate,
   User,
 } from '../../types'
-import { drawerConfig } from 'navigation/config/navigationConfig'
 
 // ============================================================================
 // Types for API requests/responses
@@ -89,7 +87,9 @@ export const conversationApiSlice = apiSlice.injectEndpoints({
       FetchConversationsParams | void
     >({
       query: (params) => {
-        const queryParams: Record<string, string> = {}
+        const queryParams: Record<string, string> = {
+          '$sort[updatedAt]': '-1', // Sort by most recently updated conversations
+        }
 
         if (params?.page) {
           queryParams.page = String(params.page)
@@ -135,18 +135,12 @@ export const conversationApiSlice = apiSlice.injectEndpoints({
           WebSocketManagerFeathers.subscribeToService<Conversation>(
             `conversation`,
             'created',
-            (newConversation) => {
-              console.log('New conversation created:', newConversation)
-              updateCachedData((draft) => {
-                const existingConversation = draft.data.find(
-                  (c) => c.id === newConversation.id
-                )
-                if (!existingConversation) {
-                  draft.data.unshift(newConversation)
-                  // invalidate the 'LIST' tag to refetch the conversations
-                  //   dispatch(apiSlice.util.invalidateTags([{ type: 'Conversation', id: 'LIST' }]))
-                }
-              })
+            () => {
+              dispatch(
+                apiSlice.util.invalidateTags([
+                  { type: 'Conversation', id: 'LIST' },
+                ])
+              )
             }
           )
 
@@ -211,7 +205,7 @@ export const conversationApiSlice = apiSlice.injectEndpoints({
      * POST /conversation
      */
     createDirectConversation: builder.mutation<
-      EntityCreate<Conversation>,
+      Conversation,
       CreateDirectConversationParams
     >({
       query: (params) => ({
@@ -473,11 +467,7 @@ export const conversationApiSlice = apiSlice.injectEndpoints({
               }
             )
           )
-          console.log(
-            '✅ Message sent successfully, updated cache with server message.'
-          )
         } catch (error) {
-          console.log('❌ Error sending message, reverting:', error)
           // Revert optimistic update on error
           patchResult.undo()
         }
