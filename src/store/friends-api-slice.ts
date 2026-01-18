@@ -6,6 +6,8 @@ import {
   SendFriendRequestParams,
   PaginatedResponse,
 } from '../../types'
+import { WebSocketManagerFeathers } from 'services/websocket-manager-feathers'
+import api from 'api'
 
 enum FriendShipStatus {
   PENDING = 0,
@@ -78,6 +80,62 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
               { type: 'friendship', id: 'RECEIVED' },
             ]
           : [{ type: 'friendship', id: 'RECEIVED' }],
+
+      async onCacheEntryAdded(
+        _arg,
+        { cacheDataLoaded, dispatch, cacheEntryRemoved }
+      ) {
+        try {
+          await cacheDataLoaded
+          const unsubscribeCreated =
+            WebSocketManagerFeathers.subscribeToService<FriendRequestInterface>(
+              'friendship',
+              'created',
+              () => {
+                dispatch(
+                  apiSlice.util.invalidateTags([
+                    { type: 'friendship', id: 'RECEIVED' },
+                  ])
+                )
+              }
+            )
+
+          const unsubscribeRemoved =
+            WebSocketManagerFeathers.subscribeToService<FriendRequestInterface>(
+              'friendship',
+              'removed',
+              () => {
+                dispatch(
+                  apiSlice.util.invalidateTags([
+                    { type: 'friendship', id: 'RECEIVED' },
+                  ])
+                )
+              }
+            )
+          const unsubscribeUpdated =
+            WebSocketManagerFeathers.subscribeToService<FriendRequestInterface>(
+              'friendship',
+              'patched',
+
+              (data) => {
+                console.log('Friendship patched data:[📈]', data)
+                dispatch(
+                  apiSlice.util.invalidateTags([
+                    { type: 'friendship', id: 'RECEIVED' },
+                    { type: 'friendship', id: 'SENT' },
+                    { type: 'Profile', id: data.userId },
+                  ])
+                )
+              }
+            )
+          await cacheEntryRemoved
+          unsubscribeCreated()
+          unsubscribeRemoved()
+          unsubscribeUpdated()
+        } catch {
+          return
+        }
+      },
     }),
 
     /**

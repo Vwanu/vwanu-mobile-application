@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux'
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import { useTheme } from 'hooks/useTheme'
-import { useFetchFriendRequestsQuery } from 'store/friends-api-slice'
+import { useFetchReceivedFriendRequestsQuery } from 'store/friends-api-slice'
 import { FeedStackParams, BottomTabParms } from '../../types'
 import { RootState } from '../store'
 
@@ -24,12 +24,10 @@ const FriendRequestIndicator: React.FC = () => {
   const { isDarkMode } = useTheme()
   const { userId } = useSelector((state: RootState) => state.auth)
 
-  const { data: { total } = { total: 0 } } = useFetchFriendRequestsQuery(
-    // @ts-ignore
-    { targetId: userId as string, status: 0 },
-    { skip: !userId }
-  )
-  const pendingRequestsCount = total
+  const { data } = useFetchReceivedFriendRequestsQuery(userId!, {
+    skip: !userId,
+  })
+  const pendingRequestsCount = data?.total ?? 0
   const handleFriendRequestPress = () => {
     navigation.navigate('ACCOUNT', {
       screen: 'FriendRequests',
