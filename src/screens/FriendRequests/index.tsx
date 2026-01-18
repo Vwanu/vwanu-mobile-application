@@ -89,9 +89,7 @@ const FriendRequestsScreen: React.FC = () => {
       >
         <View style={tw`flex-row items-center`}>
           <ProfAvatar
-            name={`${sender?.firstName} ${sender?.lastName}`}
-            source={sender?.profilePicture || ''}
-            size={50}
+            user={sender! as User}
             subtitle="Wants to connect with you"
           />
         </View>

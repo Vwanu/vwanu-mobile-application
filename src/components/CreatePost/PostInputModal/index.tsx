@@ -235,7 +235,6 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
             >
               <ProfAvatar
                 user={user!}
-                size={50}
                 subtitle="Share your thoughts with the community"
                 subtitleParams={{
                   textStyles: 'text-gray-500 text-sm',

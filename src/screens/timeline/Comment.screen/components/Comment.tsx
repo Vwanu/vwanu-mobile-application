@@ -1,13 +1,12 @@
-import React from "react";
-import { View } from "react-native";
-import { Avatar } from "react-native-paper";
-import { formatDistanceToNowStrict } from "date-fns/formatDistanceToNowStrict";
+import React from 'react'
+import { View } from 'react-native'
+import { Avatar } from 'react-native-paper'
 
-import tw from "../../../../lib/tailwind";
-import Text from "../../../../components/Text";
-import Kore from "../../../../assets/svg/Kore";
-import { CommentInterface } from "../../../../../types";
-import { abbreviateNumber } from "../../../../lib/numberFormat";
+import tw from '../../../../lib/tailwind'
+import Text from '../../../../components/Text'
+import Kore from '../../../../assets/svg/Kore'
+import { CommentInterface } from '../../../../../types'
+import { abbreviateNumber } from '../../../../lib/numberFormat'
 
 const Comment: React.FC<CommentInterface> = (props) => {
   return (
@@ -43,7 +42,7 @@ const Comment: React.FC<CommentInterface> = (props) => {
         })} */}
       </Text>
     </View>
-  );
-};
+  )
+}
 
-export default Comment;
+export default Comment

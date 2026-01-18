@@ -54,7 +54,6 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
     >
       <ProfAvatar
         user={isGroup ? ({} as User) : (getOtherUser as User)}
-        size={40}
         subtitle={lastMessage?.messageText ?? ''}
         disableDefaultNavigation
       />

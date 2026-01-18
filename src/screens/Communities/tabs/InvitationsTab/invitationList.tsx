@@ -122,7 +122,6 @@ const InvitationList: React.FC<InvitationListProps> = ({
           <View>
             <ProfAvatar
               user={item.guest as User}
-              size={40}
               subtitle={`Invited by ${item.host.firstName} ${
                 item.host?.lastName?.[0] || ''
               } to be a(n) ${item.communityRole.name.toUpperCase()}\n${formatDistanceToNow(

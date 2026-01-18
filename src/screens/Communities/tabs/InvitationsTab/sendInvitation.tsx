@@ -126,7 +126,7 @@ const SendInvitation: React.FC<SendInvitationProps> = ({
         style={tw`bg-white p-4 border-b border-gray-100`}
       >
         <View style={tw`flex-row items-center justify-between`}>
-          <ProfAvatar user={item} size={40} />
+          <ProfAvatar user={item} />
 
           <View
             style={tw`w-6 h-6 rounded-full border-2 ${
