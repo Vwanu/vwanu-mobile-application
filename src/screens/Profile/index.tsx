@@ -24,8 +24,8 @@ const Profile: React.FC = () => {
   const profileId = route.params?.profileId || userId
 
   return (
-    <Screen>
-      <View style={tw`flex-1`}>
+    <Screen safeArea={false}>
+      <>
         {/* Profile Header */}
         <ProfileHeader profileId={profileId!} />
 
@@ -34,7 +34,7 @@ const Profile: React.FC = () => {
           targetUserId={profileId}
           navigation={navigation}
         />
-      </View>
+      </>
     </Screen>
   )
 }
