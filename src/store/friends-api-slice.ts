@@ -7,7 +7,6 @@ import {
   PaginatedResponse,
 } from '../../types'
 import { WebSocketManagerFeathers } from 'services/websocket-manager-feathers'
-import api from 'api'
 
 enum FriendShipStatus {
   PENDING = 0,
@@ -83,18 +82,27 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
 
       async onCacheEntryAdded(
         _arg,
-        { cacheDataLoaded, dispatch, cacheEntryRemoved }
+        { cacheDataLoaded, dispatch, cacheEntryRemoved, getState }
       ) {
         try {
           await cacheDataLoaded
+          const state = getState() as any
+          const currentUserId = state.auth.userId
           const unsubscribeCreated =
             WebSocketManagerFeathers.subscribeToService<FriendRequestInterface>(
               'friendship',
               'created',
-              () => {
+              (data) => {
+                const profileIdToInvalidate =
+                  data.targetId === currentUserId ? data.userId : data.targetId
+                console.log(
+                  'New friend request received via websocket:',
+                  profileIdToInvalidate
+                )
                 dispatch(
                   apiSlice.util.invalidateTags([
                     { type: 'friendship', id: 'RECEIVED' },
+                    { type: 'Profile', id: profileIdToInvalidate }, // invalidate target profile
                   ])
                 )
               }
@@ -118,12 +126,13 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
               'patched',
 
               (data) => {
-                console.log('Friendship patched data:[📈]', data)
+                const profileIdToInvalidate =
+                  data.targetId === currentUserId ? data.userId : data.targetId
                 dispatch(
                   apiSlice.util.invalidateTags([
                     { type: 'friendship', id: 'RECEIVED' },
                     { type: 'friendship', id: 'SENT' },
-                    { type: 'Profile', id: data.userId },
+                    { type: 'Profile', id: profileIdToInvalidate }, // invalidate target profile
                   ])
                 )
               }
@@ -189,7 +198,7 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
      */
     acceptFriendRequest: builder.mutation<
       FriendRequestInterface,
-      { requestId: string; targetId: string }
+      { requestId: string; targetId: string; userId?: string }
     >({
       query: ({ requestId }) => ({
         url: `/friendship/${requestId}`,
@@ -199,9 +208,10 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: (_result, _error, params) => [
         { type: 'friendship', id: params.requestId },
         { type: 'friendship', id: 'LIST' },
-        { type: 'friendship', id: 'RECEIVED' },
         { type: 'friendship', id: 'COUNT' },
-        { type: 'Profile', id: params.targetId },
+        // { type: 'Profile', id: params.userId },
+        { type: 'friendship', id: 'RECEIVED' },
+        // { type: 'Profile', id: params.targetId },
       ],
     }),
 
