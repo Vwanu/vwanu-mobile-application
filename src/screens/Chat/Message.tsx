@@ -137,12 +137,7 @@ const Message: React.FC = () => {
           />
         </TouchableOpacity>
         <View style={tw`flex-1`}>
-          <ProfAvatar
-            source={user?.profilePicture}
-            name={`${user?.firstName || ''} ${user?.lastName || ''}`}
-            size={40}
-            subtitle="Online"
-          />
+          <ProfAvatar user={user as User} size={40} subtitle="Online" />
         </View>
       </View>
       <KeyboardAvoidingView

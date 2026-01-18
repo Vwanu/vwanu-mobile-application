@@ -101,16 +101,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
     <View style={tw`p-3`}>
       {/* Profile Avatar and Action Icons */}
       <View style={tw`flex flex-row justify-between items-center`}>
-        <ProfAvatar
-          source={
-            typeof user?.profilePicture === 'string'
-              ? user.profilePicture
-              : user?.profilePicture?.original || ''
-          }
-          name={`${user?.firstName || ''} ${user?.lastName || ''}`}
-          subtitle={user?.email || ''}
-          size={50}
-        />
+        <ProfAvatar user={user} disableDefaultNavigation />
 
         {userId === user?.id ? (
           <View style={tw`flex-row items-center gap-4`}>

@@ -1,5 +1,5 @@
 /*
-Sub-Component: PostHeader 
+Sub-Component: PostHeader
    - Displays profile avatar and privacy settings,
      as well as a popover for deleting the post.
 */
@@ -64,13 +64,7 @@ const PostHeader: React.FC<PostHeaderProps> = (props) => {
     <View style={tw`flex flex-row justify-between items-center mb-2`}>
       <View style={tw`flex flex-row items-center mb-2`}>
         <ProfAvatar
-          size={30}
-          source={
-            PostUser?.profilePicture
-              ? PostUser?.profilePicture.toString()
-              : (PostUser && nameToPicture(PostUser)) || ''
-          }
-          name={`${props.user?.firstName} ${props.user?.lastName}`}
+          user={PostUser!}
           subtitle={formatDistanceToNow(
             new Date(props.createdAt || Date.now()),
             {
@@ -80,8 +74,6 @@ const PostHeader: React.FC<PostHeaderProps> = (props) => {
           subtitleParams={{
             textStyles: 'text-white font-thin',
           }}
-          userId={props.user?.id}
-          onLongPress={handleProfileNavigation}
         />
         <PrivacyNotice
           privacyType={props.privacyType}

@@ -45,18 +45,11 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
     <View style={tw`p-4 border-b border-gray-${isDarkMode ? '700' : '100'}`}>
       <ProfAvatar
         size={20}
-        source={
-          comment.user?.profilePicture
-            ? comment.user.profilePicture.toString()
-            : (comment.user && nameToPicture(comment.user)) || ''
-        }
-        name={`${comment.user?.firstName} ${comment.user?.lastName}`}
+        user={comment.user!}
         subtitle={comment.postText}
         subtitleParams={{
           maxLength: 150,
         }}
-        userId={comment.user?.id}
-        onLongPress={handleProfileNavigation}
       />
       <View style={tw`flex-1 flex-row justify-between ml-3`}>
         <View style={tw`items-center mt-2`}>

@@ -126,12 +126,7 @@ const SendInvitation: React.FC<SendInvitationProps> = ({
         style={tw`bg-white p-4 border-b border-gray-100`}
       >
         <View style={tw`flex-row items-center justify-between`}>
-          <ProfAvatar
-            name={`${item.firstName} ${item?.lastName?.[0] || ''}`}
-            source={profilePictureUrl}
-            size={45}
-            userId={item.id}
-          />
+          <ProfAvatar user={item} size={40} />
 
           <View
             style={tw`w-6 h-6 rounded-full border-2 ${

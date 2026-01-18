@@ -25,10 +25,9 @@ const CommunityMember: React.FC<CommunityMemberProps> = ({
       style={tw`flex-row items-center justify-between p-2 border-b border-gray-200`}
     >
       <ProfAvatar
-        name={`${item.user.firstName} ${item.user.lastName[0]}`}
+        user={item.user}
         subtitle={item.communityRole.name.toUpperCase()}
-        source={item.user.profilePicture}
-        size={45}
+        size={40}
       />
       <Popover
         visible={isEditing}

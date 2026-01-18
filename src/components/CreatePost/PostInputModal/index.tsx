@@ -234,16 +234,8 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               ]}
             >
               <ProfAvatar
-                source={
-                  (typeof user?.profilePicture === 'object' &&
-                    user?.profilePicture?.original) ||
-                  (typeof user?.profilePicture === 'string'
-                    ? user?.profilePicture
-                    : '') ||
-                  (user ? nameToPicture(user) : '')
-                }
+                user={user!}
                 size={50}
-                name={`${user?.firstName} ${user?.lastName}`}
                 subtitle="Share your thoughts with the community"
                 subtitleParams={{
                   textStyles: 'text-gray-500 text-sm',

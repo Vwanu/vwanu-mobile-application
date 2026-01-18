@@ -152,9 +152,9 @@ const Chat: React.FC = () => {
               >
                 <ProfAvatar
                   size={40}
-                  source={user.profilePicture}
-                  name={`${user.firstName} ${user.lastName}`}
+                  user={user}
                   style={tw`absolute right-2 top-2`}
+                  disablePress
                 />
               </TouchableOpacity>
             ))

@@ -121,18 +121,14 @@ const InvitationList: React.FC<InvitationListProps> = ({
         <View style={tw`flex-row items-start justify-between`}>
           <View>
             <ProfAvatar
-              name={`${item.guest.firstName} ${
-                item.guest?.lastName?.[0] || ''
-              }`}
-              source={userProfilePicture}
-              size={45}
+              user={item.guest as User}
+              size={40}
               subtitle={`Invited by ${item.host.firstName} ${
                 item.host?.lastName?.[0] || ''
               } to be a(n) ${item.communityRole.name.toUpperCase()}\n${formatDistanceToNow(
                 item.updatedAt,
                 { addSuffix: true }
               )}`}
-              userId={item.guest.id}
             />
           </View>
 
