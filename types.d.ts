@@ -65,6 +65,7 @@ export interface User {
   role?: 'admin' | 'moderator' | 'member'
   online?: boolean
   last_seen?: Date
+  coverPicture: string
 }
 
 export type Notice = 'public' | 'private' | 'network'
