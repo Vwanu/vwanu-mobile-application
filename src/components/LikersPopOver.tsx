@@ -1,4 +1,4 @@
-/* 
+/*
 ========================================================
    Sub-Component: LikerPopover
    - Renders a popover listing users who liked the post.
@@ -14,7 +14,6 @@ import Separator from './Separator'
 import ProfAvatar from './ProfAvatar'
 import { useFetchLikesQuery } from '../store/post'
 import { ActivityIndicator } from 'react-native-paper'
-import nameToPicture from 'lib/nameToPicture'
 import { formatDistanceToNow } from 'date-fns'
 
 interface LikerPopoverProps {
@@ -56,14 +55,7 @@ const LikerPopover: React.FC<LikerPopoverProps> = ({
             data={likers.data?.data || []}
             renderItem={({ item }) => (
               <>
-                <ProfAvatar
-                  name={`${item?.User.firstName} ${item?.User.lastName}`}
-                  source={
-                    (item.User.profilePicture as string) ||
-                    nameToPicture(item?.User)
-                  }
-                  size={25}
-                />
+                <ProfAvatar user={item.User as User} size={25} />
                 <Text category="c1" appearance="hint">
                   {formatDistanceToNow(new Date(item.createdAt as Date), {
                     addSuffix: true,

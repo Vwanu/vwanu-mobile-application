@@ -92,9 +92,7 @@ const FriendRequestsScreen: React.FC = () => {
       >
         <View style={tw`flex-row items-center`}>
           <ProfAvatar
-            name={`${sender?.firstName} ${sender?.lastName}`}
-            source={sender?.profilePicture || ''}
-            size={50}
+            user={sender! as User}
             subtitle="Wants to connect with you"
           />
         </View>
@@ -133,12 +131,10 @@ const FriendRequestsScreen: React.FC = () => {
       >
         <View style={tw`flex-row items-center justify-between`}>
           <ProfAvatar
-            name={`${target?.firstName} ${target?.lastName}`}
+            user={target! as User}
             subtitle={`Pending friend request\n ${formatDistanceToNow(
               new Date(item.createdAt)
             )}`}
-            source={target?.profilePicture || ''}
-            size={50}
           />
           <Button
             onPress={() => handleCancel(item.id)}

@@ -30,15 +30,7 @@ const FollowersTab: React.FC<TabContentProps> = ({ user }) => {
             <View
               style={tw`flex-row items-center p-3 border-b border-gray-100`}
             >
-              <ProfAvatar
-                name={item.firstName}
-                size={40}
-                source={
-                  typeof item.profilePicture === 'string'
-                    ? item.profilePicture
-                    : item.profilePicture?.original
-                }
-              />
+              <ProfAvatar user={item} />
               <View style={tw`ml-3 flex-1`}>
                 <Text style={tw`font-semibold`}>
                   {item.firstName} {item.lastName}

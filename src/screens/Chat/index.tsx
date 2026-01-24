@@ -150,12 +150,7 @@ const Chat: React.FC = () => {
                   handleConversationPress(user, convo.data.id)
                 }}
               >
-                <ProfAvatar
-                  size={40}
-                  source={user.profilePicture}
-                  name={`${user.firstName} ${user.lastName}`}
-                  style={tw`absolute right-2 top-2`}
-                />
+                <ProfAvatar user={user} disableDefaultNavigation />
               </TouchableOpacity>
             ))
           )}

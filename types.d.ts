@@ -48,14 +48,7 @@ export interface User {
   firstName: string
   lastName: string
   createdAt: Date
-  profilePicture:
-    | string
-    | {
-        original: string
-        medium: string
-        small: string
-        tiny: string
-      }
+  profilePicture: string
   amountOfFollower: number
   amountOfFollowing: number
   amountOfFriends: number
@@ -65,7 +58,7 @@ export interface User {
   role?: 'admin' | 'moderator' | 'member'
   online?: boolean
   last_seen?: Date
-  coverPicture: string
+  about?: string
 }
 
 export type Notice = 'public' | 'private' | 'network'

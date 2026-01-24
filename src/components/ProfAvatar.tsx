@@ -1,20 +1,19 @@
 import { View, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Avatar } from 'react-native-paper'
+import { useNavigation } from '@react-navigation/native'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import LongText from './LongText'
+import routes from 'navigation/routes'
 
 interface ProfAvatarProps {
-  source: string
-  name: string
+  user: User
   subtitle?: string
-  size: number
+  size?: number
   layout?: 'col' | 'row'
-  userId?: string | number
-  onLongPress?: (userId: string | number) => void
-  onPress?: () => void
+  onPress?: (user: User) => void
   subtitleParams?: {
     maxLength?: number
     showMoreText?: string
@@ -22,40 +21,61 @@ interface ProfAvatarProps {
     textStyles?: string
   }
   showOnlineStatus?: boolean
-  online?: boolean
+  disableDefaultNavigation?: boolean
 }
 
 const ProfAvatar: React.FC<ProfAvatarProps> = ({
   layout = 'row',
   showOnlineStatus = false,
+  disableDefaultNavigation = false,
+  size = 50,
   ...props
 }) => {
-  const handleLongPress = () => {
-    if (props.userId && props.onLongPress) {
-      props.onLongPress(props.userId)
+  const navigation = useNavigation()
+  const handlePress = () => {
+    if (props.onPress && props.user) {
+      props.onPress(props.user)
+      return
+    }
+    // navigate to user profile
+    const parentNavigation = navigation.getParent()
+    if (parentNavigation) {
+      // @ts-ignore
+      parentNavigation.navigate(routes.ACCOUNT, {
+        screen: routes.PROFILE,
+        params: { profileId: props.user.id.toString() },
+      })
+    } else {
+      // Fallback: try direct navigation
+      // @ts-ignore
+      navigation.navigate(routes.ACCOUNT, {
+        screen: routes.PROFILE,
+        params: { profileId: props.user.id.toString() },
+      })
     }
   }
 
   return (
     <TouchableOpacity
       style={tw`flex flex-${layout} items-center`}
-      onLongPress={handleLongPress}
-      onPress={props.onPress}
+      onPress={handlePress}
       delayLongPress={800}
-      disabled={!props.userId || !props.onLongPress}
+      disabled={disableDefaultNavigation}
     >
       <View>
-        <Avatar.Image size={props.size} source={{ uri: props.source }} />
-        {showOnlineStatus && props.online !== undefined && (
+        <Avatar.Image size={size} source={{ uri: props.user.profilePicture }} />
+        {showOnlineStatus && props.user.online !== undefined && (
           <View
             style={tw`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${
-              props.online ? 'bg-green-500' : 'bg-gray-400'
+              props.user.online ? 'bg-green-500' : 'bg-gray-400'
             }`}
           />
         )}
       </View>
       <View style={tw`ml-2 flex justify-center`}>
-        <Text style={tw`font-semibold`}>{props.name}</Text>
+        <Text style={tw`font-semibold`}>
+          {props.user.firstName} {props.user.lastName}
+        </Text>
         {props.subtitle ? (
           <LongText
             textStyles={`font-thin ${props.subtitleParams?.textStyles}`}
@@ -64,7 +84,9 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
             showMoreText={props?.subtitleParams?.showMoreText}
             showLessText={props?.subtitleParams?.showLessText}
           />
-        ) : null}
+        ) : (
+          <Text>{props.user.about || ''}</Text>
+        )}
       </View>
     </TouchableOpacity>
   )

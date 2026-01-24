@@ -53,18 +53,9 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
       }`}
     >
       <ProfAvatar
-        source={
-          isGroup ? conversation.groupPicture : getOtherUser?.profilePicture
-        }
-        name={
-          isGroup
-            ? conversation?.groupName
-            : `${getOtherUser?.firstName ?? ''} ${
-                getOtherUser?.lastName ?? ''
-              }`.trim() || 'Unknown User'
-        }
-        size={50}
+        user={isGroup ? ({} as User) : (getOtherUser as User)}
         subtitle={lastMessage?.messageText ?? ''}
+        disableDefaultNavigation
       />
 
       <View style={tw`items-end`}>

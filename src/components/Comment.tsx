@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native'
 import tw from 'lib/tailwind'
 import Text from './Text'
 import ProfAvatar from './ProfAvatar'
-import nameToPicture from 'lib/nameToPicture'
 import { PostProps } from '../../types'
 import LikeForm from './LikeForm'
 import { useTheme } from 'hooks/useTheme'
@@ -44,28 +43,16 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
   return (
     <View style={tw`p-4 border-b border-gray-${isDarkMode ? '700' : '100'}`}>
       <ProfAvatar
-        size={20}
-        source={
-          comment.user?.profilePicture
-            ? comment.user.profilePicture.toString()
-            : (comment.user && nameToPicture(comment.user)) || ''
-        }
-        name={`${comment.user?.firstName} ${comment.user?.lastName}`}
-        subtitle={comment.postText}
+        user={comment.user!}
+        subtitle={formatDistanceToNow(new Date(comment.createdAt), {
+          addSuffix: true,
+        })}
         subtitleParams={{
           maxLength: 150,
         }}
-        userId={comment.user?.id}
-        onLongPress={handleProfileNavigation}
       />
       <View style={tw`flex-1 flex-row justify-between ml-3`}>
-        <View style={tw`items-center mt-2`}>
-          <Text style={tw`ml-1 font-thin text-xs pl-2`}>
-            {formatDistanceToNow(new Date(comment.createdAt), {
-              addSuffix: true,
-            })}
-          </Text>
-        </View>
+        <Text style={tw`items-center mt-2`}>{comment.postText}</Text>
         <LikeForm
           id={comment.id.toString()}
           isReactor={!!comment.isReactor}
