@@ -56,9 +56,12 @@ const FriendRequestsScreen: React.FC = () => {
     activeTab === 'received' ? isFetchingReceived : isFetchingSent
   const refetch = activeTab === 'received' ? refetchReceived : refetchSent
 
-  const handleAccept = async (requestId: string) => {
+  const handleAccept = async (requestId: string, targetId: string) => {
     try {
-      await acceptRequest(requestId).unwrap()
+      await acceptRequest({
+        requestId,
+        targetId,
+      }).unwrap()
     } catch (error) {
       console.error('Error accepting friend request:', error)
     }
@@ -95,7 +98,7 @@ const FriendRequestsScreen: React.FC = () => {
         </View>
         <View style={tw`flex-row mt-3 gap-2`}>
           <Button
-            onPress={() => handleAccept(item.id)}
+            onPress={() => handleAccept(item.id, item.targetId)}
             style={tw`flex-1  p-2 rounded-full border border-2 border-primary `}
             accessoryLeft={() => (
               <Ionicons
