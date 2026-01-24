@@ -21,6 +21,7 @@ import { useTheme } from '../hooks/useTheme'
 import FeedNavigator from './Feed'
 import AccountNavigator from './Account'
 import CommunityNavigator from './Community'
+import ChatNavigator from './Chat'
 
 // Types
 import { BottomTabParms } from '../../types'
@@ -87,18 +88,12 @@ const BottomTabBar: React.FC<TabBarProps> = ({ navigation, state }) => {
           />
         }
       />
-      {/* Disabled inbox tab for now
       <BottomNavigationTab
         title={routes.INBOX}
         icon={
-          <MaterialCommunityIcons
-            name="chat"
-            size={20}
-            color={iconColor}
-          />
+          <MaterialCommunityIcons name="chat" size={20} color={iconColor} />
         }
       />
-      */}
     </BottomNavigation>
   )
 }
@@ -136,13 +131,11 @@ const BottomTabNavigator: React.FC = () => {
         component={CommunityNavigator}
         options={{ title: 'Communities' }}
       />
-      {/* Disabled for now - can be enabled when inbox feature is ready
       <Tab.Screen
         name={routes.INBOX}
         component={ChatNavigator}
         options={{ title: 'Messages' }}
       />
-      */}
     </Tab.Navigator>
   )
 }

@@ -7,11 +7,11 @@ import FieldParams from './fieldParams'
 
 import { Input } from '@ui-kitten/components'
 
-type Props = FieldParams & P
+interface Props extends FieldParams, P {
+  onTextUpdate?: (text: string) => void
+}
 
-// const FormField = forwardRef<TextInput, Props>(
-//   ({ name, ...otherProps }, ref) => {
-const FormField = ({ name, ...otherProps }: Props) => {
+const FormField: React.FC<Props> = ({ name, onTextUpdate, ...otherProps }) => {
   const { setFieldTouched, setFieldValue, errors, touched, values } =
     useFormikContext<any>()
 
@@ -21,8 +21,9 @@ const FormField = ({ name, ...otherProps }: Props) => {
   const handleTextChange = useCallback(
     (text: string) => {
       setFieldValue(name, text)
+      onTextUpdate?.(text)
     },
-    [setFieldValue, name]
+    [setFieldValue, name, onTextUpdate]
   )
 
   // Memoized blur handler

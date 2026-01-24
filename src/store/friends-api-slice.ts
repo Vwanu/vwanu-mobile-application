@@ -14,6 +14,12 @@ enum FriendShipStatus {
   DENIED = 2,
 }
 
+interface FetchProfilesParams {
+  search?: string
+  $limit?: number
+  $skip?: number
+  $sort?: Record<string, 1 | -1>
+}
 /**
  * Friends API Slice
  * Handles all friend request-related API endpoints
@@ -55,6 +61,39 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
               { type: 'friendship', id: 'LIST' },
             ]
           : [{ type: 'friendship', id: 'LIST' }],
+    }),
+
+    fetchFriends: builder.query<
+      PaginatedResponse<Profile>,
+      FetchProfilesParams | void
+    >({
+      query: (params) => {
+        const queryParams: Record<string, any> = {}
+
+        if (params && typeof params === 'object') {
+          // Add search param if provided
+          if (params.search?.trim()) {
+            queryParams.search = params.search.trim()
+          }
+
+          // Add pagination params
+          if (params.$limit !== undefined) {
+            queryParams.$limit = params.$limit
+          }
+          if (params.$skip !== undefined) {
+            queryParams.$skip = params.$skip
+          }
+          if (params.$sort) {
+            queryParams.$sort = JSON.stringify(params.$sort)
+          }
+        }
+        return {
+          url: '/friendship',
+          method: HttpMethods.GET,
+          params: queryParams,
+        }
+      },
+      //   providesTags: ['Profile'],
     }),
 
     /**
@@ -266,4 +305,5 @@ export const {
   useAcceptFriendRequestMutation,
   useDeclineFriendRequestMutation,
   useCancelFriendRequestMutation,
+  useFetchFriendsQuery,
 } = friendsApiSlice

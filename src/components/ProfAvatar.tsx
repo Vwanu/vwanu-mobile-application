@@ -14,6 +14,7 @@ interface ProfAvatarProps {
   layout?: 'col' | 'row'
   userId?: string | number
   onLongPress?: (userId: string | number) => void
+  onPress?: () => void
   subtitleParams?: {
     maxLength?: number
     showMoreText?: string
@@ -39,6 +40,7 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
     <TouchableOpacity
       style={tw`flex flex-${layout} items-center`}
       onLongPress={handleLongPress}
+      onPress={props.onPress}
       delayLongPress={800}
       disabled={!props.userId || !props.onLongPress}
     >

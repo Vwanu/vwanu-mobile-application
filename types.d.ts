@@ -138,26 +138,41 @@ export type CommunityStackParams = {
   CommunitySettings: { communityId: string }
 }
 
+export type ChatStackParams = {
+  Chat: undefined
+  Message: { conversationId: string; user?: Partial<User> }
+}
+
 export type BottomTabParms = {
   [routes.TIMELINE]: undefined
   [routes.ACCOUNT]: NavigatorScreenParams<ProfileStackParams> | undefined
-  [routes.INBOX]: undefined
+  [routes.INBOX]: NavigatorScreenParams<ChatStackParams> | undefined
   [routes.COMMUNITY]: NavigatorScreenParams<CommunityStackParams> | undefined
 }
 
 export interface Message {
-  id: number
-  content: string
+  id: string
+  conversationId: string
+  messageText: string
   createdAt: string
   user: User
+  readDate: string
 }
 
+// Base conversation properties shared by both types
 export interface Conversation {
-  id: number
-  users: User[] | User
+  id: string
+  type: 'direct' | 'group'
+  users: User[]
   messages: Message[]
   lastMessage: Message
   amountOfUnreadMessages: number
+  groupName?: string
+  groupPicture?: string
+}
+
+export interface EntityCreate<T> {
+  data: T
 }
 
 interface Profiles extends User {
