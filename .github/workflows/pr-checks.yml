@@ -1,0 +1,189 @@
+# =============================================================================
+# Vwanu Mobile Application - Pull Request Checks
+# =============================================================================
+# This workflow runs automated checks on every pull request to ensure code
+# quality before merging.
+#
+# Triggers:
+#   - Pull requests to main, develop, qa/* branches
+#   - Push to main, develop, qa/* branches
+#
+# Checks performed:
+#   - ESLint (code style and potential errors)
+#   - TypeScript (type checking)
+#   - Security audit (npm vulnerabilities)
+#
+# =============================================================================
+
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'qa/**'
+    types: [opened, synchronize, reopened]
+
+  push:
+    branches:
+      - main
+      - develop
+      - 'qa/**'
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: pr-checks-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ===========================================================================
+  # Job: Code Quality Checks
+  # ===========================================================================
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        id: eslint
+        run: |
+          npx eslint . --ext .js,.jsx,.ts,.tsx --format stylish --max-warnings 0 2>&1 | tee eslint-output.txt
+          exit ${PIPESTATUS[0]}
+        continue-on-error: true
+
+      - name: Run TypeScript check
+        id: typescript
+        run: |
+          npx tsc --noEmit 2>&1 | tee typescript-output.txt
+          exit ${PIPESTATUS[0]}
+        continue-on-error: true
+
+      - name: Check for security vulnerabilities
+        id: security
+        run: |
+          npm audit --audit-level=high 2>&1 | tee audit-output.txt
+          exit ${PIPESTATUS[0]}
+        continue-on-error: true
+
+      - name: Generate check summary
+        if: always()
+        run: |
+          echo "# PR Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # ESLint status
+          if [ "${{ steps.eslint.outcome }}" == "success" ]; then
+            echo "## ESLint: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ESLint: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            head -50 eslint-output.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # TypeScript status
+          if [ "${{ steps.typescript.outcome }}" == "success" ]; then
+            echo "## TypeScript: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## TypeScript: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            head -50 typescript-output.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Security status
+          if [ "${{ steps.security.outcome }}" == "success" ]; then
+            echo "## Security Audit: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## Security Audit: WARNINGS" >> $GITHUB_STEP_SUMMARY
+            echo "> Note: Security audit failures are warnings only" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if checks failed
+        if: steps.eslint.outcome == 'failure' || steps.typescript.outcome == 'failure'
+        run: |
+          echo "One or more checks failed:"
+          echo "  - ESLint: ${{ steps.eslint.outcome }}"
+          echo "  - TypeScript: ${{ steps.typescript.outcome }}"
+          exit 1
+
+  # ===========================================================================
+  # Job: Expo Config Validation
+  # ===========================================================================
+  expo-config:
+    name: Expo Config Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Expo config (development)
+        run: |
+          echo "Validating development config..."
+          APP_ENV=development npx expo config --type public
+        env:
+          APP_ENV: development
+
+      - name: Validate Expo config (preview)
+        run: |
+          echo "Validating preview config..."
+          APP_ENV=preview npx expo config --type public
+        env:
+          APP_ENV: preview
+
+      - name: Validate Expo config (production)
+        run: |
+          echo "Validating production config..."
+          APP_ENV=production npx expo config --type public
+        env:
+          APP_ENV: production
+
+      - name: Config validation summary
+        run: |
+          echo "## Expo Config Validation: PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All environment configurations validated successfully:" >> $GITHUB_STEP_SUMMARY
+          echo "- development" >> $GITHUB_STEP_SUMMARY
+          echo "- preview" >> $GITHUB_STEP_SUMMARY
+          echo "- production" >> $GITHUB_STEP_SUMMARY
