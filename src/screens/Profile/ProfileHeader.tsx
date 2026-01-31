@@ -110,14 +110,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
         {/* Profile Avatar and Action Icons */}
         <View style={tw`flex flex-row justify-between items-center`}>
           <ProfAvatar
-            source={
-              typeof user?.profilePicture === 'string'
-                ? user.profilePicture
-                : user?.profilePicture?.original || ''
-            }
-            name={`${user?.firstName || ''} ${user?.lastName || ''}`}
-            subtitle={user?.email || ''}
-            size={50}
+            user={user}
+            titleStyles={tw`text-white bg-black bg-opacity-50 rounded font-semibold`}
+            subtitleParams={{
+              textStyles: `text-white bg-black bg-opacity-50 rounded font-semibold`,
+            }}
           />
 
           {userId === user?.id ? (
