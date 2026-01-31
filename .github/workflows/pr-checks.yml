@@ -1,20 +1,3 @@
-# =============================================================================
-# Vwanu Mobile Application - Pull Request Checks
-# =============================================================================
-# This workflow runs automated checks on every pull request to ensure code
-# quality before merging.
-#
-# Triggers:
-#   - Pull requests to main, develop, qa/* branches
-#   - Push to main, develop, qa/* branches
-#
-# Checks performed:
-#   - ESLint (code style and potential errors)
-#   - TypeScript (type checking)
-#   - Security audit (npm vulnerabilities)
-#
-# =============================================================================
-
 name: PR Checks
 
 on:

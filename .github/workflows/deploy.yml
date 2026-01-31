@@ -1,21 +1,3 @@
-# =============================================================================
-# Vwanu Mobile Application - Manual Deployment Workflow
-# =============================================================================
-# This workflow enables manual deployment of the Vwanu mobile application
-# to different environments using EAS Build.
-#
-# Usage:
-#   1. Go to Actions tab in GitHub
-#   2. Select "Deploy to EAS" workflow
-#   3. Click "Run workflow"
-#   4. Select branch, environment, profile, and platform
-#   5. Click "Run workflow" button
-#
-# Required Secrets:
-#   - EXPO_TOKEN: EAS authentication token (required)
-#
-# =============================================================================
-
 name: Deploy to EAS
 
 on:
