@@ -23,7 +23,6 @@ import { formatDistanceToNow } from 'date-fns'
 const FriendRequestsScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
   const { userId } = useSelector((state: RootState) => state.auth)
-
   // Fetch friend requests based on active tab
   const {
     data: receivedRequests,
@@ -91,10 +90,7 @@ const FriendRequestsScreen: React.FC = () => {
         style={tw`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4`}
       >
         <View style={tw`flex-row items-center`}>
-          <ProfAvatar
-            user={sender! as User}
-            subtitle="Wants to connect with you"
-          />
+          <ProfAvatar user={sender} subtitle="Wants to connect with you" />
         </View>
         <View style={tw`flex-row mt-3 gap-2`}>
           <Button
@@ -131,7 +127,7 @@ const FriendRequestsScreen: React.FC = () => {
       >
         <View style={tw`flex-row items-center justify-between`}>
           <ProfAvatar
-            user={target! as User}
+            user={target}
             subtitle={`Pending friend request\n ${formatDistanceToNow(
               new Date(item.createdAt)
             )}`}

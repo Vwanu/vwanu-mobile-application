@@ -282,8 +282,8 @@ export interface FriendRequestInterface {
   status: FriendRequestStatus
   createdAt: Date
   updatedAt: Date
-  user: Partial<User> & { profilePicture?: string }
-  target: Partial<User> & { profilePicture?: string }
+  user: User
+  target: User
 }
 
 export interface FetchFriendRequestsParams {

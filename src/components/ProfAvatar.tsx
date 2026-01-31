@@ -1,4 +1,4 @@
-import { View, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity, StyleProp, TextStyle } from 'react-native'
 import React from 'react'
 import { Avatar } from 'react-native-paper'
 import { useNavigation } from '@react-navigation/native'
@@ -18,10 +18,11 @@ interface ProfAvatarProps {
     maxLength?: number
     showMoreText?: string
     showLessText?: string
-    textStyles?: string
+    textStyles?: StyleProp<TextStyle>
   }
   showOnlineStatus?: boolean
   disableDefaultNavigation?: boolean
+  titleStyles?: StyleProp<TextStyle>
 }
 
 const ProfAvatar: React.FC<ProfAvatarProps> = ({
@@ -73,12 +74,12 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
         )}
       </View>
       <View style={tw`ml-2 flex justify-center`}>
-        <Text style={tw`font-semibold`}>
+        <Text style={[tw`font-semibold`, props.titleStyles]}>
           {props.user.firstName} {props.user.lastName}
         </Text>
         {props.subtitle ? (
           <LongText
-            textStyles={`font-thin ${props.subtitleParams?.textStyles}`}
+            textStyles={[tw`font-thin`, props.subtitleParams?.textStyles]}
             text={props?.subtitle}
             maxLength={props?.subtitleParams?.maxLength}
             showMoreText={props?.subtitleParams?.showMoreText}
