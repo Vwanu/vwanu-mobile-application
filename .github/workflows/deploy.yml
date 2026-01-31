@@ -1,0 +1,261 @@
+name: Deploy to EAS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+        default: 'dev'
+
+      profile:
+        description: 'EAS Build profile'
+        required: true
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+        default: 'development'
+
+      platform:
+        description: 'Target platform'
+        required: true
+        type: choice
+        options:
+          - ios
+          - android
+          - all
+        default: 'all'
+
+      skip_checks:
+        description: 'Skip pre-build checks (lint, typecheck)'
+        required: false
+        type: boolean
+        default: false
+
+# Ensure only one deployment runs at a time per environment
+concurrency:
+  group: deploy-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  EAS_PROJECT_ID: 'e550dc60-d34d-4c1d-8286-c670002c81d3'
+
+jobs:
+  # ===========================================================================
+  # Job: Pre-Build Checks
+  # ===========================================================================
+  checks:
+    name: Pre-Build Checks
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_checks != 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
+        continue-on-error: false
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+        continue-on-error: false
+
+      - name: Check for security vulnerabilities
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  # ===========================================================================
+  # Job: Build iOS
+  # ===========================================================================
+  build-ios:
+    name: Build iOS
+    runs-on: ubuntu-latest
+    needs: [checks]
+    if: |
+      always() &&
+      (needs.checks.result == 'success' || needs.checks.result == 'skipped') &&
+      (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all')
+
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://expo.dev/accounts/waddprog/projects/vwanu-app/builds
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Display build info
+        run: |
+          echo "=========================================="
+          echo "Build Configuration"
+          echo "=========================================="
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Profile: ${{ github.event.inputs.profile }}"
+          echo "Platform: iOS"
+          echo "=========================================="
+
+      - name: Build iOS app
+        run: |
+          eas build \
+            --platform ios \
+            --profile ${{ github.event.inputs.profile }} \
+            --non-interactive \
+            --no-wait
+        env:
+          APP_ENV: ${{ github.event.inputs.profile }}
+
+      - name: Build summary
+        run: |
+          echo "## iOS Build Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ github.event.inputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Profile | ${{ github.event.inputs.profile }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View build on Expo](https://expo.dev/accounts/waddprog/projects/vwanu-app/builds)" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Job: Build Android
+  # ===========================================================================
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: [checks]
+    if: |
+      always() &&
+      (needs.checks.result == 'success' || needs.checks.result == 'skipped') &&
+      (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all')
+
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: https://expo.dev/accounts/waddprog/projects/vwanu-app/builds
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Display build info
+        run: |
+          echo "=========================================="
+          echo "Build Configuration"
+          echo "=========================================="
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Profile: ${{ github.event.inputs.profile }}"
+          echo "Platform: Android"
+          echo "=========================================="
+
+      - name: Build Android app
+        run: |
+          eas build \
+            --platform android \
+            --profile ${{ github.event.inputs.profile }} \
+            --non-interactive \
+            --no-wait
+        env:
+          APP_ENV: ${{ github.event.inputs.profile }}
+
+      - name: Build summary
+        run: |
+          echo "## Android Build Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ github.event.inputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Profile | ${{ github.event.inputs.profile }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View build on Expo](https://expo.dev/accounts/waddprog/projects/vwanu-app/builds)" >> $GITHUB_STEP_SUMMARY
+
+  # ===========================================================================
+  # Job: Notify Completion
+  # ===========================================================================
+  notify:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [checks, build-ios, build-android]
+    if: always()
+
+    steps:
+      - name: Generate deployment summary
+        run: |
+          echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Setting | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Triggered by | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ github.event.inputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Profile | ${{ github.event.inputs.profile }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | ${{ github.event.inputs.platform }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Pre-Build Checks | ${{ needs.checks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| iOS Build | ${{ needs.build-ios.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Android Build | ${{ needs.build-android.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. Monitor build progress on [Expo Dashboard](https://expo.dev/accounts/waddprog/projects/vwanu-app/builds)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Once complete, download and test the build artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "3. For production builds, proceed with App Store/Play Store submission" >> $GITHUB_STEP_SUMMARY
