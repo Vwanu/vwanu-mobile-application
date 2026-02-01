@@ -87,6 +87,8 @@ const apiSlice = createApi({
     'Interest',
     'Notification',
     'friendship',
+    'Conversation',
+    'Message',
   ],
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),

@@ -67,12 +67,7 @@ const Post: React.FC<Props> = ({
 
       {props.postText && (
         <TouchableOpacity onPress={handlePress}>
-          <LongText
-            style={tw`${
-              isDarkMode ? 'text-white' : 'text-gray-500'
-            }  font-thin`}
-            text={props.postText}
-          />
+          <LongText text={props.postText} />
         </TouchableOpacity>
       )}
 

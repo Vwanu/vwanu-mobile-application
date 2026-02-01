@@ -39,7 +39,7 @@ const PostInput: React.FC<PostInputProps> = ({
   const { data: user } = useFetchProfileQuery(userId!)
   const { isDarkMode } = useTheme()
   const [creatingPost, toggleCreatingPost] = useToggle(false)
-  const [openBottomSheet, toggleOpenBottomSheet] = useToggle(false)
+  const [openBottomSheet] = useToggle(false)
 
   const handlePress = () => {
     if (canCreatePost) {
@@ -74,7 +74,7 @@ const PostInput: React.FC<PostInputProps> = ({
               canCreatePost ? 'bg-white' : 'bg-gray-100'
             } rounded-2xl mb-0`}
             accessoryRight={canCreatePost ? <Img /> : undefined}
-            disabled={!canCreatePost}
+            disabled
           />
         </View>
       </View>

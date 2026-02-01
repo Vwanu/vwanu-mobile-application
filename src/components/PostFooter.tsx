@@ -1,4 +1,4 @@
-/* 
+/*
 ========================================================
    Sub-Component: PostFooter
    - Renders like info, share, and comment buttons.
@@ -50,15 +50,13 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
   }, [props.disableNavigation, props.toggleCommenting, props.id, navigation])
 
   return (
-    <View style={tw`flex flex-row items-center justify-between`}>
+    <View style={tw`flex flex-1 flex-row items-center justify-between`}>
       <View>
         {props.amountOfKorems ? (
           <View style={tw`flex flex-row items-center`}>
             <Text style={tw`text-sm font-thin`}>Liked by</Text>
             {props.isReactor && (
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={tw`text-primary font-thin text-sm`}> You</Text>
-              </TouchableOpacity>
+              <Text style={tw`text-primary text-sm`}> You</Text>
             )}
             {props.isReactor ? (
               <TouchableOpacity onPress={() => {}}>
@@ -100,35 +98,37 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
           <Text
             style={tw`${
               isDarkMode ? 'text-white' : 'text-black'
-            } font-thin text-sm`}
+            }  text-sm italic font-thin`}
           >
-            Be the first to
-            <Text style={tw`text-sm font-thin italic`}> Kore</Text>
+            Be the first to react
           </Text>
         )}
 
         {props.showViewComment && (props.amountOfComments ?? 0) > 0 && (
           <TouchableOpacity onPress={handleCommentPress}>
             <Text
-              style={tw`${
-                isDarkMode ? 'text-white' : 'text-primary'
-              } font-thin text-sm`}
+              style={tw`${isDarkMode ? 'text-white' : 'text-primary'} text-sm`}
             >
-              View all{' '}
+              {props.amountOfComments === 1 ? 'View' : 'View all'}
+              <>
+                {props.amountOfComments > 1 && (
+                  <Text
+                    style={tw`${
+                      isDarkMode ? 'text-white' : 'text-primary'
+                    } text-sm`}
+                  >
+                    {' '}
+                    {abbreviateNumber(props.amountOfComments || 0)}
+                  </Text>
+                )}
+              </>
               <Text
                 style={tw`${
                   isDarkMode ? 'text-white' : 'text-primary'
                 } text-sm`}
               >
-                {abbreviateNumber(props.amountOfComments || 0)}
-              </Text>
-              <Text
-                style={tw`${
-                  isDarkMode ? 'text-white' : 'text-primary'
-                } font-thin text-sm`}
-              >
                 {' '}
-                comments
+                {props.amountOfComments === 1 ? 'comment' : 'comments'}
               </Text>
             </Text>
           </TouchableOpacity>

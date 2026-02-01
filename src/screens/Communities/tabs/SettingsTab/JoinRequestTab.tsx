@@ -58,13 +58,10 @@ const InvitationsTab: React.FC<InvitationsTabProps> = ({
     <View style={tw`bg-white p-4 border-b border-gray-100`}>
       <View style={tw`flex-row items-start justify-between`}>
         <ProfAvatar
-          name={`${item.guest.firstName} ${item.guest?.lastName?.[0] || ''}`}
-          source={item.guest.profilePicture || ''}
-          size={45}
+          user={item?.guest as User}
           subtitle={`Invited by ${item?.host?.firstName} ${
             item?.host?.lastName?.[0] || ''
           }`}
-          userId={item.guest.id}
         />
 
         <View style={tw`items-end`}>

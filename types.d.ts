@@ -48,14 +48,7 @@ export interface User {
   firstName: string
   lastName: string
   createdAt: Date
-  profilePicture:
-    | string
-    | {
-        original: string
-        medium: string
-        small: string
-        tiny: string
-      }
+  profilePicture: string
   amountOfFollower: number
   amountOfFollowing: number
   amountOfFriends: number
@@ -65,6 +58,7 @@ export interface User {
   role?: 'admin' | 'moderator' | 'member'
   online?: boolean
   last_seen?: Date
+  about?: string
 }
 
 export type Notice = 'public' | 'private' | 'network'
@@ -138,26 +132,41 @@ export type CommunityStackParams = {
   CommunitySettings: { communityId: string }
 }
 
+export type ChatStackParams = {
+  Chat: undefined
+  Message: { conversationId: string; user?: Partial<User> }
+}
+
 export type BottomTabParms = {
   [routes.TIMELINE]: undefined
   [routes.ACCOUNT]: NavigatorScreenParams<ProfileStackParams> | undefined
-  [routes.INBOX]: undefined
+  [routes.INBOX]: NavigatorScreenParams<ChatStackParams> | undefined
   [routes.COMMUNITY]: NavigatorScreenParams<CommunityStackParams> | undefined
 }
 
 export interface Message {
-  id: number
-  content: string
+  id: string
+  conversationId: string
+  messageText: string
   createdAt: string
   user: User
+  readDate: string
 }
 
+// Base conversation properties shared by both types
 export interface Conversation {
-  id: number
-  users: User[] | User
+  id: string
+  type: 'direct' | 'group'
+  users: User[]
   messages: Message[]
   lastMessage: Message
   amountOfUnreadMessages: number
+  groupName?: string
+  groupPicture?: string
+}
+
+export interface EntityCreate<T> {
+  data: T
 }
 
 interface Profiles extends User {
@@ -273,8 +282,8 @@ export interface FriendRequestInterface {
   status: FriendRequestStatus
   createdAt: Date
   updatedAt: Date
-  user: Partial<User> & { profilePicture?: string }
-  target: Partial<User> & { profilePicture?: string }
+  user: User
+  target: User
 }
 
 export interface FetchFriendRequestsParams {

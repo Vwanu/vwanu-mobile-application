@@ -1,10 +1,16 @@
 import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { View, TouchableOpacity, Alert } from 'react-native'
+import { CompositeNavigationProp } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
+import { useNavigation } from '@react-navigation/native'
 
 import tw from '../../lib/tailwind'
+import routes from 'navigation/routes'
 import { useTheme } from '../../hooks/useTheme'
 import { ActivityIndicator } from 'react-native-paper'
+import { ProfileStackParams, BottomTabParms } from '../../../types'
 
 export enum ConnectionState {
   FRIENDS = 'friends',
@@ -27,6 +33,10 @@ interface ConnectionStatusProps {
   onStartChat?: () => void
 }
 
+type NavigationProp = CompositeNavigationProp<
+  StackNavigationProp<ProfileStackParams, 'Profile'>,
+  BottomTabNavigationProp<BottomTabParms>
+>
 /**
  * ConnectionStatus Component
  * Displays the connection status between current user and profile being viewed
@@ -43,6 +53,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   onStartChat,
 }) => {
   const { isDarkMode } = useTheme()
+  const navigation = useNavigation<NavigationProp>()
 
   // Don't show anything if viewing own profile
   if (
@@ -53,12 +64,12 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   }
 
   const handleChatPress = () => {
-    if (onStartChat) {
-      onStartChat()
-    } else {
-      // TODO: Navigate to chat screen
-      console.log('Navigate to chat with user:', targetUserId)
-    }
+    // if (onStartChat) {
+    //   onStartChat()
+    // } else {
+    navigation.navigate(routes.INBOX)
+    // TODO: Navigate to chat screen
+    // }
   }
 
   const handleCancelRequest = () => {
@@ -91,15 +102,13 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
         return (
           <TouchableOpacity
             onPress={handleChatPress}
-            style={tw`p-2 mr-2 rounded-full ${
-              isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
-            }`}
+            style={tw`p-2 mr-2 rounded-full `}
             accessibilityLabel="Start chat"
           >
             <Ionicons
-              name="chatbubble-outline"
-              size={20}
-              color={isDarkMode ? '#60A5FA' : '#2563EB'}
+              name="chatbubble-ellipses-outline"
+              size={26}
+              color={isDarkMode ? 'white' : 'black'}
             />
           </TouchableOpacity>
         )

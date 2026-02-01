@@ -60,4 +60,10 @@ export const screenConfigs = {
     headerShown: false,
     headerTransparent: true,
   },
+  chat: {
+    headerShown: false,
+  },
+  message: {
+    headerShown: false,
+  },
 } as const

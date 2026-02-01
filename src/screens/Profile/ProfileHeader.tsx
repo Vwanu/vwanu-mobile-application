@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Ionicons } from '@expo/vector-icons'
-import { View, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity, ImageBackground } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 
 import tw from 'lib/tailwind'
@@ -22,6 +22,7 @@ import {
   useSendFriendRequestMutation,
 } from 'store/friends-api-slice'
 import { ActivityIndicator } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 interface ProfileHeaderProps {
   profileId: string
@@ -97,118 +98,111 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
     console.log('Unfriend user:', user?.id)
   }
 
+  const defaultBackground =
+    'https://plus.unsplash.com/premium_photo-1686255006386-5f58b00ffe9d?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmFja2dyb3VuZHxlbnwwfHwwfHx8MA%3D%3D'
   return (
-    <View style={tw`p-3`}>
-      {/* Profile Avatar and Action Icons */}
-      <View style={tw`flex flex-row justify-between items-center`}>
-        <ProfAvatar
-          source={
-            typeof user?.profilePicture === 'string'
-              ? user.profilePicture
-              : user?.profilePicture?.original || ''
-          }
-          name={`${user?.firstName || ''} ${user?.lastName || ''}`}
-          subtitle={user?.email || ''}
-          size={50}
-        />
-
-        {userId === user?.id ? (
-          <View style={tw`flex-row items-center gap-4`}>
-            {/* Notification Bell */}
-            <NotificationIndicator />
-
-            {/* Settings Icon */}
-            <TouchableOpacity
-              onPress={() => {
-                // @ts-ignore
-                navigation.navigate('Settings')
-              }}
-            >
-              <Ionicons
-                name="settings-outline"
-                size={20}
-                color={isDarkMode ? 'white' : 'black'}
-              />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <>
-            {isLoading ? (
-              <ActivityIndicator size="small" />
-            ) : (
-              <ConnectionStatus
-                targetUserId={user?.id || ''}
-                currentUserId={userId || ''}
-                connectionState={connectionState}
-                onSendRequest={handleSendFriendRequest}
-                onAcceptRequest={handleAcceptRequest}
-                onDeclineRequest={handleDeclineRequest}
-                onStartChat={handleStartChat}
-                onUnfriend={handleUnfriend}
-                isLoading={isAccepting || isDeclining}
-              />
-            )}
-          </>
-        )}
-      </View>
-      {/* Bio */}
-      <View style={tw`flex flex-row justify-between mt-3`}>
-        <View style={tw`flex-1`}>
-          <LongText
-            text={
-              user?.bio || user?.id === userId
-                ? 'Please write a bio'
-                : 'Bio coming soon'
-            }
-            maxLength={
-              (process.env.BIO_MAX_LENGTH && +process.env.BIO_MAX_LENGTH) || 200
-            }
-          />
-        </View>
-
+    <ImageBackground
+      source={{ uri: user.coverPicture ?? defaultBackground }}
+      style={tw`w-full`}
+      resizeMode="cover"
+    >
+      <SafeAreaView style={tw`p-2`}>
+        {/* Profile Avatar and Action Icons */}
         <View style={tw`flex flex-row justify-between items-center`}>
-          <Button
-            appearance="ghost"
-            accessoryLeft={() => (
-              <Ionicons
-                name="pencil-outline"
-                size={16}
-                color={isDarkMode ? 'white' : 'black'}
-              />
-            )}
+          <ProfAvatar
+            user={user}
+            titleStyles={tw`text-white bg-black bg-opacity-50 rounded font-semibold`}
+            subtitleParams={{
+              textStyles: `text-white bg-black bg-opacity-50 rounded font-semibold`,
+            }}
           />
-        </View>
-      </View>
 
-      {/* Stats */}
-      <View style={tw`flex flex-row justify-center items-center my-4 gap-8`}>
-        <View style={tw`justify-center items-center`}>
-          <Text style={tw`font-semibold text-lg`}>
-            {abbreviateNumber(user?.amountOfFriends || 0)}
-          </Text>
-          <Text style={tw`font-thin text-sm`}>Friends</Text>
+          {userId === user?.id ? (
+            <View style={tw`flex-row items-center gap-4`}>
+              {/* Notification Bell */}
+              <NotificationIndicator />
+
+              {/* Settings Icon */}
+              <TouchableOpacity
+                onPress={() => {
+                  // @ts-ignore
+                  navigation.navigate('Settings')
+                }}
+              >
+                <Ionicons
+                  name="settings-outline"
+                  size={20}
+                  color={isDarkMode ? 'white' : 'black'}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              {isLoading ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <ConnectionStatus
+                  targetUserId={user?.id || ''}
+                  currentUserId={userId || ''}
+                  connectionState={connectionState}
+                  onSendRequest={handleSendFriendRequest}
+                  onAcceptRequest={handleAcceptRequest}
+                  onDeclineRequest={handleDeclineRequest}
+                  onStartChat={handleStartChat}
+                  isLoading={isAccepting || isDeclining}
+                />
+              )}
+            </>
+          )}
         </View>
-        <View
-          style={tw`w-[1px] ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} h-12`}
-        />
-        <View style={tw`justify-center items-center`}>
-          <Text style={tw`font-semibold text-lg`}>
-            {abbreviateNumber(user?.amountOfFollowing || 0)}
-          </Text>
-          <Text style={tw`font-thin text-sm`}>Following</Text>
+        <View style={tw`flex flex-row justify-center items-center my-4 gap-8`}>
+          <View style={tw`justify-center items-center`}>
+            <Text style={[tw`font-semibold text-lg`, whiteShadowStyle]}>
+              {abbreviateNumber(user?.amountOfFriends || 0)}
+            </Text>
+            <Text style={[tw`font-thin text-sm`, whiteShadowStyle]}>
+              Friends
+            </Text>
+          </View>
+          <View
+            style={tw`w-[1px] ${
+              isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+            } h-12`}
+          />
+          <View style={tw`justify-center items-center`}>
+            <Text style={[tw`font-semibold text-lg`, whiteShadowStyle]}>
+              {abbreviateNumber(user?.amountOfFollowing || 0)}
+            </Text>
+            <Text style={[tw`font-thin text-sm`, whiteShadowStyle]}>
+              Following
+            </Text>
+          </View>
+          <View
+            style={tw`w-[1px] ${
+              isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
+            } h-12`}
+          />
+          <View style={tw`justify-center items-center`}>
+            <Text style={[tw`font-semibold text-lg`, whiteShadowStyle]}>
+              {abbreviateNumber(user?.amountOfFollower || 0)}
+            </Text>
+            <Text style={[tw`font-thin text-sm`, whiteShadowStyle]}>
+              Followers
+            </Text>
+          </View>
         </View>
-        <View
-          style={tw`w-[1px] ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} h-12`}
-        />
-        <View style={tw`justify-center items-center`}>
-          <Text style={tw`font-semibold text-lg`}>
-            {abbreviateNumber(user?.amountOfFollower || 0)}
-          </Text>
-          <Text style={tw`font-thin text-sm`}>Followers</Text>
-        </View>
-      </View>
-    </View>
+      </SafeAreaView>
+    </ImageBackground>
   )
+}
+
+const whiteShadowStyle = {
+  shadowColor: '#FFFFFF',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 5,
+  color: 'white',
 }
 
 export default ProfileHeader

@@ -55,14 +55,9 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       } border-b border-gray-200 dark:border-gray-700`}
     >
       <ProfAvatar
-        size={48}
-        userId={notification.userId}
+        user={notification.fromUser as User}
         subtitle={notification.message}
-        onLongPress={handleNavigateToEntity}
-        source={notification.fromUser.profilePicture}
-        name={
-          notification.fromUser.firstName + ' ' + notification.fromUser.lastName
-        }
+        onPress={handleNavigateToEntity}
       />
 
       <View style={tw`items-end`}>

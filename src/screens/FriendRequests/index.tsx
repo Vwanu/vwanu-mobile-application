@@ -23,7 +23,6 @@ import { formatDistanceToNow } from 'date-fns'
 const FriendRequestsScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
   const { userId } = useSelector((state: RootState) => state.auth)
-
   // Fetch friend requests based on active tab
   const {
     data: receivedRequests,
@@ -56,9 +55,12 @@ const FriendRequestsScreen: React.FC = () => {
     activeTab === 'received' ? isFetchingReceived : isFetchingSent
   const refetch = activeTab === 'received' ? refetchReceived : refetchSent
 
-  const handleAccept = async (requestId: string) => {
+  const handleAccept = async (requestId: string, targetId: string) => {
     try {
-      await acceptRequest(requestId).unwrap()
+      await acceptRequest({
+        requestId,
+        targetId,
+      }).unwrap()
     } catch (error) {
       console.error('Error accepting friend request:', error)
     }
@@ -88,16 +90,11 @@ const FriendRequestsScreen: React.FC = () => {
         style={tw`bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4`}
       >
         <View style={tw`flex-row items-center`}>
-          <ProfAvatar
-            name={`${sender?.firstName} ${sender?.lastName}`}
-            source={sender?.profilePicture || ''}
-            size={50}
-            subtitle="Wants to connect with you"
-          />
+          <ProfAvatar user={sender} subtitle="Wants to connect with you" />
         </View>
         <View style={tw`flex-row mt-3 gap-2`}>
           <Button
-            onPress={() => handleAccept(item.id)}
+            onPress={() => handleAccept(item.id, item.targetId)}
             style={tw`flex-1  p-2 rounded-full border border-2 border-primary `}
             accessoryLeft={() => (
               <Ionicons
@@ -130,12 +127,10 @@ const FriendRequestsScreen: React.FC = () => {
       >
         <View style={tw`flex-row items-center justify-between`}>
           <ProfAvatar
-            name={`${target?.firstName} ${target?.lastName}`}
+            user={target}
             subtitle={`Pending friend request\n ${formatDistanceToNow(
               new Date(item.createdAt)
             )}`}
-            source={target?.profilePicture || ''}
-            size={50}
           />
           <Button
             onPress={() => handleCancel(item.id)}

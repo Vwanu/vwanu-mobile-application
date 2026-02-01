@@ -32,9 +32,7 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
     >
       {/* Avatar */}
       <ProfAvatar
-        size={48}
-        source={user.profilePicture}
-        name={`${user.firstName} ${user.lastName}`}
+        user={user}
         subtitle={`${
           user.about || 'Not | bio set up'
         } \n Member since ${formatDistanceToNow(
@@ -42,7 +40,6 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
           { addSuffix: true }
         )}`}
         showOnlineStatus
-        online={user.online}
       />
     </TouchableOpacity>
   )
