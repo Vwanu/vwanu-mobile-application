@@ -1,6 +1,6 @@
 import * as React from 'react'
 import Svg, { G, Path } from 'react-native-svg'
-import { SVGProps } from './style'
+import { SVGProps } from '../../../types'
 
 /* SVGR has dropped some elements not supported by react-native-svg: title */
 const SVGComponent: React.FC<SVGProps> = ({ width, height, fill, stroke }) => (

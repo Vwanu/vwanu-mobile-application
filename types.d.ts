@@ -296,6 +296,12 @@ export interface SendFriendRequestParams {
   targetId: string
 }
 
+export interface SVGProps {
+  width?: number | string
+  height?: number | string
+  fill?: string
+  stroke?: boolean
+}
 export interface RespondToFriendRequestParams {
   requestId: string
   action: 'accept' | 'decline'
