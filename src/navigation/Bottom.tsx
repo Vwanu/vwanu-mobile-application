@@ -26,11 +26,9 @@ import FeedNavigator from './Feed'
 import AccountNavigator from './Account'
 import CommunityNavigator from './Community'
 import ChatNavigator from './Chat'
+import { BottomTabParams } from '../../types'
 
-// Types
-import { BottomTabParms } from '../../types'
-
-const Tab = createBottomTabNavigator<BottomTabParms>()
+const Tab = createBottomTabNavigator<BottomTabParams>()
 
 /**
  * Custom Bottom Tab Bar Component
