@@ -89,7 +89,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
       {/* Profile Bio and Connection Actions */}
       <View style={tw`flex flex-row justify-between items-center mt-2 pr-6`}>
         <View style={tw`w-3/4`}>
-          <Text category="p1" style={tw`w-3/4`}>
+          <Text category="p1" style={[tw`w-3/4 font-poppins-medium text-sm`]}>
             {user?.about || 'Encourage them to set a bio!'}
           </Text>
         </View>

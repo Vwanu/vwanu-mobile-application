@@ -10,36 +10,44 @@ interface ProfileHeaderProps {
   user: User
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
+const Separator = () => {
   const { isDarkMode } = useTheme()
   return (
+    <View style={tw`w-[1.5px] ${isDarkMode ? 'bg-white' : 'bg-black'} h-12`} />
+  )
+}
+const ProfileHeaderStat = ({
+  label,
+  value,
+}: {
+  label: string
+  value: number
+}) => {
+  return (
+    <View style={tw`justify-center items-center`}>
+      <Text style={[tw`font-semibold text-lg font-poppins-semibold`]}>
+        {abbreviateNumber(value)}
+      </Text>
+      <Text style={[tw`text-sm font-poppins-medium`]}>{label}</Text>
+    </View>
+  )
+}
+const ProfileHeaderStats: React.FC<ProfileHeaderProps> = ({ user }) => {
+  return (
     <View style={tw`flex flex-row justify-center items-center mt-4 gap-8`}>
-      <View style={tw`justify-center items-center`}>
-        <Text style={tw`font-semibold text-lg`}>
-          {abbreviateNumber(user?.amountOfFriends || 0)}
-        </Text>
-        <Text style={tw`font-thin text-sm`}>Friends</Text>
-      </View>
-      <View
-        style={tw`w-[1px] ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} h-12`}
+      <ProfileHeaderStat label="Friends" value={user?.amountOfFriends || 0} />
+      <Separator />
+      <ProfileHeaderStat
+        label="Followings"
+        value={user?.amountOfFollowing || 0}
       />
-      <View style={tw`justify-center items-center`}>
-        <Text style={tw`font-semibold text-lg`}>
-          {abbreviateNumber(user?.amountOfFollowing || 0)}
-        </Text>
-        <Text style={tw`font-thin text-sm`}>Following</Text>
-      </View>
-      <View
-        style={tw`w-[1px] ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'} h-12`}
+      <Separator />
+      <ProfileHeaderStat
+        label="Followers"
+        value={user?.amountOfFollower || 0}
       />
-      <View style={tw`justify-center items-center`}>
-        <Text style={tw`font-semibold text-lg`}>
-          {abbreviateNumber(user?.amountOfFollower || 0)}
-        </Text>
-        <Text style={tw`font-thin text-sm`}>Followers</Text>
-      </View>
     </View>
   )
 }
 
-export default ProfileHeader
+export default ProfileHeaderStats

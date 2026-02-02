@@ -1,6 +1,5 @@
 import React from 'react'
-import { Ionicons } from '@expo/vector-icons'
-import { View, TouchableOpacity, Alert } from 'react-native'
+import { View, Alert } from 'react-native'
 import { CompositeNavigationProp } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
@@ -14,9 +13,9 @@ import {
 
 import tw from '../../lib/tailwind'
 import routes from 'navigation/routes'
-import { useTheme } from '../../hooks/useTheme'
 import { ActivityIndicator } from 'react-native-paper'
 import { ProfileStackParams, BottomTabParms } from '../../../types'
+import ActionButton from 'components/ActionButton'
 
 export enum ConnectionState {
   FRIENDS = 'friends',
@@ -36,16 +35,10 @@ type NavigationProp = CompositeNavigationProp<
   StackNavigationProp<ProfileStackParams, 'Profile'>,
   BottomTabNavigationProp<BottomTabParms>
 >
-/**
- * ConnectionStatus Component
- * Displays the connection status between current user and profile being viewed
- * Shows appropriate actions based on friendship state
- */
 const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   targetUser,
   currentUserId,
 }) => {
-  const { isDarkMode } = useTheme()
   const navigation = useNavigation<NavigationProp>()
 
   const [sendFriendRequest, { isLoading }] = useSendFriendRequestMutation()
@@ -83,7 +76,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       }
     }
 
-    return ConnectionState.NOT_CONNECTED
+    return null as unknown as ConnectionState
   }
   const handleChatPress = () => {
     // if (onStartChat) {
@@ -142,86 +135,53 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
         return <ActivityIndicator size="small" />
       case ConnectionState.FRIENDS:
         return (
-          <TouchableOpacity
+          <ActionButton
             onPress={handleChatPress}
-            style={tw`p-2 mr-2 rounded-full `}
+            iconName="chatbubble-ellipses-outline"
             accessibilityLabel="Start chat"
-          >
-            <Ionicons
-              name="chatbubble-ellipses-outline"
-              size={26}
-              color={isDarkMode ? 'white' : 'black'}
-            />
-          </TouchableOpacity>
+          />
         )
 
       case ConnectionState.REQUEST_RECEIVED:
         return (
           <View style={tw`flex-row items-center`}>
             {/* Accept Button */}
-            <TouchableOpacity
+            <ActionButton
               onPress={() => handleAcceptRequest()}
-              style={tw`p-2 mr-2 rounded-full ${
-                isDarkMode ? 'bg-green-900' : 'bg-green-100'
-              }`}
+              iconName="checkmark"
               accessibilityLabel="Accept friend request"
-            >
-              <Ionicons
-                name="checkmark"
-                size={20}
-                color={isDarkMode ? '#34D399' : '#059669'}
-              />
-            </TouchableOpacity>
+              loading={isDeclining || isAccepting}
+            />
 
             {/* Decline Button */}
-            <TouchableOpacity
+            <ActionButton
               onPress={() => handleDeclineRequest()}
-              style={tw`p-2 rounded-full ${
-                isDarkMode ? 'bg-red-900' : 'bg-red-100'
-              }`}
+              iconName="close"
               accessibilityLabel="Decline friend request"
-            >
-              <Ionicons
-                name="close"
-                size={20}
-                color={isDarkMode ? '#F87171' : '#DC2626'}
-              />
-            </TouchableOpacity>
-
-            {/* Badge indicator */}
-            <View
-              style={tw`absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full`}
+              loading={isDeclining || isAccepting}
             />
           </View>
         )
 
       case ConnectionState.REQUEST_SENT:
         return (
-          <TouchableOpacity
+          <ActionButton
             onPress={() => handleCancelRequest()}
-            style={tw`p-2 rounded-full`}
+            iconName="hourglass-outline"
             accessibilityLabel="Friend request pending"
-          >
-            <Ionicons name="hourglass-outline" size={24} />
-          </TouchableOpacity>
+          />
         )
 
       case ConnectionState.NOT_CONNECTED:
         return (
-          <TouchableOpacity
+          <ActionButton
             onPress={() => handleSendFriendRequest()}
-            style={tw`p-2 rounded-full ${
-              isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
-            }`}
+            iconName="person-add-outline"
             accessibilityLabel="Send friend request"
-          >
-            <Ionicons
-              name="person-add-outline"
-              size={20}
-              color={isDarkMode ? '#60A5FA' : '#2563EB'}
-            />
-          </TouchableOpacity>
+          />
         )
+      case null:
+        return null
 
       default:
         throw new Error(
@@ -230,7 +190,6 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     }
   }
 
-  //   ----------
   return <View style={tw`items-center`}>{renderConnectionContent()}</View>
 }
 
