@@ -26,7 +26,7 @@ const ProfileHeaderStat = ({
   return (
     <View style={tw`justify-center items-center`}>
       <Text style={[tw`font-semibold text-lg font-poppins-semibold`]}>
-        {abbreviateNumber(value)}
+        {abbreviateNumber(value || 0)}
       </Text>
       <Text style={[tw`text-sm font-poppins-medium`]}>{label}</Text>
     </View>
@@ -35,17 +35,11 @@ const ProfileHeaderStat = ({
 const ProfileHeaderStats: React.FC<ProfileHeaderProps> = ({ user }) => {
   return (
     <View style={tw`flex flex-row justify-center items-center mt-4 gap-8`}>
-      <ProfileHeaderStat label="Friends" value={user?.amountOfFriends || 0} />
+      <ProfileHeaderStat label="Friends" value={user?.amountOfFriends} />
       <Separator />
-      <ProfileHeaderStat
-        label="Followings"
-        value={user?.amountOfFollowing || 0}
-      />
+      <ProfileHeaderStat label="Followings" value={user?.amountOfFollowing} />
       <Separator />
-      <ProfileHeaderStat
-        label="Followers"
-        value={user?.amountOfFollower || 0}
-      />
+      <ProfileHeaderStat label="Followers" value={user?.amountOfFollower} />
     </View>
   )
 }
