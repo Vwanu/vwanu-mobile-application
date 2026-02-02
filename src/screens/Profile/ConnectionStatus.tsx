@@ -14,7 +14,7 @@ import {
 import tw from '../../lib/tailwind'
 import routes from 'navigation/routes'
 import { ActivityIndicator } from 'react-native-paper'
-import { ProfileStackParams, BottomTabParms } from '../../../types'
+import { ProfileStackParams, BottomTabParams } from '../../../types'
 import ActionButton from 'components/ActionButton'
 
 export enum ConnectionState {
@@ -32,8 +32,8 @@ interface ConnectionStatusProps {
 }
 
 type NavigationProp = CompositeNavigationProp<
-  StackNavigationProp<ProfileStackParams, 'Profile'>,
-  BottomTabNavigationProp<BottomTabParms>
+  StackNavigationProp<ProfileStackParams, routes.PROFILE>,
+  BottomTabNavigationProp<BottomTabParams>
 >
 const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   targetUser,

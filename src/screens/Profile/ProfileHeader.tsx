@@ -88,14 +88,14 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
       </View>
       {/* Profile Bio and Connection Actions */}
       <View style={tw`flex flex-row justify-between items-center mt-2 pr-6`}>
-        <View style={tw`w-3/4`}>
-          <Text category="p1" style={[tw`w-3/4 font-poppins-medium text-sm`]}>
+        <View style={tw`flex-1`}>
+          <Text category="p1" style={[tw`font-poppins-medium text-sm`]}>
             {user?.about || 'Encourage them to set a bio!'}
           </Text>
         </View>
         {userId !== user?.id && (
           <View
-            style={tw`flex flex-row justify-between items-center mt-2 flex-1 `}
+            style={tw`flex flex-row justify-between items-center mt-2 flex-shrink-0 `}
           >
             <ConnectionStatus currentUserId={userId || ''} targetUser={user} />
             <>
@@ -104,7 +104,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
                   onPress={() => {}}
                   style={tw`px-3 ml-2 py-1 rounded-full bg-blue-600`}
                 >
-                  <Text style={tw`text-white font-bold text-xs`}>Follow</Text>
+                  <Text style={tw`text-white font-poppins-bold text-xs`}>
+                    Follow
+                  </Text>
                 </TouchableOpacity>
               )}
             </>
