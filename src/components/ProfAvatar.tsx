@@ -74,19 +74,24 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
         )}
       </View>
       <View style={tw`ml-2 flex justify-center`}>
-        <Text style={[tw`font-semibold`, props.titleStyles]}>
+        <Text
+          style={[tw`font-semibold font-poppins-medium`, props.titleStyles]}
+        >
           {props.user.firstName} {props.user.lastName}
         </Text>
         {props.subtitle ? (
           <LongText
-            textStyles={[tw`font-thin`, props.subtitleParams?.textStyles]}
+            textStyles={[
+              tw`font-thin font-poppins-thin`,
+              props.subtitleParams?.textStyles,
+            ]}
             text={props?.subtitle}
             maxLength={props?.subtitleParams?.maxLength}
             showMoreText={props?.subtitleParams?.showMoreText}
             showLessText={props?.subtitleParams?.showLessText}
           />
         ) : (
-          <Text>{props.user.about || ''}</Text>
+          <Text style={tw`font-poppins-medium`}>{props.user.about || ''}</Text>
         )}
       </View>
     </TouchableOpacity>

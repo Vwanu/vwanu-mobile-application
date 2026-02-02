@@ -137,7 +137,7 @@ export type ChatStackParams = {
   Message: { conversationId: string; user?: Partial<User> }
 }
 
-export type BottomTabParms = {
+export type BottomTabParams = {
   [routes.TIMELINE]: undefined
   [routes.ACCOUNT]: NavigatorScreenParams<ProfileStackParams> | undefined
   [routes.INBOX]: NavigatorScreenParams<ChatStackParams> | undefined
