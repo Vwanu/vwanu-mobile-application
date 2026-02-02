@@ -11,7 +11,7 @@ import { signOutUser } from './auth-slice'
 // Enhanced base query with automatic token refresh
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
-  unknown,
+  any,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   // Get valid tokens (will refresh if needed)

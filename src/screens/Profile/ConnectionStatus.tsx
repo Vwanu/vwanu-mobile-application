@@ -6,6 +6,12 @@ import { StackNavigationProp } from '@react-navigation/stack'
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import { useNavigation } from '@react-navigation/native'
 
+import {
+  useAcceptFriendRequestMutation,
+  useDeclineFriendRequestMutation,
+  useSendFriendRequestMutation,
+} from 'store/friends-api-slice'
+
 import tw from '../../lib/tailwind'
 import routes from 'navigation/routes'
 import { useTheme } from '../../hooks/useTheme'
@@ -22,15 +28,8 @@ export enum ConnectionState {
 }
 
 interface ConnectionStatusProps {
-  targetUserId: string
+  targetUser: Profile
   currentUserId: string
-  isLoading?: boolean
-  connectionState: ConnectionState
-  onSendRequest: () => void
-  onAcceptRequest: () => void
-  onDeclineRequest: () => void
-  onCancelRequest?: () => void
-  onStartChat?: () => void
 }
 
 type NavigationProp = CompositeNavigationProp<
@@ -43,26 +42,49 @@ type NavigationProp = CompositeNavigationProp<
  * Shows appropriate actions based on friendship state
  */
 const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
-  targetUserId,
+  targetUser,
   currentUserId,
-  connectionState,
-  onSendRequest,
-  onAcceptRequest,
-  onDeclineRequest,
-  onCancelRequest,
-  onStartChat,
 }) => {
   const { isDarkMode } = useTheme()
   const navigation = useNavigation<NavigationProp>()
 
+  const [sendFriendRequest, { isLoading }] = useSendFriendRequestMutation()
+  const [acceptFriendRequest, { isLoading: isAccepting }] =
+    useAcceptFriendRequestMutation()
+  const [declineFriendRequest, { isLoading: isDeclining }] =
+    useDeclineFriendRequestMutation()
+
   // Don't show anything if viewing own profile
-  if (
-    connectionState === ConnectionState.SELF ||
-    targetUserId === currentUserId
-  ) {
+  if (targetUser.id === currentUserId) {
     return null
   }
 
+  // Determine connection state between current user and profile being viewed
+  const getConnectionState = (): ConnectionState => {
+    if (isAccepting || isDeclining) {
+      return ConnectionState.LOADING
+    }
+    if (currentUserId === targetUser?.id) {
+      return ConnectionState.SELF
+    }
+    if (!targetUser.friendship) {
+      return ConnectionState.NOT_CONNECTED
+    }
+    if (targetUser.friendship.status === 1) return ConnectionState.FRIENDS
+    else if (targetUser.friendship.status === 0) {
+      switch (targetUser.friendship.targetId) {
+        case targetUser.id:
+          return ConnectionState.REQUEST_SENT
+        case currentUserId:
+          return ConnectionState.REQUEST_RECEIVED
+        default:
+          return ConnectionState.NOT_CONNECTED
+          break
+      }
+    }
+
+    return ConnectionState.NOT_CONNECTED
+  }
   const handleChatPress = () => {
     // if (onStartChat) {
     //   onStartChat()
@@ -93,9 +115,29 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       ]
     )
   }
+  const handleAcceptRequest = async () => {
+    acceptFriendRequest({
+      requestId: targetUser?.friendship?.id as string,
+      targetId: targetUser?.id as string,
+    })
+  }
+  const handleDeclineRequest = async () => {
+    declineFriendRequest({
+      requestId: targetUser?.friendship?.id as string,
+      targetId: targetUser?.id as string,
+    })
+  }
+
+  const handleSendFriendRequest = async () => {
+    sendFriendRequest({ targetId: targetUser?.id as string })
+  }
+
+  const connectionState = getConnectionState()
 
   const renderConnectionContent = () => {
     switch (connectionState) {
+      case ConnectionState.SELF:
+        return null
       case ConnectionState.LOADING:
         return <ActivityIndicator size="small" />
       case ConnectionState.FRIENDS:
@@ -118,7 +160,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           <View style={tw`flex-row items-center`}>
             {/* Accept Button */}
             <TouchableOpacity
-              onPress={() => onAcceptRequest()}
+              onPress={() => handleAcceptRequest()}
               style={tw`p-2 mr-2 rounded-full ${
                 isDarkMode ? 'bg-green-900' : 'bg-green-100'
               }`}
@@ -133,7 +175,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
             {/* Decline Button */}
             <TouchableOpacity
-              onPress={() => onDeclineRequest()}
+              onPress={() => handleDeclineRequest()}
               style={tw`p-2 rounded-full ${
                 isDarkMode ? 'bg-red-900' : 'bg-red-100'
               }`}
@@ -156,24 +198,18 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       case ConnectionState.REQUEST_SENT:
         return (
           <TouchableOpacity
-            onPress={handleCancelRequest}
-            style={tw`p-2 rounded-full ${
-              isDarkMode ? 'bg-yellow-900' : 'bg-yellow-100'
-            }`}
+            onPress={() => handleCancelRequest()}
+            style={tw`p-2 rounded-full`}
             accessibilityLabel="Friend request pending"
           >
-            <Ionicons
-              name="hourglass-outline"
-              size={20}
-              color={isDarkMode ? '#FBBF24' : '#D97706'}
-            />
+            <Ionicons name="hourglass-outline" size={24} />
           </TouchableOpacity>
         )
 
       case ConnectionState.NOT_CONNECTED:
         return (
           <TouchableOpacity
-            onPress={() => onSendRequest()}
+            onPress={() => handleSendFriendRequest()}
             style={tw`p-2 rounded-full ${
               isDarkMode ? 'bg-blue-900' : 'bg-blue-100'
             }`}
@@ -188,10 +224,13 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
         )
 
       default:
-        return null
+        throw new Error(
+          `Unhandled connection state${connectionState satisfies never}`
+        )
     }
   }
 
+  //   ----------
   return <View style={tw`items-center`}>{renderConnectionContent()}</View>
 }
 
