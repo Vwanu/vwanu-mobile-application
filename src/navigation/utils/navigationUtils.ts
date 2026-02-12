@@ -39,6 +39,7 @@ export const SCREEN_NAMES = {
   TIMELINE: 'Timeline',
   GALLERY: 'Gallery',
   SINGLE_POST: 'SinglePost',
+  BLOGS: 'Blogs',
 
   // Chat Stack
   CHAT: 'Chat',

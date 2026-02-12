@@ -109,6 +109,7 @@ export type FeedStackParams = Record<string, object | undefined> & {
   Comment: PostProps
   Gallery: PostProps & { initialSlide?: number }
   SinglePost: { postId: string; isCommenting?: boolean }
+  Blogs: undefined
 }
 
 export type ProfileStackParams = {
