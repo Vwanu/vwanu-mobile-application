@@ -151,6 +151,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
               iconName="checkmark"
               accessibilityLabel="Accept friend request"
               loading={isDeclining || isAccepting}
+              iconStyle={tw`text-green-500 border rounded-full`}
             />
 
             {/* Decline Button */}
@@ -159,6 +160,7 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
               iconName="close"
               accessibilityLabel="Decline friend request"
               loading={isDeclining || isAccepting}
+              iconStyle={tw`text-red-500 border rounded-full`}
             />
           </View>
         )

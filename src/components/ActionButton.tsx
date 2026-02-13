@@ -1,6 +1,10 @@
 import React from 'react'
 import { Ionicons } from '@expo/vector-icons'
-import { TouchableOpacity, TouchableOpacityProps } from 'react-native'
+import {
+  TextStyle,
+  TouchableOpacity,
+  TouchableOpacityProps,
+} from 'react-native'
 
 import tw from 'lib/tailwind'
 import { useTheme } from 'hooks/useTheme'
@@ -9,12 +13,14 @@ import { ActivityIndicator } from 'react-native-paper'
 interface ActionButtonProps extends TouchableOpacityProps {
   iconName: keyof typeof Ionicons.glyphMap
   loading?: boolean
+  iconStyle?: TextStyle
 }
 const ActionButton: React.FC<ActionButtonProps> = ({
   onPress,
   iconName,
   accessibilityLabel,
   loading = false,
+  iconStyle,
 }) => {
   const { isDarkMode } = useTheme()
   return (
@@ -31,6 +37,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
           name={iconName}
           size={20}
           color={isDarkMode ? 'white' : 'black'}
+          {...iconStyle}
         />
       )}
     </TouchableOpacity>
