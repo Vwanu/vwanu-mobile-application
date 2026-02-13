@@ -2,11 +2,13 @@ import React from 'react'
 
 import { Interest } from '../../../store/interests'
 import TabBar, { Tab } from '../../../components/Tabs/TabBar'
+import { ViewStyle } from 'react-native'
 
 interface CategoryTabsProps {
   interests: Interest[]
   selectedInterest: Interest | null
   onInterestChange: (interest: Interest) => void
+  style: ViewStyle
 }
 
 const CategoryTabs: React.FC<CategoryTabsProps> = ({

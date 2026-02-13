@@ -73,7 +73,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, onPress }) => {
             <Text style={tw`font-semibold text-gray-900 dark:text-white`}>
               {blog.title}
             </Text>
-            <View style={tw`flex-row items-center justify-between`}>
+            <View style={tw`flex-row items-center justify-between pr-2`}>
               <Text style={tw`text-xs text-gray-500 dark:text-gray-400`}>
                 {formattedDate}
               </Text>

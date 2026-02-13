@@ -16,6 +16,8 @@ interface TabBarProps {
   activeTab: string
   onTabChange: (tabId: string) => void
   iconOnly?: boolean
+  activeTextColor?: string
+  disableTextColor?: string
 }
 
 const TabBar: React.FC<TabBarProps> = ({
@@ -23,6 +25,8 @@ const TabBar: React.FC<TabBarProps> = ({
   activeTab,
   onTabChange,
   iconOnly = false,
+  disableTextColor,
+  activeTextColor,
 }) => {
   const flatListRef = useRef<FlatList>(null)
 
@@ -70,9 +74,9 @@ const TabBar: React.FC<TabBarProps> = ({
             <Text
               style={tw`font-medium ${item.icon ? 'ml-2' : ''} ${
                 isDisabled
-                  ? 'text-gray-400'
+                  ? disableTextColor || 'text-gray-400'
                   : isActive
-                  ? 'text-primary'
+                  ? activeTextColor || 'text-primary'
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -85,7 +89,7 @@ const TabBar: React.FC<TabBarProps> = ({
   }
 
   return (
-    <View style={tw`bg-white border-b border-gray-200`}>
+    <View>
       <FlatList
         ref={flatListRef}
         data={tabs}

@@ -87,13 +87,16 @@ const BlogListScreen: React.FC = () => {
     return (
       <View>
         {interests && interests.length > 0 && (
-          <CategoryTabs
-            interests={interests}
-            selectedInterest={selectedInterest}
-            onInterestChange={handleInterestChange}
-          />
+          <View style={tw``}>
+            <CategoryTabs
+              interests={interests}
+              selectedInterest={selectedInterest}
+              onInterestChange={handleInterestChange}
+              style={tw`bg-red-500`}
+            />
+          </View>
         )}
-        <FeaturedBlogList blogs={featuredBlogs} title="Featured" />
+        <FeaturedBlogList blogs={featuredBlogs} />
 
         <View style={tw`flex flex-row justify-between items-center mt-4 `}>
           <Text
@@ -103,15 +106,9 @@ const BlogListScreen: React.FC = () => {
           </Text>
           <TouchableOpacity>
             <Text
-              style={tw`text-lg font-bold text-primary text-gray-900 dark:text-white mb-3 mt-2`}
+              style={tw`text-lg text-green-500 font-bold text-primary dark:text-white mb-3 mt-2`}
             >
-              Filters{' '}
-              <Ionicons
-                name="filter"
-                size={16}
-                color={tw.color('gray-900 dark:gray-100')}
-                style={tw`ml-1`}
-              />
+              Filters <Ionicons name="filter" size={16} style={tw`ml-1`} />
             </Text>
           </TouchableOpacity>
         </View>
