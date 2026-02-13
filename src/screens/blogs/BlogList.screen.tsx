@@ -7,6 +7,8 @@ import {
   SafeAreaView,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
@@ -17,8 +19,10 @@ import Screen from 'components/screen'
 import { ImageBackground } from 'expo-image'
 import CategoryTabs from '../Communities/components/CategoryTabs'
 import { useFetchInterestsQuery, Interest } from '../../store/interests'
+import { FeedStackParams } from '../../../types'
 
 const BlogListScreen: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<FeedStackParams>>()
   const [searchQuery, setSearchQuery] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [selectedInterest, setSelectedInterest] = useState<Interest | null>(
@@ -74,9 +78,19 @@ const BlogListScreen: React.FC = () => {
     )
   }, [searchQuery])
 
-  const renderItem = useCallback(({ item }: { item: MockBlog }) => {
-    return <BlogCard blog={item} />
-  }, [])
+  const handleBlogPress = useCallback(
+    (blog: MockBlog) => {
+      navigation.navigate('BlogDetail', { blogId: blog.id })
+    },
+    [navigation]
+  )
+
+  const renderItem = useCallback(
+    ({ item }: { item: MockBlog }) => {
+      return <BlogCard blog={item} onPress={() => handleBlogPress(item)} />
+    },
+    [handleBlogPress]
+  )
 
   const handleInterestChange = (interest: Interest) => {
     setSelectedInterest(interest)
@@ -96,7 +110,7 @@ const BlogListScreen: React.FC = () => {
             />
           </View>
         )}
-        <FeaturedBlogList blogs={featuredBlogs} />
+        <FeaturedBlogList blogs={featuredBlogs} onBlogPress={handleBlogPress} />
 
         <View style={tw`flex flex-row justify-between items-center mt-4 `}>
           <Text

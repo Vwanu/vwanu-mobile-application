@@ -15,7 +15,7 @@ export const shouldHideTabBar = (route: any): boolean => {
   const routeName = getFocusedRouteNameFromRoute(route) ?? routes.TIMELINE
 
   // Hide tab bar on these screens
-  const hiddenTabBarScreens = ['Gallery', 'SinglePost', 'Message']
+  const hiddenTabBarScreens = ['Gallery', 'SinglePost', 'Message', 'BlogDetail']
 
   return hiddenTabBarScreens.includes(routeName)
 }
@@ -40,6 +40,7 @@ export const SCREEN_NAMES = {
   GALLERY: 'Gallery',
   SINGLE_POST: 'SinglePost',
   BLOGS: 'Blogs',
+  BLOG_DETAIL: 'BlogDetail',
 
   // Chat Stack
   CHAT: 'Chat',

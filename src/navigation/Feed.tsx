@@ -14,6 +14,7 @@ import TimelineScreen from '../screens/timeline/Timeline.screen'
 import ImageGallery from '../screens/timeline/ImageGallery.screen'
 import SinglePostScreen from '../screens/timeline/SinglePost.screen'
 import BlogListScreen from '../screens/blogs/BlogList.screen'
+import BlogDetailScreen from '../screens/blogs/BlogDetatails.screen.tsx'
 
 // Types
 import { FeedStackParams } from '../../types'
@@ -58,6 +59,14 @@ const FeedNavigator: React.FC = () => (
       component={BlogListScreen}
       options={{
         title: 'Blogs',
+      }}
+    />
+    <Stack.Screen
+      name={SCREEN_NAMES.BLOG_DETAIL}
+      component={BlogDetailScreen}
+      options={{
+        title: 'Blog Detail',
+        headerShown: false,
       }}
     />
   </Stack.Navigator>

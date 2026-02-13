@@ -5,6 +5,15 @@ export interface BlogInterest {
   name: string
 }
 
+export interface MockBlogComment {
+  id: string
+  blogId: string
+  author: User
+  text: string
+  amountOfLikes: number
+  createdAt: string
+}
+
 export interface MockBlog {
   id: string
   author: User
@@ -499,5 +508,203 @@ export const mockBlogs: MockBlog[] = [
     createdAt: '2025-12-21T14:00:00Z',
     publishedAt: '2025-12-22T10:00:00Z',
     updatedAt: '2025-12-22T10:00:00Z',
+  },
+]
+
+export const mockBlogComments: MockBlogComment[] = [
+  {
+    id: 'c1',
+    blogId: '1',
+    author: createAuthor(
+      '3',
+      'Sarah',
+      'Williams',
+      'https://i.pravatar.cc/150?img=5'
+    ),
+    text: 'This is exactly what I needed! Golden hour shots always felt so tricky, but your tips on camera settings are super helpful.',
+    amountOfLikes: 12,
+    createdAt: '2025-12-17T08:30:00Z',
+  },
+  {
+    id: 'c2',
+    blogId: '1',
+    author: createAuthor(
+      '6',
+      'James',
+      'Anderson',
+      'https://i.pravatar.cc/150?img=14'
+    ),
+    text: 'Great read! I would love to see a follow-up about blue hour photography as well.',
+    amountOfLikes: 8,
+    createdAt: '2025-12-17T14:20:00Z',
+  },
+  {
+    id: 'c3',
+    blogId: '2',
+    author: createAuthor(
+      '7',
+      'Olivia',
+      'Thompson',
+      'https://i.pravatar.cc/150?img=10'
+    ),
+    text: 'TypeScript with Node.js is a game changer. Thanks for sharing the project structure tips!',
+    amountOfLikes: 24,
+    createdAt: '2025-12-12T09:15:00Z',
+  },
+  {
+    id: 'c4',
+    blogId: '2',
+    author: createAuthor(
+      '14',
+      'Matthew',
+      'Lewis',
+      'https://i.pravatar.cc/150?img=21'
+    ),
+    text: 'Could you do a deep dive into the authentication middleware? That part was especially interesting.',
+    amountOfLikes: 15,
+    createdAt: '2025-12-13T11:00:00Z',
+  },
+  {
+    id: 'c5',
+    blogId: '2',
+    author: createAuthor(
+      '10',
+      'Daniel',
+      'Lee',
+      'https://i.pravatar.cc/150?img=17'
+    ),
+    text: 'Been using this approach for months and it scales beautifully. Highly recommend.',
+    amountOfLikes: 19,
+    createdAt: '2025-12-14T16:45:00Z',
+  },
+  {
+    id: 'c6',
+    blogId: '4',
+    author: createAuthor(
+      '11',
+      'Ava',
+      'White',
+      'https://i.pravatar.cc/150?img=18'
+    ),
+    text: 'The morning hydration tip alone changed my energy levels. Thank you for this!',
+    amountOfLikes: 45,
+    createdAt: '2025-12-07T07:30:00Z',
+  },
+  {
+    id: 'c7',
+    blogId: '4',
+    author: createAuthor(
+      '5',
+      'Jessica',
+      'Taylor',
+      'https://i.pravatar.cc/150?img=9'
+    ),
+    text: 'I started doing the 5-minute stretch routine and I already feel a difference after one week.',
+    amountOfLikes: 33,
+    createdAt: '2025-12-08T09:00:00Z',
+  },
+  {
+    id: 'c8',
+    blogId: '6',
+    author: createAuthor(
+      '13',
+      'Mia',
+      'Clark',
+      'https://i.pravatar.cc/150?img=20'
+    ),
+    text: 'Honesty like this is rare. The part about ignoring customer feedback really resonated with me.',
+    amountOfLikes: 67,
+    createdAt: '2025-12-01T10:30:00Z',
+  },
+  {
+    id: 'c9',
+    blogId: '6',
+    author: createAuthor(
+      '2',
+      'Michael',
+      'Chen',
+      'https://i.pravatar.cc/150?img=12'
+    ),
+    text: 'Every founder should read this. Failure teaches more than success ever will.',
+    amountOfLikes: 52,
+    createdAt: '2025-12-02T13:15:00Z',
+  },
+  {
+    id: 'c10',
+    blogId: '14',
+    author: createAuthor(
+      '19',
+      'Amelia',
+      'King',
+      'https://i.pravatar.cc/150?img=26'
+    ),
+    text: 'Best intro to ML I have read. You made neural networks actually make sense!',
+    amountOfLikes: 88,
+    createdAt: '2025-12-05T11:00:00Z',
+  },
+  {
+    id: 'c11',
+    blogId: '14',
+    author: createAuthor(
+      '7',
+      'Olivia',
+      'Thompson',
+      'https://i.pravatar.cc/150?img=10'
+    ),
+    text: 'Would love more content like this. Maybe a series covering each concept in depth?',
+    amountOfLikes: 41,
+    createdAt: '2025-12-06T15:30:00Z',
+  },
+  {
+    id: 'c12',
+    blogId: '3',
+    author: createAuthor(
+      '12',
+      'Christopher',
+      'Harris',
+      'https://i.pravatar.cc/150?img=19'
+    ),
+    text: 'As a fellow artist, I completely agree. The coffee cup sketch example was brilliant.',
+    amountOfLikes: 14,
+    createdAt: '2025-12-19T10:00:00Z',
+  },
+  {
+    id: 'c13',
+    blogId: '5',
+    author: createAuthor(
+      '11',
+      'Ava',
+      'White',
+      'https://i.pravatar.cc/150?img=18'
+    ),
+    text: 'I built my capsule wardrobe last year following similar advice. Best decision ever!',
+    amountOfLikes: 22,
+    createdAt: '2025-12-22T08:00:00Z',
+  },
+  {
+    id: 'c14',
+    blogId: '8',
+    author: createAuthor(
+      '5',
+      'Jessica',
+      'Taylor',
+      'https://i.pravatar.cc/150?img=9'
+    ),
+    text: 'Tried the ravioli recipe last weekend. My family loved it! Thanks for the detailed steps.',
+    amountOfLikes: 38,
+    createdAt: '2025-12-10T18:00:00Z',
+  },
+  {
+    id: 'c15',
+    blogId: '11',
+    author: createAuthor(
+      '4',
+      'David',
+      'Martinez',
+      'https://i.pravatar.cc/150?img=13'
+    ),
+    text: 'Five minutes a day is so achievable. This finally got me to start meditating consistently.',
+    amountOfLikes: 56,
+    createdAt: '2025-12-20T06:30:00Z',
   },
 ]
