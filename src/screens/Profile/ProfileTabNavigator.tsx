@@ -92,11 +92,11 @@ const ProfileTabNavigator: React.FC<ProfileTabNavigatorProps> = ({
             }
           />
           <Text
-            style={tw`text-sm mt-1 ${
+            style={tw`text-sm mt-1 font-poppins ${
               isSelected
                 ? isDarkMode
-                  ? 'text-blue-400'
-                  : 'text-blue-600'
+                  ? 'text-blue-400 font-poppins-semibold'
+                  : 'text-blue-600 font-poppins-semibold'
                 : isDarkMode
                 ? 'text-gray-400'
                 : 'text-gray-600'

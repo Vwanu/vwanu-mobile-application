@@ -4,6 +4,17 @@ module.exports = {
   important: '#root',
   theme: {
     extend: {
+      fontFamily: {
+        poppins: ['Poppins_400Regular'],
+        'poppins-bold': ['Poppins_700Bold'],
+        'poppins-semibold': ['Poppins_600SemiBold'],
+        'poppins-medium': ['Poppins_500Medium'],
+        'poppins-black': ['Poppins_900Black'],
+        inter: ['Inter_400Regular'],
+        'inter-medium': ['Inter_500Medium'],
+        'inter-semibold': ['Inter_600SemiBold'],
+        'inter-bold': ['Inter_700Bold'],
+      },
       colors: {
         danger: '#FF4200',
         success: '#39820F',
