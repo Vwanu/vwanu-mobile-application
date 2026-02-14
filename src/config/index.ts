@@ -16,6 +16,7 @@ export enum endpoints {
   COMMUNITY = '/commmunities',
   BANNER = '/banners',
   COMMENTS = 'comments',
+  BLOGS = '/blogs',
 }
 
 export const HttpMethods = {
