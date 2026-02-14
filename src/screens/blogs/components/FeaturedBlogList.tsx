@@ -3,19 +3,19 @@ import { View, FlatList } from 'react-native'
 
 import tw from 'lib/tailwind'
 import BlogCardFeatured from './BlogCardFeatured'
-import { MockBlog } from 'data/mockBlogs'
+import { Blog } from '../../../../types'
 
 interface FeaturedBlogListProps {
-  blogs: MockBlog[]
+  blogs: Blog[]
   title?: string
-  onBlogPress?: (blog: MockBlog) => void
+  onBlogPress?: (blog: Blog) => void
 }
 
 const FeaturedBlogList: React.FC<FeaturedBlogListProps> = ({
   blogs,
   onBlogPress,
 }) => {
-  const renderItem = ({ item }: { item: MockBlog }) => (
+  const renderItem = ({ item }: { item: Blog }) => (
     <BlogCardFeatured blog={item} onPress={() => onBlogPress?.(item)} />
   )
 

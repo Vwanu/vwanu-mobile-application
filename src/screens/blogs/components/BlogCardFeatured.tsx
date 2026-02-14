@@ -4,11 +4,11 @@ import { formatDate } from 'date-fns'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
-import { MockBlog } from 'data/mockBlogs'
+import { Blog } from '../../../../types'
 import ProfAvatar from 'components/ProfAvatar'
 
 interface BlogCardFeaturedProps {
-  blog: MockBlog
+  blog: Blog
   onPress?: () => void
   width?: number
   height?: number
