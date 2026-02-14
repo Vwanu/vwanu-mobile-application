@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, forwardRef } from 'react'
+import { TextStyle } from 'react-native'
 import { useFormikContext } from 'formik'
 
 import { P } from '../Input'
@@ -9,6 +10,7 @@ import { Input } from '@ui-kitten/components'
 
 interface Props extends FieldParams, P {
   onTextUpdate?: (text: string) => void
+  textStyle?: TextStyle
 }
 
 const FormField: React.FC<Props> = ({ name, onTextUpdate, ...otherProps }) => {

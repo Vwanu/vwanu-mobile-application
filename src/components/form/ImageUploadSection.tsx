@@ -9,9 +9,15 @@ import tw from 'lib/tailwind'
 
 interface Props {
   name: string
+  label?: string
+  helperText?: string
 }
 
-const ImageUploadSection: React.FC<Props> = ({ name }) => {
+const ImageUploadSection: React.FC<Props> = ({
+  name,
+  label = 'Community Image',
+  helperText,
+}) => {
   const [imageUri, setImageUri] = useState<string | null>(null)
   const { setFieldValue, values } = useFormikContext()
 
@@ -85,30 +91,26 @@ const ImageUploadSection: React.FC<Props> = ({ name }) => {
   }
 
   const showImageOptions = () => {
-    Alert.alert(
-      'Select Image',
-      'Choose how you want to add a community image',
-      [
-        {
-          text: 'Camera',
-          onPress: handleCamera,
-        },
-        {
-          text: 'Photo Library',
-          onPress: handleImagePicker,
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-      ]
-    )
+    Alert.alert('Select Image', `Choose how you want to add an image`, [
+      {
+        text: 'Camera',
+        onPress: handleCamera,
+      },
+      {
+        text: 'Photo Library',
+        onPress: handleImagePicker,
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+    ])
   }
 
   return (
     <View style={tw`bg-white px-4 py-6 border-b border-gray-100`}>
       <Text category="h6" style={tw`font-semibold text-lg mb-4`}>
-        Community Image
+        {label}
       </Text>
 
       <TouchableOpacity
@@ -143,10 +145,10 @@ const ImageUploadSection: React.FC<Props> = ({ name }) => {
                 <Ionicons name="camera-outline" size={32} color="#6B7280" />
               </View>
               <Text style={tw`text-gray-600 font-medium text-base mb-1`}>
-                Add Community Image
+                Add {label}
               </Text>
               <Text style={tw`text-gray-500 text-sm text-center`}>
-                Tap to upload a cover image for your community
+                {helperText || `Tap to upload a cover image`}
               </Text>
             </View>
           </View>

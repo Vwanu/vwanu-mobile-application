@@ -1,5 +1,5 @@
 import React from 'react'
-import { Formik, FormikValues, FormikHelpers } from 'formik'
+import { Formik, FormikValues, FormikHelpers, FormikProps } from 'formik'
 import { View, StyleProp, ViewStyle } from 'react-native'
 import { AnyObjectSchema, InferType } from 'yup'
 import { Layout } from '@ui-kitten/components'
@@ -15,6 +15,7 @@ interface FormProps<S extends AnyObjectSchema> {
   style?: StyleProp<ViewStyle>
   onValidationError?: (errors: any) => void
   enableDebug?: boolean
+  innerRef?: React.Ref<FormikProps<InferType<S>>>
 }
 
 // Use a generic function component instead of React.FC so we can pass <T extends FormikValues>
@@ -26,6 +27,7 @@ function Form<S extends AnyObjectSchema>({
   style,
   onValidationError,
   enableDebug = false,
+  innerRef,
 }: FormProps<S>) {
   const handleSubmit = async (
     values: InferType<S>,
@@ -79,6 +81,7 @@ function Form<S extends AnyObjectSchema>({
       validationSchema={validationSchema}
       validateOnChange={true}
       validateOnBlur={true}
+      innerRef={innerRef}
     >
       {({ errors, touched, values, isValid }) => {
         if (enableDebug) {

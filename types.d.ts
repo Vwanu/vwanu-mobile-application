@@ -111,6 +111,7 @@ export type FeedStackParams = Record<string, object | undefined> & {
   SinglePost: { postId: string; isCommenting?: boolean }
   Blogs: undefined
   BlogDetail: { blogId: string }
+  CreateBlog: undefined
 }
 
 export type ProfileStackParams = {
