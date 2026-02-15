@@ -6,17 +6,19 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import Screen from 'components/screen'
 import { FeedStackParams } from '../../../../types'
-import { mockBlogs } from 'data/mockBlogs'
 import Header from './Header'
 import Body from './Body'
 import useToggle from 'hooks/useToggle'
 import Comment from './Comment'
+import { useFetchBlogQuery } from 'store/blog-api-slice'
 
 type Props = StackScreenProps<FeedStackParams, 'BlogDetail'>
 
 const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { blogId } = route.params
-  const blog = mockBlogs.find((b) => b.id === blogId)
+
+  const { data: blog, isLoading, isFetching } = useFetchBlogQuery(blogId)
+
   const [content, showContent] = useToggle(true)
 
   if (!blog) {
@@ -30,7 +32,7 @@ const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }
 
   return (
-    <Screen safeArea={false}>
+    <Screen safeArea={false} loading={isLoading || isFetching}>
       <Header
         blog={blog}
         showContent={content}

@@ -58,7 +58,7 @@ const BlogCardFeatured: React.FC<BlogCardFeaturedProps> = ({
               {blog.title}
             </Text>
             <ProfAvatar
-              user={blog.author}
+              user={blog.user}
               size={36}
               subtitle={formatDate(blog.createdAt, 'PPP')}
               titleStyles={tw`text-white font-semibold text-sm`}

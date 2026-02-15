@@ -14,16 +14,17 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import BlogCard from './components/BlogCard'
 import FeaturedBlogList from './components/FeaturedBlogList'
-import { mockBlogs, MockBlog } from 'data/mockBlogs'
 import Screen from 'components/screen'
 import { ImageBackground } from 'expo-image'
 import CategoryTabs from '../Communities/components/CategoryTabs'
 import { useFetchInterestsQuery, Interest } from '../../store/interests'
 import { FeedStackParams } from '../../../types'
-
+import { useFetchBlogsQuery } from 'store/blog-api-slice'
+import { ActivityIndicator } from 'react-native-paper'
+import { Blog } from '../../../types'
 const BlogListScreen: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<FeedStackParams>>()
-  const [searchQuery, setSearchQuery] = useState('')
+
   const [refreshing, setRefreshing] = useState(false)
   const [selectedInterest, setSelectedInterest] = useState<Interest | null>(
     null
@@ -32,35 +33,15 @@ const BlogListScreen: React.FC = () => {
   const { data: interests, isLoading: interestsLoading } =
     useFetchInterestsQuery()
 
-  // Featured blogs (top 5 by likes)
-  const featuredBlogs = [...mockBlogs]
-    .sort((a, b) => b.amountOfLikes - a.amountOfLikes)
-    .slice(0, 5)
+  const {
+    data: blogsData,
+    isLoading: isBlogLoading,
+    isFetching: isBlogFetching,
+    error: blogError,
+    refetch,
+  } = useFetchBlogsQuery({})
 
-  // Filter blogs based on search query and selected interest
-  const filteredBlogs = useMemo(() => {
-    let blogs = mockBlogs
-
-    if (searchQuery) {
-      blogs = blogs.filter(
-        (blog) =>
-          blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          blog.author.firstName
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          blog.author.lastName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    return blogs
-  }, [searchQuery, selectedInterest])
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true)
-    // Simulate refresh delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setRefreshing(false)
-  }, [])
+  const blogs = blogsData?.data || []
 
   const renderEmpty = useCallback(() => {
     return (
@@ -72,21 +53,21 @@ const BlogListScreen: React.FC = () => {
           No blogs found
         </Text>
         <Text style={tw`text-sm text-gray-500 dark:text-gray-400 mt-2`}>
-          {searchQuery ? 'Try a different search' : 'Check back later'}
+          Check back later
         </Text>
       </View>
     )
-  }, [searchQuery])
+  }, [])
 
   const handleBlogPress = useCallback(
-    (blog: MockBlog) => {
+    (blog: Blog) => {
       navigation.navigate('BlogDetail', { blogId: blog.id })
     },
     [navigation]
   )
 
   const renderItem = useCallback(
-    ({ item }: { item: MockBlog }) => {
+    ({ item }: { item: Blog }) => {
       return <BlogCard blog={item} onPress={() => handleBlogPress(item)} />
     },
     [handleBlogPress]
@@ -95,40 +76,6 @@ const BlogListScreen: React.FC = () => {
   const handleInterestChange = (interest: Interest) => {
     setSelectedInterest(interest)
   }
-
-  const renderHeader = useCallback(() => {
-    if (searchQuery) return null // Hide featured when searching
-    return (
-      <View>
-        {interests && interests.length > 0 && (
-          <View style={tw``}>
-            <CategoryTabs
-              interests={interests}
-              selectedInterest={selectedInterest}
-              onInterestChange={handleInterestChange}
-              style={tw`bg-red-500`}
-            />
-          </View>
-        )}
-        <FeaturedBlogList blogs={featuredBlogs} onBlogPress={handleBlogPress} />
-
-        <View style={tw`flex flex-row justify-between items-center mt-4 `}>
-          <Text
-            style={tw`text-lg font-bold text-gray-900 dark:text-white mb-3 mt-2`}
-          >
-            Recent
-          </Text>
-          <TouchableOpacity>
-            <Text
-              style={tw`text-lg text-green-500 font-bold text-primary dark:text-white mb-3 mt-2`}
-            >
-              Filters <Ionicons name="filter" size={16} style={tw`ml-1`} />
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    )
-  }, [searchQuery, featuredBlogs, selectedInterest, handleInterestChange])
 
   return (
     <Screen safeArea={false}>
@@ -140,20 +87,31 @@ const BlogListScreen: React.FC = () => {
           }}
           style={tw`absolute top-0 left-0 right-0 h-[330px]`}
         />
-        <SafeAreaView style={tw`flex-1`}>
+        <SafeAreaView style={tw`flex-1 `}>
+          <View style={tw`pt-10`}>
+            <FeaturedBlogList onBlogPress={handleBlogPress} />
+          </View>
+          {interests?.length ? (
+            <CategoryTabs
+              interests={interests}
+              selectedInterest={selectedInterest}
+              onInterestChange={handleInterestChange}
+              style={tw`bg-red-500 mt-5`}
+            />
+          ) : (
+            <ActivityIndicator animating />
+          )}
           <FlatList
-            data={filteredBlogs}
+            data={blogs}
             renderItem={renderItem}
             keyExtractor={(item) => item.id}
-            ListHeaderComponent={renderHeader}
             ListEmptyComponent={renderEmpty}
             contentContainerStyle={tw`p-3 pb-34`}
             refreshControl={
               <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                tintColor="#3B82F6"
-                colors={['#3B82F6']}
+                refreshing={isBlogFetching}
+                onRefresh={refetch}
+                tintColor={tw.color('primary')}
               />
             }
             removeClippedSubviews={true}

@@ -48,10 +48,9 @@ export const blogApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Fetch paginated blog list
     fetchBlogs: builder.query<PaginatedResponse<Blog>, FetchBlogsParams>({
-      query: ({ page = 1, limit = 10, search, interestId, userId } = {}) => {
+      query: ({ limit = 10, search, interestId, userId } = {}) => {
         const params: Record<string, string> = {}
-        params.page = page.toString()
-        params.limit = limit.toString()
+        params['$limit'] = limit.toString()
 
         if (search && search.trim()) {
           params.search = search.trim()

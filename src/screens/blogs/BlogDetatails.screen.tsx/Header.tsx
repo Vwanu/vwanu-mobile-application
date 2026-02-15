@@ -3,6 +3,7 @@ import { View, TouchableOpacity } from 'react-native'
 import { ImageBackground } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { formatDate } from 'date-fns'
+import { Blog } from '../../../../types'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
@@ -10,10 +11,8 @@ import Text from 'components/Text'
 import ProfAvatar from 'components/ProfAvatar'
 import LikeForm from 'components/LikeForm'
 
-import { mockBlogs } from 'data/mockBlogs'
-
 interface Props {
-  blog: (typeof mockBlogs)[0]
+  blog: Blog
   showContent?: boolean
   onShowContent: () => void
 }
@@ -61,7 +60,7 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
       </ImageBackground>
       <View style={tw`p-4`}>
         <View style={tw`flex-row items-center justify-between mb-6 pb-4 `}>
-          <ProfAvatar user={blog.author} size={40} subtitle={formattedDate} />
+          <ProfAvatar user={blog.user} size={40} subtitle={formattedDate} />
           <TouchableOpacity onPress={() => onShowContent()}>
             <Ionicons
               name={`${showContent ? 'home-outline' : 'car'}`}

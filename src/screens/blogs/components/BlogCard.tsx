@@ -79,7 +79,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, onPress }) => {
               </Text>
 
               <Text style={tw`text-xs text-gray-500 dark:text-gray-400`}>
-                by {blog.author.firstName} {blog.author.lastName}
+                by {blog.user.firstName} {blog.user.lastName}
               </Text>
 
               <LikeForm

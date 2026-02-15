@@ -3,10 +3,10 @@ import { ScrollView } from 'react-native'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
-import { mockBlogs } from 'data/mockBlogs'
+import { Blog } from '../../../../types'
 
 type Props = {
-  blog: (typeof mockBlogs)[0]
+  blog: Blog
 }
 
 const BlogDetailScreen: React.FC<Props> = ({ blog }) => {

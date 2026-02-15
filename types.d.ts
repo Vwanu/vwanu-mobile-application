@@ -317,7 +317,7 @@ export interface BlogComment {
 
 export interface Blog {
   id: string
-  author: User
+  user: User
   title: string
   titlePicture: string
   content: string
