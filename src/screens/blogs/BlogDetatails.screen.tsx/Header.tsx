@@ -1,12 +1,14 @@
 import React from 'react'
-import { View, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity, Alert } from 'react-native'
 import { ImageBackground } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
+import { Popover } from '@ui-kitten/components'
 import { formatDate } from 'date-fns'
 import { Blog, FeedStackParams } from '../../../../types'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
+import Button from 'components/Button'
 
 import ProfAvatar from 'components/ProfAvatar'
 import LikeForm from 'components/LikeForm'
@@ -14,6 +16,8 @@ import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { RootState } from '../../../store'
+import useToggle from 'hooks/useToggle'
+import { useDeleteBlogMutation } from '../../../store/blog-api-slice'
 
 interface Props {
   blog: Blog
@@ -26,6 +30,32 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
   const navigation = useNavigation<NavigationProp<FeedStackParams>>()
   const { userId } = useSelector((state: RootState) => state.auth)
   const isOwner = userId === blog.user.id
+  const [menuVisible, toggleMenu] = useToggle(false)
+  const [deleteBlog] = useDeleteBlogMutation()
+
+  const handleDelete = () => {
+    toggleMenu()
+    Alert.alert('Delete Blog', 'Are you sure you want to delete this blog?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteBlog(blog.id).unwrap()
+            navigation.goBack()
+          } catch (error) {
+            Alert.alert('Error', 'Failed to delete blog. Please try again.')
+          }
+        },
+      },
+    ])
+  }
+
+  const handleEdit = () => {
+    toggleMenu()
+    navigation.navigate('CreateBlog', { blogId: blog.id })
+  }
 
   return (
     <View>
@@ -46,16 +76,43 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
             >
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
-            {/* Edit Button (owner only) */}
+            {/* Owner Menu */}
             {isOwner && (
-              <TouchableOpacity
-                style={tw`w-10 h-10 bg-black/50 rounded-full p-2`}
-                onPress={() =>
-                  navigation.navigate('CreateBlog', { blogId: blog.id })
-                }
+              <Popover
+                visible={menuVisible}
+                anchor={() => (
+                  <TouchableOpacity
+                    style={tw`w-10 h-10 bg-black/50 rounded-full p-2`}
+                    onPress={toggleMenu}
+                  >
+                    <Ionicons
+                      name="ellipsis-vertical"
+                      size={24}
+                      color="white"
+                    />
+                  </TouchableOpacity>
+                )}
+                onBackdropPress={toggleMenu}
+                backdropStyle={tw`bg-black/2`}
               >
-                <Ionicons name="create-outline" size={24} color="white" />
-              </TouchableOpacity>
+                <View style={tw`flex-col items-start rounded-md p-2`}>
+                  <Button
+                    title="Edit"
+                    accessoryLeft={<Ionicons name="create-outline" size={18} />}
+                    appearance="ghost"
+                    onPress={handleEdit}
+                  />
+                  <Button
+                    title="Delete"
+                    accessoryLeft={
+                      <Ionicons name="trash-outline" size={18} color="red" />
+                    }
+                    appearance="ghost"
+                    style={tw`text-red-500`}
+                    onPress={handleDelete}
+                  />
+                </View>
+              </Popover>
             )}
           </View>
           <View>
