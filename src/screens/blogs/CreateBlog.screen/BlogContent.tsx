@@ -27,10 +27,16 @@ const initialValues = {
 interface BlogContentProps {
   formRef?: React.Ref<FormikProps<typeof initialValues>>
   onSubmit: (values: typeof initialValues) => void
+  values?: typeof initialValues
 }
 
-const BlogContent: React.FC<BlogContentProps> = ({ formRef, onSubmit }) => {
+const BlogContent: React.FC<BlogContentProps> = ({
+  formRef,
+  onSubmit,
+  values,
+}) => {
   const editorRef = useRef<QuillEditor>(null)
+  const formInitialValues = values || initialValues
 
   return (
     <KeyboardAvoidingView
@@ -40,7 +46,7 @@ const BlogContent: React.FC<BlogContentProps> = ({ formRef, onSubmit }) => {
     >
       <Form
         validationSchema={ValidationSchema}
-        initialValues={initialValues}
+        initialValues={formInitialValues}
         style={tw`flex-1`}
         onSubmit={onSubmit}
         innerRef={formRef}
@@ -54,7 +60,12 @@ const BlogContent: React.FC<BlogContentProps> = ({ formRef, onSubmit }) => {
             autoFocus
             multiline
           />
-          <RichTextEditor name="content" required editorRef={editorRef} />
+          <RichTextEditor
+            name="content"
+            required
+            editorRef={editorRef}
+            initialValue={formInitialValues.content}
+          />
         </View>
         <RichToolBar editor={editorRef} />
       </Form>

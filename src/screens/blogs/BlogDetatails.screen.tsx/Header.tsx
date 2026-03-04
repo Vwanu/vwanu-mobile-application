@@ -3,17 +3,17 @@ import { View, TouchableOpacity } from 'react-native'
 import { ImageBackground } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { formatDate } from 'date-fns'
-import { Blog } from '../../../../types'
+import { Blog, FeedStackParams } from '../../../../types'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 
 import ProfAvatar from 'components/ProfAvatar'
 import LikeForm from 'components/LikeForm'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { useSelector } from 'react-redux'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { RootState } from '../../../../types'
+import { RootState } from '../../../store'
 
 interface Props {
   blog: Blog
@@ -23,7 +23,7 @@ interface Props {
 
 const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
   const formattedDate = formatDate(new Date(blog.publishedAt), 'MMMM dd, yyyy')
-  const navigation = useNavigation()
+  const navigation = useNavigation<NavigationProp<FeedStackParams>>()
   const { userId } = useSelector((state: RootState) => state.auth)
   const isOwner = userId === blog.user.id
 
@@ -50,7 +50,9 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
             {isOwner && (
               <TouchableOpacity
                 style={tw`w-10 h-10 bg-black/50 rounded-full p-2`}
-                onPress={() => {}}
+                onPress={() =>
+                  navigation.navigate('CreateBlog', { blogId: blog.id })
+                }
               >
                 <Ionicons name="create-outline" size={24} color="white" />
               </TouchableOpacity>

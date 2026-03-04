@@ -14,6 +14,7 @@ interface Props {
   placeholder?: string
   style?: StyleProp<ViewStyle>
   editorRef?: React.RefObject<QuillEditor>
+  initialValue?: string
 }
 
 const RichTextEditor: React.FC<Props> = ({
@@ -23,6 +24,7 @@ const RichTextEditor: React.FC<Props> = ({
   placeholder = '',
   style,
   editorRef: externalRef,
+  initialValue = '',
 }) => {
   const internalRef = useRef<QuillEditor>(null)
   const editorRef = externalRef || internalRef
@@ -68,6 +70,7 @@ const RichTextEditor: React.FC<Props> = ({
           }}
           onHtmlChange={handleHtmlChange}
           onBlur={handleBlur}
+          initialHtml={initialValue}
           autoSize
           theme={{
             background: '#ffffff',
