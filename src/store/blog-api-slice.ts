@@ -1,5 +1,6 @@
 import apiSlice from './api-slice'
 import { endpoints, HttpMethods } from '../config'
+import { AuthTokenService } from '../lib/authTokenService'
 import {
   Blog,
   BlogComment,
@@ -51,6 +52,7 @@ export const blogApiSlice = apiSlice.injectEndpoints({
       query: ({ limit = 10, search, interestId, userId } = {}) => {
         const params: Record<string, string> = {}
         params['$limit'] = limit.toString()
+        params['$sort[createdAt]'] = '-1'
 
         if (search && search.trim()) {
           params.search = search.trim()
@@ -101,16 +103,65 @@ export const blogApiSlice = apiSlice.injectEndpoints({
 
     // Create a new blog
     createBlog: builder.mutation<Blog, CreateBlogParams>({
-      query: (blogData) => {
-        const formData = _toFormData(blogData)
-        return {
-          url: endpoints.BLOGS,
-          method: HttpMethods.POST,
-          body: formData,
-          prepareHeaders: (headers: Headers) => {
-            headers.set('Content-Type', 'multipart/form-data')
-            return headers
-          },
+      async queryFn(blogData) {
+        try {
+          const formData = _toFormData(blogData)
+          const tokens = await AuthTokenService.getValidTokens()
+          const baseUrl = process.env.EXPO_PUBLIC_API_URL?.trim()
+          const appKey = process.env.EXPO_PUBLIC_APP_KEY
+
+          const headers: Record<string, string> = {}
+          if (tokens?.accessToken) {
+            headers['authorization'] = `Bearer ${tokens.accessToken}`
+          }
+          if (tokens?.idToken) {
+            headers['x-id-token'] = tokens.idToken
+          }
+          if (appKey) {
+            headers['x-app-key'] = appKey
+          }
+
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 30000)
+
+          console.log(
+            '📤 Sending blog POST to:',
+            `${baseUrl}${endpoints.BLOGS}`
+          )
+
+          const response = await fetch(`${baseUrl}${endpoints.BLOGS}`, {
+            method: 'POST',
+            headers,
+            body: formData,
+            signal: controller.signal,
+          })
+
+          clearTimeout(timeoutId)
+
+          console.log('📥 Blog POST response status:', response.status)
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            console.error('❌ Blog POST error body:', errorText)
+            return {
+              error: {
+                status: response.status,
+                data: errorText,
+              },
+            }
+          }
+
+          const data = await response.json()
+          console.log('✅ Blog created successfully:', data.id)
+          return { data: data as Blog }
+        } catch (err: any) {
+          console.error('❌ Blog POST exception:', err.name, err.message)
+          return {
+            error: {
+              status: 'FETCH_ERROR',
+              error: err.message || 'Failed to create blog',
+            },
+          }
         }
       },
       invalidatesTags: [{ type: 'Blog', id: 'LIST' }],

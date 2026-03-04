@@ -33,13 +33,7 @@ const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <Screen safeArea={false} loading={isLoading || isFetching}>
-      <Header
-        blog={blog}
-        showContent={content}
-        onShowContent={() => {
-          showContent()
-        }}
-      />
+      <Header blog={blog} showContent={content} onShowContent={showContent} />
       {content ? <Body blog={blog} /> : <Comment blogId={blogId} />}
     </Screen>
   )
