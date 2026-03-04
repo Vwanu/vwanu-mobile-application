@@ -98,7 +98,8 @@ const BlogListScreen: React.FC = () => {
               interests={interests}
               selectedInterest={selectedInterest}
               onInterestChange={handleInterestChange}
-              style={tw`bg-red-500 mt-5`}
+              onClear={() => setSelectedInterest(null)}
+              style={tw`mt-5`}
             />
           ) : (
             <ActivityIndicator animating />
