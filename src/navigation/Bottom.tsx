@@ -44,8 +44,12 @@ const BottomTabBar: React.FC<TabBarProps> = ({ navigation, state }) => {
   const handleTabPress = (index: number) => {
     const routeName = state.routeNames[index]
 
-    // If navigating to Account tab, reset profile parameters to show own profile
-    if (routeName === routes.ACCOUNT) {
+    // Always navigate to the root screen of each tab's stack
+    if (routeName === routes.TIMELINE) {
+      navigation.navigate(routeName, {
+        screen: SCREEN_NAMES.TIMELINE,
+      })
+    } else if (routeName === routes.ACCOUNT) {
       navigation.navigate(routeName, {
         screen: routes.PROFILE,
         params: { profileId: undefined },
