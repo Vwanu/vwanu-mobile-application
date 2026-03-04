@@ -324,7 +324,7 @@ export interface Blog {
   interests: Interest[]
   amountOfLikes: number
   createdAt: string
-  publishedAt: string
+  publishedAt: string | null
   updatedAt: string
 }
 
@@ -349,4 +349,5 @@ export interface UpdateBlogParams {
   content?: string
   titlePicture?: string
   interests?: string[]
+  publishedAt?: string | null
 }

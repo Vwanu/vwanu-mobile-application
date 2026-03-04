@@ -10,11 +10,19 @@ import {
   UpdateBlogParams,
 } from '../../types'
 
-const _toFormData = (values: Partial<CreateBlogParams>): FormData => {
+const _toFormData = (
+  values: Partial<CreateBlogParams & Pick<UpdateBlogParams, 'publishedAt'>>
+): FormData => {
   const formData = new FormData()
 
   if (values.title) formData.append('title', values.title)
   if (values.content) formData.append('content', values.content)
+  if ('publishedAt' in values) {
+    formData.append(
+      'publishedAt',
+      values.publishedAt === null ? '' : values.publishedAt!
+    )
+  }
 
   if (values.interests) {
     values.interests.forEach((interest) => {

@@ -17,7 +17,10 @@ import { useSelector } from 'react-redux'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { RootState } from '../../../store'
 import useToggle from 'hooks/useToggle'
-import { useDeleteBlogMutation } from '../../../store/blog-api-slice'
+import {
+  useDeleteBlogMutation,
+  useUpdateBlogMutation,
+} from '../../../store/blog-api-slice'
 
 interface Props {
   blog: Blog
@@ -26,12 +29,16 @@ interface Props {
 }
 
 const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
-  const formattedDate = formatDate(new Date(blog.publishedAt), 'MMMM dd, yyyy')
+  const formattedDate = blog.publishedAt
+    ? formatDate(new Date(blog.publishedAt), 'MMMM dd, yyyy')
+    : 'Draft'
   const navigation = useNavigation<NavigationProp<FeedStackParams>>()
   const { userId } = useSelector((state: RootState) => state.auth)
   const isOwner = userId === blog.user.id
   const [menuVisible, toggleMenu] = useToggle(false)
   const [deleteBlog] = useDeleteBlogMutation()
+  const [updateBlog] = useUpdateBlogMutation()
+  const isPublished = !!blog.publishedAt
 
   const handleDelete = () => {
     toggleMenu()
@@ -55,6 +62,36 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
   const handleEdit = () => {
     toggleMenu()
     navigation.navigate('CreateBlog', { blogId: blog.id })
+  }
+
+  const handleToggleDraft = () => {
+    toggleMenu()
+    const action = isPublished ? 'unpublish' : 'publish'
+    Alert.alert(
+      isPublished ? 'Set as Draft' : 'Publish Blog',
+      isPublished
+        ? 'This blog will be unpublished and saved as a draft.'
+        : 'This blog will be published and visible to everyone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: isPublished ? 'Set as Draft' : 'Publish',
+          onPress: async () => {
+            try {
+              await updateBlog({
+                id: blog.id,
+                publishedAt: isPublished ? null : new Date().toISOString(),
+              }).unwrap()
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                `Failed to ${action} blog. Please try again.`
+              )
+            }
+          },
+        },
+      ]
+    )
   }
 
   return (
@@ -101,6 +138,17 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
                     accessoryLeft={<Ionicons name="create-outline" size={18} />}
                     appearance="ghost"
                     onPress={handleEdit}
+                  />
+                  <Button
+                    title={isPublished ? 'Set as Draft' : 'Publish'}
+                    accessoryLeft={
+                      <Ionicons
+                        name={isPublished ? 'document-outline' : 'send-outline'}
+                        size={18}
+                      />
+                    }
+                    appearance="ghost"
+                    onPress={handleToggleDraft}
                   />
                   <Button
                     title="Delete"
