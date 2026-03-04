@@ -332,7 +332,7 @@ export interface FetchBlogsParams {
   page?: number
   limit?: number
   search?: string
-  interestId?: string
+  interestIds?: string[]
   userId?: string
 }
 

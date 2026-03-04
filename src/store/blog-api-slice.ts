@@ -57,7 +57,7 @@ export const blogApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // Fetch paginated blog list
     fetchBlogs: builder.query<PaginatedResponse<Blog>, FetchBlogsParams>({
-      query: ({ limit = 10, search, interestId, userId } = {}) => {
+      query: ({ limit = 10, search, interestIds, userId } = {}) => {
         const params: Record<string, string> = {}
         params['$limit'] = limit.toString()
         params['$sort[createdAt]'] = '-1'
@@ -65,8 +65,8 @@ export const blogApiSlice = apiSlice.injectEndpoints({
         if (search && search.trim()) {
           params.search = search.trim()
         }
-        if (interestId) {
-          params.interestId = interestId
+        if (interestIds?.length) {
+          params.interestIds = interestIds.join(',')
         }
         if (userId) {
           params.userId = userId

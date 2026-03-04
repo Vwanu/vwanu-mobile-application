@@ -39,7 +39,9 @@ const BlogListScreen: React.FC = () => {
     isFetching: isBlogFetching,
     error: blogError,
     refetch,
-  } = useFetchBlogsQuery({})
+  } = useFetchBlogsQuery({
+    interestIds: selectedInterest ? [selectedInterest.id] : [],
+  })
 
   const blogs = blogsData?.data || []
 
@@ -74,7 +76,7 @@ const BlogListScreen: React.FC = () => {
   )
 
   const handleInterestChange = (interest: Interest) => {
-    setSelectedInterest(interest)
+    setSelectedInterest((prev) => (prev?.id === interest.id ? null : interest))
   }
 
   return (
