@@ -32,6 +32,9 @@ enum routes {
   PRIVACY_TERMS = 'PRIVACY_TERMS',
   GUIDELINES = 'GUIDELINES',
   CREATE_COMMUNITY = 'CreateCommunity',
+  BLOGS = 'Blogs',
+  BLOG_DETAIL = 'BlogDetail',
+  CREATE_BLOG = 'CreateBlog',
 }
 
 export default routes
