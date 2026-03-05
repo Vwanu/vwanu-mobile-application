@@ -123,10 +123,19 @@ const BlogListScreen: React.FC = () => {
             windowSize={5}
           />
           <TouchableOpacity
-            style={tw`absolute bottom-6 right-4 w-14 h-14 bg-green-500 rounded-full items-center justify-center shadow-lg`}
+            style={[
+              tw`absolute bottom-6 right-6 bg-white rounded-full w-14 h-14 items-center justify-center`,
+              {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 8,
+              },
+            ]}
             onPress={() => navigation.navigate('CreateBlog')}
           >
-            <Ionicons name="add" size={28} color="#fff" />
+            <Ionicons name="add" size={28} color={tw.color('gray-200')} />
           </TouchableOpacity>
         </SafeAreaView>
       </View>
