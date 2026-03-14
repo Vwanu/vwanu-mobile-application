@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
   const profileId = route.params?.profileId || userId
 
   return (
-    <Screen safeArea={false}>
+    <Screen>
       <>
         {/* Profile Header */}
         <ProfileHeader profileId={profileId!} />

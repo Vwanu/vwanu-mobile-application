@@ -3,9 +3,13 @@
  * Main navigation between primary app sections
  */
 import React from 'react'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { BottomNavigation, BottomNavigationTab } from '@ui-kitten/components'
+
+import Home from 'assets/svg/Home'
+import Chat from 'assets/svg/Chat'
+import Profile from 'assets/svg/Profile'
+import Users from 'assets/svg/Users'
 
 // Configuration and utilities
 import { tabConfig } from './config/navigationConfig'
@@ -22,11 +26,9 @@ import FeedNavigator from './Feed'
 import AccountNavigator from './Account'
 import CommunityNavigator from './Community'
 import ChatNavigator from './Chat'
+import { BottomTabParams } from '../../types'
 
-// Types
-import { BottomTabParms } from '../../types'
-
-const Tab = createBottomTabNavigator<BottomTabParms>()
+const Tab = createBottomTabNavigator<BottomTabParams>()
 
 /**
  * Custom Bottom Tab Bar Component
@@ -39,13 +41,20 @@ interface TabBarProps {
 
 const BottomTabBar: React.FC<TabBarProps> = ({ navigation, state }) => {
   const { isDarkMode } = useTheme()
-  const iconColor = isDarkMode ? 'white' : tw.color('text-primary')
+  const activeColor = isDarkMode ? 'white' : tw.color('text-primary')
+  const inactiveColor = isDarkMode
+    ? tw.color('text-secondary')
+    : tw.color('text-black')
 
   const handleTabPress = (index: number) => {
     const routeName = state.routeNames[index]
 
-    // If navigating to Account tab, reset profile parameters to show own profile
-    if (routeName === routes.ACCOUNT) {
+    // Always navigate to the root screen of each tab's stack
+    if (routeName === routes.TIMELINE) {
+      navigation.navigate(routeName, {
+        screen: SCREEN_NAMES.TIMELINE,
+      })
+    } else if (routeName === routes.ACCOUNT) {
       navigation.navigate(routeName, {
         screen: routes.PROFILE,
         params: { profileId: undefined },
@@ -59,39 +68,42 @@ const BottomTabBar: React.FC<TabBarProps> = ({ navigation, state }) => {
       navigation.navigate(routeName)
     }
   }
-
   return (
-    <BottomNavigation selectedIndex={state.index} onSelect={handleTabPress}>
+    <BottomNavigation
+      selectedIndex={state.index}
+      onSelect={handleTabPress}
+      indicatorStyle={{ display: 'none' }}
+    >
       <BottomNavigationTab
-        title={routes.TIMELINE}
         icon={
-          <MaterialCommunityIcons
-            name="swap-horizontal"
-            size={20}
-            color={iconColor}
+          <Home
+            stroke={state.index === 0}
+            fill={state.index === 0 ? activeColor : inactiveColor}
           />
         }
       />
       <BottomNavigationTab
-        title={routes.ACCOUNT}
         icon={
-          <MaterialCommunityIcons name="account" size={20} color={iconColor} />
-        }
-      />
-      <BottomNavigationTab
-        title={routes.COMMUNITY}
-        icon={
-          <MaterialCommunityIcons
-            name="account-group"
-            size={20}
-            color={iconColor}
+          <Profile
+            stroke={state.index === 1}
+            fill={state.index === 1 ? activeColor : inactiveColor}
           />
         }
       />
       <BottomNavigationTab
-        title={routes.INBOX}
         icon={
-          <MaterialCommunityIcons name="chat" size={20} color={iconColor} />
+          <Users
+            fill={state.index === 2 ? activeColor : inactiveColor}
+            stroke={state.index === 2}
+          />
+        }
+      />
+      <BottomNavigationTab
+        icon={
+          <Chat
+            fill={state.index === 3 ? activeColor : inactiveColor}
+            stroke={state.index === 3}
+          />
         }
       />
     </BottomNavigation>

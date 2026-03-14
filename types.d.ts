@@ -2,6 +2,7 @@ import routes from './src/navigation/routes'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { SerializedError } from '@reduxjs/toolkit'
 import { NavigatorScreenParams } from '@react-navigation/native'
+import { Interest } from 'store/interests'
 
 // Import generated types from backend API
 export * from './src/types/generatedTypes'
@@ -109,6 +110,9 @@ export type FeedStackParams = Record<string, object | undefined> & {
   Comment: PostProps
   Gallery: PostProps & { initialSlide?: number }
   SinglePost: { postId: string; isCommenting?: boolean }
+  Blogs: undefined
+  BlogDetail: { blogId: string }
+  CreateBlog: { blogId?: string } | undefined
 }
 
 export type ProfileStackParams = {
@@ -137,7 +141,7 @@ export type ChatStackParams = {
   Message: { conversationId: string; user?: Partial<User> }
 }
 
-export type BottomTabParms = {
+export type BottomTabParams = {
   [routes.TIMELINE]: undefined
   [routes.ACCOUNT]: NavigatorScreenParams<ProfileStackParams> | undefined
   [routes.INBOX]: NavigatorScreenParams<ChatStackParams> | undefined
@@ -296,7 +300,60 @@ export interface SendFriendRequestParams {
   targetId: string
 }
 
+export interface SVGProps {
+  width?: number | string
+  height?: number | string
+  fill?: string
+  stroke?: boolean
+}
 export interface RespondToFriendRequestParams {
   requestId: string
   action: 'accept' | 'decline'
+}
+
+// Blog Types
+export interface BlogComment {
+  id: string
+  blogId: string
+  author: User
+  text: string
+  amountOfLikes: number
+  createdAt: string
+}
+
+export interface Blog {
+  id: string
+  user: User
+  title: string
+  titlePicture: string
+  content: string
+  interests: Interest[]
+  amountOfLikes: number
+  createdAt: string
+  publishedAt: string | null
+  updatedAt: string
+}
+
+export interface FetchBlogsParams {
+  page?: number
+  limit?: number
+  search?: string
+  interestIds?: string[]
+  userId?: string
+}
+
+export interface CreateBlogParams {
+  title: string
+  content: string
+  titlePicture?: string
+  interests: string[]
+}
+
+export interface UpdateBlogParams {
+  id: string
+  title?: string
+  content?: string
+  titlePicture?: string
+  interests?: string[]
+  publishedAt?: string | null
 }
