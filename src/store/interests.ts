@@ -4,6 +4,8 @@ import { endpoints, HttpMethods } from '../config'
 export interface Interest {
   id: string
   name: string
+  coverPicture?: string
+  description?: string
 }
 
 const interests = apiSlice.injectEndpoints({

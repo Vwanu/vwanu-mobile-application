@@ -35,6 +35,7 @@ enum routes {
   BLOGS = 'Blogs',
   BLOG_DETAIL = 'BlogDetail',
   CREATE_BLOG = 'CreateBlog',
+  FORUM_DETAIL = 'ForumDetail',
 }
 
 export default routes

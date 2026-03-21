@@ -21,6 +21,7 @@ export const shouldHideTabBar = (route: any): boolean => {
     'Message',
     'BlogDetail',
     'CreateBlog',
+    'ForumDetail',
   ]
 
   return hiddenTabBarScreens.includes(routeName)
@@ -48,6 +49,7 @@ export const SCREEN_NAMES = {
   BLOGS: 'Blogs',
   BLOG_DETAIL: 'BlogDetail',
   CREATE_BLOG: 'CreateBlog',
+  FORUM_DETAIL: 'ForumDetail',
 
   // Chat Stack
   CHAT: 'Chat',
