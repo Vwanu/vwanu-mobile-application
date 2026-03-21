@@ -16,6 +16,7 @@ import LikerPopover from './LikersPopOver'
 import { abbreviateNumber } from '../lib/numberFormat'
 import LikeForm from './LikeForm'
 import { useTheme } from '../hooks/useTheme'
+import { useToggleKoreMutation } from 'store/post'
 
 interface Props extends PostProps {
   showViewComment?: boolean
@@ -31,6 +32,13 @@ interface PostFooterProps extends Props {
 
 const PostFooter: React.FC<PostFooterProps> = (props) => {
   const navigation = useNavigation()
+  const [toggleKore] = useToggleKoreMutation()
+  const handleLike = useCallback(
+    async (id: string) => {
+      await toggleKore(id).unwrap()
+    },
+    [toggleKore]
+  )
   const moreReactors = props.isReactor
     ? (props.amountOfKorems ?? 0) - 1
     : (props.amountOfKorems ?? 0) - (props.reactors?.length - 2 || 0)
@@ -147,9 +155,10 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
           <LikeForm
             id={props.id.toString()}
             isReactor={!!props.isReactor}
-            amountOfKorems={+props.amountOfKorems}
-            koreHeight={18}
+            likersCount={+props.amountOfKorems}
+            size={18}
             flexDir="column"
+            onLike={handleLike}
           />
         </View>
         <View style={tw`items-center`}>
