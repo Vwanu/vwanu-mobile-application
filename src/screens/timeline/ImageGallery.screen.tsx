@@ -21,6 +21,7 @@ import { FeedStackParams } from '../../../types'
 
 import { setTabBarVisibility } from 'store/ui-slice'
 import { useDispatch } from 'react-redux'
+import { useToggleKoreMutation } from 'store/post'
 
 const IMG_SIZE = 80
 const SPACING = 10
@@ -32,6 +33,10 @@ const ImageGallery: React.FC = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const route = useRoute<GalleryScreenRouteProp>()
+  const [toggleKore] = useToggleKoreMutation()
+  const handleLike = async (id: string) => {
+    await toggleKore(id).unwrap()
+  }
   const images = route.params?.media || []
 
   const [activeIndex, setActiveIndex] = React.useState(
@@ -227,15 +232,16 @@ const ImageGallery: React.FC = () => {
             <LikeForm
               id={route.params.id.toString()}
               isReactor={route.params.isReactor || false}
-              amountOfKorems={route.params.amountOfKorems}
-              koreHeight={20}
+              likersCount={route.params.amountOfKorems}
+              size={20}
               flexDir="row"
+              onLike={handleLike}
             />
           </View>
 
           <TouchableOpacity
             onPress={handleOpenComments}
-            style={tw`bg-white bg-opacity-50 items-center justify-center 
+            style={tw`bg-white bg-opacity-50 items-center justify-center
             rounded-full w-10 h-10`}
           >
             <Ionicons

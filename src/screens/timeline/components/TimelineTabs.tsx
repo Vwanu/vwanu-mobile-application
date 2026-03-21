@@ -27,6 +27,11 @@ const TimelineTabs: React.FC<TimelineTabsProps> = ({
       label: 'Blogs', // For accessibility, though not displayed
       icon: activeTab === 'blogs' ? 'newspaper' : 'newspaper-outline',
     },
+    {
+      id: 'forums',
+      label: 'Forums',
+      icon: activeTab === 'forums' ? 'chatbubbles' : 'chatbubbles-outline',
+    },
   ]
 
   return (
