@@ -14,7 +14,10 @@ import LikeForm from 'components/LikeForm'
 import {
   useLazyFetchDiscussionRepliesQuery,
   useToggleDiscussionLikeMutation,
+  useLazyFetchDiscussionLikersQuery,
 } from 'store/discussion-api-slice'
+import LikerPopover from 'components/LikersPopOver'
+import useToggle from 'hooks/useToggle'
 
 interface DiscussionCardProps {
   discussion: Discussion
@@ -24,9 +27,12 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
   const [showReplyInput, setShowReplyInput] = useState(false)
   const date = formatDate(new Date(discussion.createdAt), 'MMM dd, yyyy')
   const replyCount = discussion.amountOfReplies
+  const [isShowLikers, toggleShowLikers] = useToggle(false)
 
   const [fetchReplies, { data: repliesData, isFetching: isLoadingReplies }] =
     useLazyFetchDiscussionRepliesQuery()
+  const [fetchLikers, { data: likersData, isFetching: isFetchingLikers }] =
+    useLazyFetchDiscussionLikersQuery()
   const [toggleDiscussionLike] = useToggleDiscussionLikeMutation()
 
   const handleLike = async (_id: string) => {
@@ -76,7 +82,28 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
           flexDir="row"
           size={15}
           onLike={handleLike}
+          onToggleLikers={() => {
+            toggleShowLikers()
+            fetchLikers({
+              interestId: discussion.interestId,
+              discussionId: discussion.id,
+            })
+          }}
         />
+        {isShowLikers && (
+          <LikerPopover
+            visible={isShowLikers}
+            onDismiss={toggleShowLikers}
+            likers={likersData?.data || []}
+            isFetching={isFetchingLikers}
+            onRefetch={() => {
+              fetchLikers({
+                interestId: discussion.interestId,
+                discussionId: discussion.id,
+              })
+            }}
+          />
+        )}
         {replyCount > 0 && (
           <TouchableOpacity
             style={tw`flex-row items-center`}

@@ -16,26 +16,21 @@ import { ActivityIndicator } from 'react-native-paper'
 import { formatDistanceToNow } from 'date-fns'
 
 interface LikerPopoverProps {
-  id: string
   visible: boolean
   onDismiss: () => void
-  fetchLikers: ({ skip }: { skip?: boolean }) => {
-    data: Array<{ User: User; createdAt: Date }>
-    isFetching: boolean
-    refetch: () => void
-  }
+  likers: Array<{ User: User; createdAt: Date }>
+  isFetching: boolean
+  onRefetch: () => void
 }
 
 const { width } = Dimensions.get('screen')
 const LikerPopover: React.FC<LikerPopoverProps> = ({
   visible,
   onDismiss,
-  fetchLikers,
-  ...props
+  likers,
+  isFetching,
+  onRefetch,
 }) => {
-  const { data, isFetching, refetch } = fetchLikers({ skip: !visible })
-
-  console.log('💔💔LikerPopover data:', data, 'isFetching:', isFetching)
   return (
     <Popover
       visible={visible}
@@ -55,16 +50,20 @@ const LikerPopover: React.FC<LikerPopoverProps> = ({
         ) : (
           <FlatList
             refreshing={isFetching}
-            onRefresh={refetch}
-            data={data || []}
+            onRefresh={onRefetch}
+            data={likers || []}
             renderItem={({ item }) => (
               <>
-                <ProfAvatar user={item.User as User} size={25} />
-                <Text category="c1" appearance="hint">
-                  {formatDistanceToNow(new Date(item.createdAt as Date), {
-                    addSuffix: true,
-                  })}
-                </Text>
+                <ProfAvatar
+                  user={item.User as User}
+                  size={25}
+                  subtitle={formatDistanceToNow(
+                    new Date(item.createdAt as Date),
+                    {
+                      addSuffix: true,
+                    }
+                  )}
+                />
               </>
             )}
             keyExtractor={(_, index) => index.toString()}

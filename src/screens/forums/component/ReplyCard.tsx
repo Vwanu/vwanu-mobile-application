@@ -7,12 +7,22 @@ import Text from 'components/Text'
 import LikeForm from 'components/LikeForm'
 import ProfAvatar from 'components/ProfAvatar'
 import { Discussion } from '../../../../types'
-import { useToggleDiscussionLikeMutation } from 'store/discussion-api-slice'
+import {
+  useLazyFetchDiscussionLikersQuery,
+  useToggleDiscussionLikeMutation,
+} from 'store/discussion-api-slice'
+import useToggle from 'hooks/useToggle'
+import LikerPopover from 'components/LikersPopOver'
 
 const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
+  const [isShowLikers, toggleShowLikers] = useToggle(false)
   const date = formatDate(new Date(reply.createdAt), 'MMM dd, yyyy')
 
   const [toggleDiscussionLike] = useToggleDiscussionLikeMutation()
+
+  const [fetchLikers, { data: likersData, isFetching: isFetchingLikers }] =
+    useLazyFetchDiscussionLikersQuery()
+
   const handleLike = async (_id: string) => {
     await toggleDiscussionLike({
       interestId: reply.interestId,
@@ -36,7 +46,29 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
         flexDir="row"
         size={15}
         onLike={handleLike}
+        onToggleLikers={() => {
+          toggleShowLikers()
+          fetchLikers({
+            interestId: reply.interestId,
+            discussionId: reply.id,
+          })
+        }}
       />
+
+      {isShowLikers && (
+        <LikerPopover
+          visible={isShowLikers}
+          onDismiss={toggleShowLikers}
+          likers={likersData?.data || []}
+          isFetching={isFetchingLikers}
+          onRefetch={() => {
+            fetchLikers({
+              interestId: reply.interestId,
+              discussionId: reply.id,
+            })
+          }}
+        />
+      )}
     </View>
   )
   {

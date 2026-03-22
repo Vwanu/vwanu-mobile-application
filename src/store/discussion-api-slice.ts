@@ -53,6 +53,23 @@ export const discussionApiSlice = apiSlice.injectEndpoints({
       ],
     }),
 
+    fetchDiscussionLikers: builder.query<
+      PaginatedResponse<{ User: User; createdAt: Date }>,
+      { interestId: string; discussionId: string }
+    >({
+      query: ({ interestId, discussionId }) => ({
+        url: discussionKoremUrl(interestId),
+        params: {
+          '$sort[createdAt]': '-1',
+          discussionId,
+          entityType: 'Discussion',
+        },
+      }),
+      providesTags: (_result, _error, { discussionId }) => [
+        { type: 'Discussion', id: `LIKERS-${discussionId}` },
+      ],
+    }),
+
     // Fetch replies for a specific discussion (where parentId = discussionId)
     fetchDiscussionReplies: builder.query<
       PaginatedResponse<Discussion>,
@@ -155,4 +172,5 @@ export const {
   useReplyToDiscussionMutation,
   useToggleDiscussionLikeMutation,
   useToggleReplyLikeMutation,
+  useLazyFetchDiscussionLikersQuery,
 } = discussionApiSlice

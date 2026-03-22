@@ -16,7 +16,7 @@ import LikerPopover from './LikersPopOver'
 import { abbreviateNumber } from '../lib/numberFormat'
 import LikeForm from './LikeForm'
 import { useTheme } from '../hooks/useTheme'
-import { useToggleKoreMutation } from 'store/post'
+import { useToggleKoreMutation, useFetchLikesQuery } from 'store/post'
 
 interface Props extends PostProps {
   showViewComment?: boolean
@@ -39,6 +39,10 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
     },
     [toggleKore]
   )
+  const likesQuery = useFetchLikesQuery(props.id.toString(), {
+    skip: !props.seeLikers,
+  })
+  const fetchLikers = useCallback(() => likesQuery, [likesQuery])
   const moreReactors = props.isReactor
     ? (props.amountOfKorems ?? 0) - 1
     : (props.amountOfKorems ?? 0) - (props.reactors?.length - 2 || 0)
@@ -98,6 +102,7 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
                   id={props.id.toString()}
                   visible={props.seeLikers}
                   onDismiss={props.toggleLikerPopover}
+                  fetchLikers={fetchLikers}
                 />
               </>
             )}
