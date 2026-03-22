@@ -8,7 +8,6 @@ import React from 'react'
 import { TouchableOpacity, View, Dimensions, FlatList } from 'react-native'
 import { Popover } from '@ui-kitten/components'
 
-import Text from './Text'
 import tw from '../lib/tailwind'
 import Separator from './Separator'
 import ProfAvatar from './ProfAvatar'
@@ -34,17 +33,12 @@ const LikerPopover: React.FC<LikerPopoverProps> = ({
   return (
     <Popover
       visible={visible}
-      anchor={() => {
-        return (
-          <TouchableOpacity onPress={onDismiss}>
-            <Text style={tw`text-primary font-thin`}>others</Text>
-          </TouchableOpacity>
-        )
-      }}
+      anchor={() => <TouchableOpacity onPress={onDismiss} />}
+      placement="bottom"
       onBackdropPress={onDismiss}
       backdropStyle={tw`bg-black bg-opacity-50`}
     >
-      <View style={[tw` p-2`, { width: width / 2 }]}>
+      <View style={[tw`p-2`, { width: width / 2 }]}>
         {isFetching ? (
           <ActivityIndicator animating={true} />
         ) : (
