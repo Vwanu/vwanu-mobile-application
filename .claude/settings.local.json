@@ -6,7 +6,8 @@
       "mcp__linear-server__create_issue",
       "mcp__linear-server__update_issue",
       "mcp__ide__getDiagnostics",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git status:*)"
     ],
     "deny": [],
     "ask": []
