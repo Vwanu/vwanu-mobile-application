@@ -10,6 +10,7 @@ import { PostProps } from '../../types'
 import LikeForm from './LikeForm'
 import { useTheme } from 'hooks/useTheme'
 import routes from '../navigation/routes'
+import { useToggleKoreMutation } from 'store/post'
 
 interface CommentProps {
   comment: PostProps
@@ -18,6 +19,10 @@ interface CommentProps {
 const Comment: React.FC<CommentProps> = ({ comment }) => {
   const { isDarkMode } = useTheme()
   const navigation = useNavigation()
+  const [toggleKore] = useToggleKoreMutation()
+  const handleLike = async (id: string) => {
+    await toggleKore(id).unwrap()
+  }
 
   const handleProfileNavigation = (userId: string | number) => {
     console.log('Navigating to profile for user:', userId)
@@ -56,9 +61,10 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
         <LikeForm
           id={comment.id.toString()}
           isReactor={!!comment.isReactor}
-          amountOfKorems={comment.amountOfKorems}
-          koreHeight={16}
+          likersCount={comment.amountOfKorems}
+          size={16}
           flexDir="row"
+          onLike={handleLike}
         />
       </View>
     </View>

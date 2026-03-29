@@ -1,102 +1,107 @@
-import React from 'react'
-import { string, object } from 'yup'
-import { View, TouchableOpacity } from 'react-native'
+import React, { useCallback, useRef } from 'react'
+import { View, TouchableOpacity, Pressable } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated'
 
 import tw from 'lib/tailwind'
 import Text from './Text'
-import { Form, Submit } from './form'
-import { useToggleKoreMutation } from 'store/post'
 import { abbreviateNumber } from '../lib/numberFormat'
-import LikerPopover from './LikersPopOver'
 import useToggle from '../hooks/useToggle'
-import Kore from '../assets/svg/Kore'
 import { useTheme } from 'hooks/useTheme'
 
-interface PostInputModalInterface {
+interface LikeFormProps {
   id: string
   isReactor: boolean
-  amountOfKorems: number
-  koreHeight: number
+  likersCount: number
+  size: number
   flexDir: 'row' | 'column'
+  onLike: (id: string) => Promise<void>
+  onToggleLikers?: () => void
 }
 
-const ValidationSchema = object().shape({
-  id: string().label('Content'),
-})
-
-const PostInputModal: React.FC<PostInputModalInterface> = ({
+const LikeForm: React.FC<LikeFormProps> = ({
   id,
   flexDir,
-  koreHeight,
-  amountOfKorems,
+  size,
+  likersCount,
   isReactor,
+  onLike,
+  onToggleLikers,
 }) => {
-  const [toggleKore, { isLoading }] = useToggleKoreMutation()
-  const [showLikers, toggleLikers] = useToggle(false)
+  const isLoadingRef = useRef(false)
   const { isDarkMode } = useTheme()
+  const scale = useSharedValue(1)
 
-  const handleSubmit = async () => {
-    await toggleKore(id)
-  }
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }))
 
-  const handleLongPress = () => {
-    toggleLikers()
-  }
+  const handlePress = useCallback(async () => {
+    if (isLoadingRef.current) return
+    isLoadingRef.current = true
 
-  const LikeCount = () => (
-    <TouchableOpacity onLongPress={handleLongPress}>
-      <Text
-        category="c1"
-        appearance="hint"
-        style={tw`${
-          isDarkMode ? 'text-white' : 'text-black'
-        } text-sm font-thin ${flexDir === 'row' ? '-mr' : ''}`}
-      >
-        {abbreviateNumber(amountOfKorems)}
-      </Text>
-    </TouchableOpacity>
-  )
-
-  if (isReactor) {
-    return (
-      <View style={tw`flex-${flexDir} -gap-1 items-center`}>
-        <LikeCount />
-        <View style={tw`opacity-80`}>
-          <Kore width={koreHeight} height={koreHeight} />
-        </View>
-        {amountOfKorems > 0 && showLikers && (
-          <LikerPopover id={id} visible={showLikers} onDismiss={toggleLikers} />
-        )}
-      </View>
+    // Trigger heartbeat animation
+    scale.value = withSequence(
+      withSpring(1.5, { damping: 4, stiffness: 300 }),
+      withSpring(1, { damping: 6, stiffness: 200 })
     )
-  }
+
+    try {
+      await onLike(id)
+    } finally {
+      isLoadingRef.current = false
+    }
+  }, [id, onLike, scale])
 
   return (
     <View
-      style={tw`flex-${flexDir} ${
-        flexDir === 'row' ? 'gap-1' : '-gap-1'
-      } items-center`}
+      style={tw`flex-${
+        flexDir === 'row' ? 'row-reverse ' : 'column -gap-1'
+      }  items-center`}
     >
-      <LikeCount />
-      <Form
-        validationSchema={ValidationSchema}
-        initialValues={{ id }}
-        onSubmit={handleSubmit}
-        style={tw`-m-1`}
+      <TouchableOpacity
+        disabled={likersCount === 0 || !onToggleLikers}
+        onLongPress={() => {
+          onToggleLikers?.()
+        }}
       >
-        <Submit
-          disabled={isLoading}
-          appearance="ghost"
-          accessoryRight={() => <Kore width={koreHeight} height={koreHeight} />}
-          size="small"
-          style={tw`-m-1 -p-1`}
-        />
-      </Form>
-      {showLikers && amountOfKorems > 0 && (
-        <LikerPopover id={id} visible={showLikers} onDismiss={toggleLikers} />
-      )}
+        {likersCount > 0 ? (
+          <Text
+            style={[
+              tw`text-primary ml-1 ${isDarkMode ? 'text-gray-300' : ''}`,
+              { fontSize: size ? size * 0.9 : 12 },
+            ]}
+          >
+            {abbreviateNumber(likersCount)}{' '}
+            {flexDir === 'row' ? (likersCount === 1 ? 'kore' : 'kores') : ''}
+          </Text>
+        ) : (
+          <Text
+            style={[
+              tw`text-primary ml-1`,
+              { fontSize: size ? size * 0.9 : 12 },
+            ]}
+          >
+            {' '}
+          </Text>
+        )}
+      </TouchableOpacity>
+      <Pressable onPress={handlePress}>
+        <Animated.View style={animatedStyle}>
+          <Ionicons
+            name={isReactor ? 'heart' : 'heart-outline'}
+            size={size || 20}
+            color={isReactor ? tw.color('secondary') : tw.color('gray-400')}
+          />
+        </Animated.View>
+      </Pressable>
     </View>
   )
 }
 
-export default PostInputModal
+export default LikeForm

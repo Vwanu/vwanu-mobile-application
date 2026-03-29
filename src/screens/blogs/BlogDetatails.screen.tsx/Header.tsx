@@ -20,6 +20,7 @@ import useToggle from 'hooks/useToggle'
 import {
   useDeleteBlogMutation,
   useUpdateBlogMutation,
+  useToggleBlogLikeMutation,
 } from '../../../store/blog-api-slice'
 
 interface Props {
@@ -29,6 +30,10 @@ interface Props {
 }
 
 const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
+  const [toggleBlogLike] = useToggleBlogLikeMutation()
+  const handleLike = async (id: string) => {
+    await toggleBlogLike(id).unwrap()
+  }
   const formattedDate = blog.publishedAt
     ? formatDate(new Date(blog.publishedAt), 'MMMM dd, yyyy')
     : 'Draft'
@@ -195,10 +200,11 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
           </TouchableOpacity>
           <LikeForm
             id={blog.id}
-            amountOfKorems={blog.amountOfLikes}
+            likersCount={blog.amountOfLikes}
             isReactor={false}
-            koreHeight={28}
+            size={28}
             flexDir="row"
+            onLike={handleLike}
           />
         </View>
       </View>
