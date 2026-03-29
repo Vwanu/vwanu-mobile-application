@@ -37,6 +37,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
 }) => {
   const editorRef = useRef<QuillEditor>(null)
   const formInitialValues = values || initialValues
+  const [contentFocused, setContentFocused] = React.useState(false)
 
   return (
     <KeyboardAvoidingView
@@ -52,22 +53,26 @@ const BlogContent: React.FC<BlogContentProps> = ({
         innerRef={formRef}
       >
         <View style={tw`flex-1`}>
-          <Field
-            name="title"
-            style={tw`bg-white border-0`}
-            textStyle={tw`text-3xl font-bold`}
-            required
-            autoFocus
-            multiline
-          />
+          <View style={tw`border border-t-0 border-r-0 border-b-gray-300`}>
+            <Field
+              name="title"
+              placeholder="Title"
+              style={tw`bg-white border-0`}
+              textStyle={tw`text-3xl font-bold`}
+              required
+              autoFocus
+              multiline
+            />
+          </View>
           <RichTextEditor
             name="content"
             required
             editorRef={editorRef}
             initialValue={formInitialValues.content}
+            onFocusChange={setContentFocused}
           />
         </View>
-        <RichToolBar editor={editorRef} />
+        {contentFocused && <RichToolBar editor={editorRef} />}
       </Form>
     </KeyboardAvoidingView>
   )

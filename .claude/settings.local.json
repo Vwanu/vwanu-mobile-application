@@ -8,6 +8,7 @@
       "mcp__ide__getDiagnostics",
       "Bash(npx tsc:*)",
       "mcp__linear-server__list_projects"
+      "Bash(git status:*)"
     ],
     "deny": [],
     "ask": []
