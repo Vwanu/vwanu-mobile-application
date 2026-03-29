@@ -78,9 +78,7 @@ const PostList: React.FC<Props> = ({ communityId }) => {
 
   return (
     <PaginatedList
-      key={`posts-${currentPosts.length}-${currentPosts
-        .map((p) => `${p.id}-${p.amountOfKorems}-${p.isReactor}`)
-        .join('-')}`}
+      key={`posts-${currentPosts.map((p) => p.id).join('-')}`}
       initialData={{ data: currentPosts, total: 100 }}
       initialLimit={10}
       fetchData={fetchPosts}

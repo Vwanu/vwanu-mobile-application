@@ -1,7 +1,7 @@
 import apiSlice from './api-slice'
 import { endpoints, HttpMethods } from '../config'
 
-import { PostProps, PostKoremProps } from '../../types'
+import { PostProps, PostKoremProps, PaginatedResponse } from '../../types'
 
 interface Response {
   data: PostProps[]
@@ -217,6 +217,20 @@ const post = apiSlice.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Post' as const, id }],
     }),
 
+    fetchPostLikers: build.query<
+      PaginatedResponse<{ User: User; createdAt: Date }>,
+      { postId: string }
+    >({
+      query: ({ postId }) => ({
+        url: `${endpoints.POSTS}/${postId}/kore`,
+        params: {
+          '$sort[createdAt]': '-1',
+          postId,
+          entityType: 'Post',
+        },
+      }),
+    }),
+
     fetchLikes: build.query<Rep, string | number>({
       query: (id) => ({
         url: `${endpoints.POSTS}/${id}/kore`,
@@ -232,54 +246,42 @@ const post = apiSlice.injectEndpoints({
         },
         method: HttpMethods.POST,
       }),
-      async onQueryStarted(postId, { dispatch, queryFulfilled }) {
-        // Define the query parameters that match the timeline
-        const timelineQueryArgs = {
-          $limit: 10,
-          $skip: 0,
-          $sort: { createdAt: -1 as const },
-        }
+      async onQueryStarted(postId, { dispatch, getState, queryFulfilled }) {
+        const state = getState() as any
+        const entries = post.util.selectInvalidatedBy(state, [{ type: 'Post' }])
 
-        // Optimistic update for the main timeline query
-        const patchResult = dispatch(
-          post.util.updateQueryData(
-            'fetchPosts',
-            timelineQueryArgs,
-            (draft) => {
-              const postIndex = draft.data.findIndex(
-                (post) => post.id.toString() === postId
-              )
-
-              if (postIndex !== -1) {
-                const currentPost = draft.data[postIndex]
-
-                // Toggle the isReactor status and adjust count
-                if (currentPost.isReactor) {
-                  currentPost.isReactor = false
-                  currentPost.amountOfKorems = Math.max(
-                    0,
-                    currentPost.amountOfKorems - 1
+        const patchResults = entries
+          .filter((entry) => entry.endpointName === 'fetchPosts')
+          .map((entry) =>
+            dispatch(
+              post.util.updateQueryData(
+                'fetchPosts',
+                entry.originalArgs,
+                (draft) => {
+                  const target = draft.data.find(
+                    (p) => p.id.toString() === postId
                   )
-                } else {
-                  currentPost.isReactor = true
-                  currentPost.amountOfKorems = currentPost.amountOfKorems + 1
+                  if (target) {
+                    if (target.isReactor) {
+                      target.isReactor = false
+                      target.amountOfKorems = Math.max(
+                        0,
+                        target.amountOfKorems - 1
+                      )
+                    } else {
+                      target.isReactor = true
+                      target.amountOfKorems = target.amountOfKorems + 1
+                    }
+                  }
                 }
-              } else {
-                console.log('❌ Post not found in cache for ID:', postId)
-              }
-            }
+              )
+            )
           )
-        )
 
         try {
           await queryFulfilled
-        } catch (error) {
-          console.log(
-            '❌ Toggle kore API call failed, reverting optimistic update'
-          )
-          // Revert optimistic update on failure
-          patchResult.undo()
-          console.error('Toggle kore failed:', error)
+        } catch {
+          patchResults.forEach((patch) => patch.undo())
         }
       },
     }),
@@ -309,6 +311,7 @@ const {
   useToggleKoreMutation,
   useFetchPostQuery,
   useDeletePostMutation,
+  useLazyFetchPostLikersQuery,
 } = post
 
 export {
@@ -320,4 +323,5 @@ export {
   useToggleKoreMutation,
   useFetchPostQuery,
   useDeletePostMutation,
+  useLazyFetchPostLikersQuery,
 }
