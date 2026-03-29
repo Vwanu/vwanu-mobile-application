@@ -15,6 +15,7 @@ interface Props {
   style?: StyleProp<ViewStyle>
   editorRef?: React.RefObject<QuillEditor>
   initialValue?: string
+  onFocusChange?: (focused: boolean) => void
 }
 
 const RichTextEditor: React.FC<Props> = ({
@@ -25,6 +26,7 @@ const RichTextEditor: React.FC<Props> = ({
   style,
   editorRef: externalRef,
   initialValue = '',
+  onFocusChange,
 }) => {
   const internalRef = useRef<QuillEditor>(null)
   const editorRef = externalRef || internalRef
@@ -68,8 +70,14 @@ const RichTextEditor: React.FC<Props> = ({
               toolbar: false,
             },
           }}
+          onFocus={() => {
+            onFocusChange?.(true)
+          }}
           onHtmlChange={handleHtmlChange}
-          onBlur={handleBlur}
+          onBlur={() => {
+            handleBlur()
+            onFocusChange?.(false)
+          }}
           initialHtml={initialValue}
           autoSize
           theme={{

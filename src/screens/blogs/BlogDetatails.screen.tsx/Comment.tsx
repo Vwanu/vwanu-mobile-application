@@ -118,11 +118,20 @@ const BlogComments: React.FC<BlogCommentsProps> = ({ blogId }) => {
         {/* Floating Add Comment Button */}
         {!showInput && (
           <TouchableOpacity
-            style={tw`absolute bottom-6 right-6 bg-green-500 rounded-full w-14 h-14 items-center justify-center shadow-lg`}
+            style={[
+              tw`absolute bottom-6 right-6 bg-white rounded-full w-14 h-14 items-center justify-center`,
+              {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 8,
+              },
+            ]}
             onPress={() => setShowInput(true)}
             activeOpacity={0.8}
           >
-            <Ionicons name="add" size={28} color="white" />
+            <Ionicons name="add" size={28} color={tw.color('gray-200')} />
           </TouchableOpacity>
         )}
       </View>

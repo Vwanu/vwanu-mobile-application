@@ -164,15 +164,13 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
             )}
           </View>
           <View>
-            <View style={tw`flex-row flex-wrap mb-3`}>
+            <View style={tw`flex-row flex-wrap mb-3 px-2`}>
               {blog.interests?.map((interest) => (
                 <View
                   key={interest.id}
-                  style={tw`bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full mr-2 mb-2`}
+                  style={tw`bg-black opacity-70 px-3 py-1 rounded-md mr-2 mb-2`}
                 >
-                  <Text
-                    style={tw`text-green-700 dark:text-green-300 text-xs font-medium`}
-                  >
+                  <Text style={tw`text-white text-md font-bold`}>
                     {interest.name}
                   </Text>
                 </View>
@@ -187,10 +185,21 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
       <View style={tw`p-4`}>
         <View style={tw`flex-row items-center justify-between `}>
           <ProfAvatar user={blog.user} size={40} subtitle={formattedDate} />
-          <TouchableOpacity onPress={() => onShowContent()}>
+          <TouchableOpacity
+            style={tw`flex-row items-center align-center justify-center gap-1`}
+            onPress={() => onShowContent()}
+          >
+            {showContent && (
+              <Text style={tw`text-primary `}>
+                {blog.amountOfComments ?? 0}
+              </Text>
+            )}
             <Ionicons
-              name={`${showContent ? 'home-outline' : 'car'}`}
-              color="red"
+              name={`${
+                showContent ? 'chatbubble-ellipses-outline' : 'book-outline'
+              }`}
+              color={tw.color('primary')}
+              size={20}
             />
           </TouchableOpacity>
           <LikeForm
