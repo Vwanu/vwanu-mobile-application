@@ -12,6 +12,7 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import LikeForm from 'components/LikeForm'
 import { Blog } from '../../../../types'
+import { useToggleBlogLikeMutation } from 'store/blog-api-slice'
 
 interface BlogCardProps {
   blog: Blog
@@ -40,6 +41,10 @@ const truncateAtWord = (text: string, maxLength: number): string => {
 
 const BlogCard: React.FC<BlogCardProps> = ({ blog, onPress }) => {
   const { width: screenWidth } = useWindowDimensions()
+  const [toggleBlogLike] = useToggleBlogLikeMutation()
+  const handleLike = async (id: string) => {
+    await toggleBlogLike(id).unwrap()
+  }
   const formattedDate = formatDate(new Date(blog.publishedAt), 'MMM dd, yyyy')
 
   // Calculate max characters based on available width
@@ -84,10 +89,11 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, onPress }) => {
 
               <LikeForm
                 id={blog.id}
-                amountOfKorems={blog.amountOfLikes}
+                likersCount={blog.amountOfLikes}
                 isReactor={false}
-                koreHeight={24}
+                size={24}
                 flexDir="row"
+                onLike={handleLike}
               />
             </View>
           </View>

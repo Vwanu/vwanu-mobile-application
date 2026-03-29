@@ -14,6 +14,7 @@ import TimelineSkeletone from './TimelineSkeletone'
 import TimelineHeader from './TimelineHeader'
 import TimelineTabs from './components/TimelineTabs'
 import PeopleList from './PeopleList'
+import ForumList from './ForumList'
 
 const Timeline = () => {
   const navigation = useNavigation()
@@ -44,6 +45,9 @@ const Timeline = () => {
 
         {/* People Tab */}
         {activeTab === 'people' && <PeopleList />}
+
+        {/* Forums Tab */}
+        {activeTab === 'forums' && <ForumList />}
 
         {/* Blogs Tab */}
         {activeTab === 'blogs' && (

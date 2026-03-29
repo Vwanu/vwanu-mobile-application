@@ -113,6 +113,7 @@ export type FeedStackParams = Record<string, object | undefined> & {
   Blogs: undefined
   BlogDetail: { blogId: string }
   CreateBlog: { blogId?: string } | undefined
+  ForumDetail: { forum: Interest }
 }
 
 export type ProfileStackParams = {
@@ -356,4 +357,44 @@ export interface UpdateBlogParams {
   titlePicture?: string
   interests?: string[]
   publishedAt?: string | null
+}
+
+// Discussion Types
+export interface DiscussionReply {
+  id: string
+  body: string
+  user: User
+  amountOfLikes: number
+  createdAt: string
+}
+
+export interface Discussion {
+  id: string
+  title: string
+  body: string
+  user: User
+  interestId: string
+  parentId?: string
+  amountOfLikes: number
+  replies: DiscussionReply[]
+  createdAt: string
+  amountOfReplies: number
+  isReactor: null | boolean
+}
+
+export interface FetchDiscussionsParams {
+  interestId: string
+  page?: number
+  limit?: number
+}
+
+export interface CreateDiscussionParams {
+  interestId: string
+  title: string
+  body: string
+}
+
+export interface CreateDiscussionReplyParams {
+  discussionId: string
+  body: string
 }
