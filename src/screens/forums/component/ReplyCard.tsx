@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { View } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import { formatDate } from 'date-fns'
 
 import tw from 'lib/tailwind'
@@ -67,6 +67,14 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
               discussionId: reply.id,
             })
           }}
+          anchorContent={
+            <TouchableOpacity onPress={toggleShowLikers}>
+              <Text style={tw`text-xs text-primary`}>
+                {reply.amountOfLikes}{' '}
+                {reply.amountOfLikes === 1 ? 'like' : 'likes'}
+              </Text>
+            </TouchableOpacity>
+          }
         />
       )}
     </View>

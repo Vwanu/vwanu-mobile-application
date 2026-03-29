@@ -4,7 +4,7 @@
    - Renders like info, share, and comment buttons.
 ======================================================== */
 
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import { TouchableOpacity, View } from 'react-native'
@@ -16,7 +16,11 @@ import LikerPopover from './LikersPopOver'
 import { abbreviateNumber } from '../lib/numberFormat'
 import LikeForm from './LikeForm'
 import { useTheme } from '../hooks/useTheme'
-import { useToggleKoreMutation, useFetchLikesQuery } from 'store/post'
+import {
+  useToggleKoreMutation,
+  useFetchLikesQuery,
+  useLazyFetchPostLikersQuery,
+} from 'store/post'
 
 interface Props extends PostProps {
   showViewComment?: boolean
@@ -33,16 +37,22 @@ interface PostFooterProps extends Props {
 const PostFooter: React.FC<PostFooterProps> = (props) => {
   const navigation = useNavigation()
   const [toggleKore] = useToggleKoreMutation()
+
+  const [fetchLikers, { isFetching: isFetchingLikers, data: likersData }] =
+    useLazyFetchPostLikersQuery()
+
+  const handleShowLikers = useCallback(() => {
+    props.toggleLikerPopover()
+    fetchLikers({ postId: props.id.toString() })
+  }, [props.toggleLikerPopover, fetchLikers, props.id])
+
   const handleLike = useCallback(
     async (id: string) => {
       await toggleKore(id).unwrap()
     },
     [toggleKore]
   )
-  const likesQuery = useFetchLikesQuery(props.id.toString(), {
-    skip: !props.seeLikers,
-  })
-  const fetchLikers = useCallback(() => likesQuery, [likesQuery])
+
   const moreReactors = props.isReactor
     ? (props.amountOfKorems ?? 0) - 1
     : (props.amountOfKorems ?? 0) - (props.reactors?.length - 2 || 0)
@@ -61,62 +71,67 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
     }
   }, [props.disableNavigation, props.toggleCommenting, props.id, navigation])
 
+  const textColor = isDarkMode ? 'text-white' : 'text-black'
+
+  const anchorElement = useMemo(
+    () => (
+      <TouchableOpacity onPress={handleShowLikers}>
+        <View style={tw`flex flex-row items-center`}>
+          <Text style={tw`text-sm font-thin`}>Liked by</Text>
+          {!!props.isReactor && (
+            <Text style={tw`text-primary text-sm`}> You</Text>
+          )}
+          {props.isReactor ? (
+            <Text style={tw`${textColor}`}>
+              {' '}
+              {props.reactors && props.reactors[0]?.firstName}
+            </Text>
+          ) : (
+            <Text style={tw`${textColor}`}>
+              {' '}
+              {props.reactors &&
+                props.reactors.map((u: any) => u.firstName).join(', ')}
+            </Text>
+          )}
+          {moreReactors > 0 && (
+            <>
+              {props.isReactor && (
+                <Text style={tw`${textColor} font-thin`}> and</Text>
+              )}
+              <Text style={tw`${textColor}`}>
+                {' '}
+                {abbreviateNumber(moreReactors)}
+                {props.isReactor
+                  ? moreReactors > 1
+                    ? ' others'
+                    : ' more'
+                  : ''}
+              </Text>
+            </>
+          )}
+        </View>
+      </TouchableOpacity>
+    ),
+    [handleShowLikers, props.isReactor, props.reactors, moreReactors, textColor]
+  )
+
   return (
     <View style={tw`flex flex-1 flex-row items-center justify-between`}>
       <View>
         {props.amountOfKorems ? (
-          <View style={tw`flex flex-row items-center`}>
-            <Text style={tw`text-sm font-thin`}>Liked by</Text>
-            {props.isReactor && (
-              <Text style={tw`text-primary text-sm`}> You</Text>
-            )}
-            {props.isReactor ? (
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={tw`${isDarkMode ? 'text-white' : 'text-black'}`}>
-                  {props.reactors && props.reactors[0]?.firstName}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={tw`${isDarkMode ? 'text-white' : 'text-black'}`}>
-                  {props.reactors &&
-                    props.reactors.map((u: any) => u.firstName).join(',')}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {moreReactors > 0 && (
-              <>
-                <Text
-                  style={tw`${
-                    isDarkMode ? 'text-white' : 'text-black'
-                  } font-thin`}
-                >
-                  and
-                </Text>
-                <Text style={tw`${isDarkMode ? 'text-white' : 'text-black'}`}>
-                  {' '}
-                  {abbreviateNumber(moreReactors)}{' '}
-                </Text>
-
-                <LikerPopover
-                  id={props.id.toString()}
-                  visible={props.seeLikers}
-                  onDismiss={props.toggleLikerPopover}
-                  fetchLikers={fetchLikers}
-                />
-              </>
-            )}
-          </View>
+          <LikerPopover
+            visible={props.seeLikers}
+            likers={likersData?.data || []}
+            isFetching={isFetchingLikers}
+            onDismiss={props.toggleLikerPopover}
+            onRefetch={() => fetchLikers({ postId: props.id.toString() })}
+            anchorContent={anchorElement}
+          />
         ) : (
-          <Text
-            style={tw`${
-              isDarkMode ? 'text-white' : 'text-black'
-            }  text-sm italic font-thin`}
-          >
+          <Text style={tw`${textColor} text-sm italic font-thin`}>
             Be the first to react
           </Text>
         )}
-
         {props.showViewComment && (props.amountOfComments ?? 0) > 0 && (
           <TouchableOpacity onPress={handleCommentPress}>
             <Text
@@ -164,6 +179,7 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
             size={18}
             flexDir="column"
             onLike={handleLike}
+            onToggleLikers={handleShowLikers}
           />
         </View>
         <View style={tw`items-center`}>
