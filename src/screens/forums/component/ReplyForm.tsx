@@ -5,7 +5,7 @@ import { useFormikContext } from 'formik'
 import { string, object } from 'yup'
 
 import tw from 'lib/tailwind'
-import { Field, Form, Submit } from 'components/form'
+import { MentionInput, Form, Submit } from 'components/form'
 import { useReplyToDiscussionMutation } from 'store/discussion-api-slice'
 
 interface ReplyFormProps {
@@ -36,7 +36,7 @@ const ReplyFormContent: React.FC<{
       <TouchableOpacity onPress={onClose} style={tw`mr-2`}>
         <Ionicons name="close" size={20} color={tw.color('gray-500')} />
       </TouchableOpacity>
-      <Field
+      <MentionInput
         name="body"
         placeholder="Write a reply..."
         placeholderTextColor={tw.color('gray-400')}

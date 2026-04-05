@@ -80,25 +80,7 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
     </View>
   )
   {
-    /* <TouchableOpacity
-        style={tw`flex-row items-center mt-2`}
-        onPress={toggleLike}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name={liked ? 'heart' : 'heart-outline'}
-          size={14}
-          color={liked ? '#EF4444' : tw.color('gray-400')}
-        />
-        <Text
-          style={tw`text-xs ${liked ? 'text-red-500' : 'text-gray-400'} ml-1`}
-        >
-          {likes}
-        </Text>
-      </TouchableOpacity> */
   }
-  // </View>
-  //   )
 }
 
 export default memo(ReplyCard)
