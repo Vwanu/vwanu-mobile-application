@@ -258,9 +258,8 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
     // Fetch banned members for a community
     fetchBannedMembers: builder.query<
       PaginatedResponse<{
-        communityId: string
-        user: User
-        communityRole: CommunityRole
+        bannedUser: User
+        banByUser: User
       }>,
       { id: string }
     >({
@@ -274,12 +273,12 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
     // Ban a community member
     banMember: builder.mutation<
       { success: boolean },
-      { communityId: string; userId: string }
+      { communityId: string; userId: string; duration: string }
     >({
-      query: ({ communityId, userId }) => ({
+      query: ({ communityId, userId, duration }) => ({
         url: `/communities/${communityId}/bans`,
         method: HttpMethods.POST,
-        body: { userId },
+        body: { userId, until: duration },
       }),
       invalidatesTags: (result, error, { communityId }) => [
         { type: 'Community', id: communityId },

@@ -37,9 +37,9 @@ const MembersTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
     setFilter(item.id.toString())
   }
 
-  const handleBan = async (userId: string) => {
+  const handleBan = async (userId: string, duration: string) => {
     try {
-      await banMember({ communityId, userId }).unwrap()
+      await banMember({ communityId, userId, duration }).unwrap()
     } catch (err) {
       console.error('Error banning member:', err)
     }

@@ -33,6 +33,8 @@ const BannedMembersTab: React.FC<BannedMembersTabProps> = ({
     refetch,
   } = useFetchBannedMembersQuery({ id: communityId })
 
+  console.log('[❤️‍🔥💙💔Banned Members Data:]', bannedMembers?.data)
+
   const [unbanMember] = useUnbanMemberMutation()
 
   useEffect(() => {
@@ -63,9 +65,13 @@ const BannedMembersTab: React.FC<BannedMembersTabProps> = ({
       <FlatList
         data={bannedMembers?.data || []}
         renderItem={({ item }) => (
-          <CommunityMember item={item} isBanned onUnban={handleUnban} />
+          <CommunityMember
+            item={{ user: item.bannedUser, communityRole: { name: 'Banned' } }}
+            isBanned
+            onUnban={handleUnban}
+          />
         )}
-        keyExtractor={(item) => item.user.id}
+        keyExtractor={(item) => item.bannedUser.id}
         ListEmptyComponent={
           <NoPost
             title="No Banned Members"
