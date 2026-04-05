@@ -1,24 +1,17 @@
 import React, { useCallback, useMemo } from 'react'
 import { View, TextInput, TextInputProps } from 'react-native'
 import { useFormikContext } from 'formik'
-import { useMentions, TriggersConfig } from 'react-native-controlled-mentions'
+import { useMentions } from 'react-native-controlled-mentions'
 
 import tw from 'lib/tailwind'
 import Error from '../Error'
 import FieldParams from '../fieldParams'
 import SuggestionList from './SuggestionList'
+import { mentionTriggersConfig } from 'config/mentionConfig'
 
 interface MentionInputProps
   extends FieldParams,
     Omit<TextInputProps, 'value' | 'onChangeText' | 'children'> {}
-
-const triggersConfig: TriggersConfig<'mention'> = {
-  mention: {
-    trigger: '@',
-    textStyle: { fontWeight: 'bold', color: '#3B82F6' },
-    isInsertSpaceAfterMention: true,
-  },
-}
 
 const MentionInputField: React.FC<MentionInputProps> = ({
   name,
@@ -41,7 +34,7 @@ const MentionInputField: React.FC<MentionInputProps> = ({
   const { textInputProps, triggers } = useMentions({
     value: values[name] || '',
     onChange: handleChange,
-    triggersConfig,
+    triggersConfig: mentionTriggersConfig,
   })
 
   const handleBlur = useCallback(() => {

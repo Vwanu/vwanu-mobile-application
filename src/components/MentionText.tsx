@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react'
 import { Text, StyleProp, TextStyle } from 'react-native'
-import { parseValue, TriggersConfig } from 'react-native-controlled-mentions'
+import { parseValue } from 'react-native-controlled-mentions'
 
 import tw from 'lib/tailwind'
+import { mentionConfigs } from 'config/mentionConfig'
 
 interface MentionTextProps {
   children: string
@@ -11,22 +12,16 @@ interface MentionTextProps {
   onMentionPress?: (id: string, name: string) => void
 }
 
-const triggersConfig: TriggersConfig<'mention'> = {
-  mention: {
-    trigger: '@',
-    textStyle: { fontWeight: 'bold', color: '#3B82F6' },
-  },
-}
-
-const configs = Object.values(triggersConfig)
-
 const MentionText: React.FC<MentionTextProps> = ({
   children,
   style,
   mentionStyle,
   onMentionPress,
 }) => {
-  const { parts } = useMemo(() => parseValue(children, configs), [children])
+  const { parts } = useMemo(
+    () => parseValue(children, mentionConfigs),
+    [children]
+  )
 
   return (
     <Text style={style}>
