@@ -18,7 +18,7 @@ import {
 
 interface ProfileTabNavigatorProps {
   userId: string | null
-  targetUserId: string
+  targetUserId: string | null
   navigation: any
 }
 

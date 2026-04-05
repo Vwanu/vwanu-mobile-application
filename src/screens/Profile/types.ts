@@ -4,7 +4,7 @@
 
 export interface TabContentProps {
   userId: string | null
-  targetUserId: string
+  targetUserId: string | null
   user: any // TODO: Replace with proper User type when available
   navigation: any // TODO: Replace with proper navigation type
 }
