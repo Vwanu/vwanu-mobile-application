@@ -1,7 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Ionicons } from '@expo/vector-icons'
-import { View, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Popover } from '@ui-kitten/components'
 
@@ -12,6 +12,10 @@ import { useTheme } from 'hooks/useTheme'
 import ProfAvatar from 'components/ProfAvatar'
 import ProfileNotFound from './ProfileNotFound'
 import { useFetchProfileQuery } from 'store/profiles'
+import {
+  useFollowUserMutation,
+  useUnfollowUserMutation,
+} from 'store/followers-api-slice'
 import ConnectionStatus from './ConnectionStatus'
 import NotificationIndicator from 'components/NotificationIndicator'
 
@@ -30,12 +34,24 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
   const { userId } = useSelector((state: RootState) => state.auth)
   const [showAction, toggleShowActions] = useToggle(false)
 
+  const [followUser, { isLoading: isFollowing }] = useFollowUserMutation()
+  const [unfollowUser, { isLoading: isUnfollowing }] = useUnfollowUserMutation()
+
   const user = data
   if (!user) {
     return <ProfileNotFound />
   }
 
-  const following = false
+  const handleFollowToggle = async () => {
+    if (user.isFollowing) {
+      await unfollowUser(user.id)
+    } else {
+      await followUser({ UserId: user.id })
+    }
+  }
+
+  const isFollowLoading = isFollowing || isUnfollowing
+
   return (
     <SafeAreaView
       style={tw`pt-3 px-6 w-full border-b ${
@@ -98,18 +114,25 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
             style={tw`flex flex-row justify-between items-center mt-2 flex-shrink-0 `}
           >
             <ConnectionStatus currentUserId={userId || ''} targetUser={user} />
-            <>
-              {!user.isFollowing && (
-                <TouchableOpacity
-                  onPress={() => {}}
-                  style={tw`px-3 ml-2 py-1 rounded-full bg-blue-600`}
+            <TouchableOpacity
+              onPress={handleFollowToggle}
+              disabled={isFollowLoading}
+              style={tw`px-3 ml-2 py-1 rounded-full ${
+                user.isFollowing ? 'bg-gray-300' : 'bg-blue-600'
+              }`}
+            >
+              {isFollowLoading ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text
+                  style={tw`${
+                    user.isFollowing ? 'text-black' : 'text-white'
+                  } font-poppins-bold text-xs`}
                 >
-                  <Text style={tw`text-white font-poppins-bold text-xs`}>
-                    Follow
-                  </Text>
-                </TouchableOpacity>
+                  {user.isFollowing ? 'Unfollow' : 'Follow'}
+                </Text>
               )}
-            </>
+            </TouchableOpacity>
           </View>
         )}
       </View>

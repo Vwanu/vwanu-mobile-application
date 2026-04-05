@@ -102,6 +102,14 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
                 discussionId: discussion.id,
               })
             }}
+            anchorContent={
+              <TouchableOpacity onPress={toggleShowLikers}>
+                <Text style={tw`text-xs text-primary`}>
+                  {discussion.amountOfLikes}{' '}
+                  {discussion.amountOfLikes === 1 ? 'like' : 'likes'}
+                </Text>
+              </TouchableOpacity>
+            }
           />
         )}
         {replyCount > 0 && (
