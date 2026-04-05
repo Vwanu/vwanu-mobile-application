@@ -45,7 +45,7 @@ const MentionInputField: React.FC<MentionInputProps> = ({
   const visible = touched[name]
 
   return (
-    <View style={tw`flex-1`}>
+    <View style={[tw`flex-1`, { position: 'relative', zIndex: 100 }]}>
       <SuggestionList {...triggers.mention} />
       <TextInput
         {...restProps}

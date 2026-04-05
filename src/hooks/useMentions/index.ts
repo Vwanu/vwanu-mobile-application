@@ -6,11 +6,12 @@ const useMentionSuggestions = (
   keyword: string | undefined
 ): UseMentionSuggestionsResult => {
   const debouncedKeyword = useDebounce(keyword, 300)
-  const shouldSearch =
-    debouncedKeyword !== undefined && debouncedKeyword.length > 0
+  const shouldSearch = debouncedKeyword !== undefined
 
   const { data, isFetching } = useFetchProfilesQuery(
-    shouldSearch ? { search: debouncedKeyword, $limit: 10 } : undefined,
+    shouldSearch
+      ? { search: debouncedKeyword || undefined, $limit: 10 }
+      : undefined,
     { skip: !shouldSearch }
   )
 
