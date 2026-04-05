@@ -1,75 +1,46 @@
 import React from 'react'
-import { View, FlatList } from 'react-native'
+import { View, FlatList, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { Button } from '@ui-kitten/components'
+import { useNavigation } from '@react-navigation/native'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
-import ProfAvatar from 'components/ProfAvatar'
-import { useFetchProfilesQuery } from 'store/profiles'
+import { useFetchFollowingQuery } from 'store/followers-api-slice'
 import { TabContentProps } from '../types'
+import Follower from '../components/Follower'
 
 /**
  * Following Tab Component
  * Displays list of users that the current profile is following
  */
-const FollowingTab: React.FC<TabContentProps> = ({ targetUserId }) => {
-  // For now, using the same profiles query - in a real app, this would be a specific "following" endpoint
-  const { data: following = [] } = useFetchProfilesQuery()
+const FollowingTab: React.FC<TabContentProps> = ({ targetUserId, userId }) => {
+  const {
+    data: followingData,
+    isLoading,
+    refetch,
+  } = useFetchFollowingQuery(targetUserId || '')
+  const navigation = useNavigation()
 
-  const renderFollowingItem = ({ item }: { item: any }) => (
-    <View
-      style={tw`flex-row items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg mb-2`}
-    >
-      <View style={tw`flex-row items-center flex-1`}>
-        <ProfAvatar
-          source={item.profilePicture}
-          name={`${item.firstName} ${item.lastName}`}
-          size={50}
-        />
-        <View style={tw`ml-3 flex-1`}>
-          <Text style={tw`font-semibold`}>
-            {item.firstName} {item.lastName}
-          </Text>
-          {item.bio && (
-            <Text
-              style={tw`text-gray-600 dark:text-gray-400 text-sm mt-1`}
-              numberOfLines={1}
-            >
-              {item.bio}
-            </Text>
-          )}
-          {item.location && (
-            <Text style={tw`text-gray-500 dark:text-gray-500 text-xs mt-1`}>
-              📍 {item.location}
-            </Text>
-          )}
-        </View>
+  const following = followingData?.data || []
+
+  if (isLoading) {
+    return (
+      <View style={tw`flex-1 justify-center items-center p-8`}>
+        <ActivityIndicator size="large" />
       </View>
-      <Button
-        size="small"
-        appearance="outline"
-        status="primary"
-        onPress={() => {
-          // TODO: Implement unfollow functionality
-          console.log('Unfollow user:', item.id)
-        }}
-      >
-        Following
-      </Button>
-    </View>
-  )
+    )
+  }
 
   return (
     <View style={tw`flex-1`}>
       {following.length > 0 ? (
         <FlatList
           data={following}
-          renderItem={renderFollowingItem}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={() => <View style={tw`h-1`} />}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <Follower follower={item} />}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={tw`pb-4`}
+          onRefresh={refetch}
+          refreshing={isLoading}
         />
       ) : (
         <View style={tw`flex-1 justify-center items-center p-8`}>
