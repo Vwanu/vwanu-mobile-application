@@ -12,7 +12,6 @@ import JoinRequestTab from './JoinRequestTab'
 import BannedMembersTab from './BannedMembersTab'
 
 import { CommunityStackParams } from '../../../../../types'
-import Button from 'components/Button'
 
 const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true)
@@ -21,18 +20,16 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   const [showBannedMembers, setShowBannedMembers] = React.useState(false)
   const navigation = useNavigation<StackNavigationProp<CommunityStackParams>>()
 
-  // Show join requests view if active
   if (showJoinRequests) {
     return (
       <View style={tw`flex-1 bg-gray-50`}>
         {/* Back Button Header */}
-        <View style={tw`bg-white px-2 pt-2`}>
-          <Button
-            appearance="ghost"
-            accessoryRight={() => <Ionicons name="arrow-back" size={20} />}
-            onPress={() => setShowJoinRequests(false)}
-          />
-        </View>
+        <Ionicons
+          name="close"
+          size={20}
+          onPress={() => setShowJoinRequests(false)}
+          style={tw` p-2 `}
+        />
         {/* Join Request Content */}
         <JoinRequestTab communityId={communityId} onError={onError} />
       </View>
@@ -43,14 +40,13 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   if (showBannedMembers) {
     return (
       <View style={tw`flex-1 bg-gray-50`}>
-        {/* Back Button Header */}
-        <View style={tw`bg-white px-2 pt-2`}>
-          <Button
-            appearance="ghost"
-            accessoryRight={() => <Ionicons name="arrow-back" size={20} />}
-            onPress={() => setShowBannedMembers(false)}
-          />
-        </View>
+        <Ionicons
+          name="close"
+          size={20}
+          onPress={() => setShowBannedMembers(false)}
+          style={tw` p-2 `}
+        />
+
         {/* Banned Members Content */}
         <BannedMembersTab communityId={communityId} onError={onError} />
       </View>
@@ -70,17 +66,11 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
             navigation.navigate(routes.CREATE_COMMUNITY, { communityId })
           }
         />
-        {/* <SettingItem
-          icon="people-outline"
-          title="Privacy"
-          subtitle="Public community"
-          onPress={() => console.log('Privacy settings')}
-        /> */}
         <SettingItem
-          icon="shield-checkmark-outline"
-          title="Member Approval"
-          subtitle="Manage join requests"
-          onPress={() => setShowJoinRequests(true)}
+          icon="people-outline"
+          title="Privacy Settings"
+          subtitle="Manage who can see and join the community"
+          onPress={() => console.log('Privacy settings')}
         />
       </View>
 
@@ -110,18 +100,24 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
 
       {/* Moderation */}
       <View style={tw`mt-6`}>
-        <SettingHeader title="Moderation" />
+        <SettingHeader title="Management" />
         <SettingItem
-          icon="flag-outline"
-          title="Reported Content"
-          subtitle="View and manage reports"
-          onPress={() => console.log('Reported content')}
+          icon="shield-checkmark-outline"
+          title="Member Approval"
+          subtitle="Manage join requests"
+          onPress={() => setShowJoinRequests(true)}
         />
         <SettingItem
           icon="ban-outline"
           title="Blocked Users"
           subtitle="Manage blocked members"
           onPress={() => setShowBannedMembers(true)}
+        />
+        <SettingItem
+          icon="flag-outline"
+          title="Reported Content"
+          subtitle="View and manage reports"
+          onPress={() => console.log('Reported content')}
         />
       </View>
 
