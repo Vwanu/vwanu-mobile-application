@@ -26,7 +26,18 @@ const SuggestionList: React.FC<SuggestionListProps> = ({
 
   if (isLoading && suggestions.length === 0) {
     return (
-      <View style={tw`bg-white dark:bg-gray-800 rounded-lg shadow-md p-3 mb-1`}>
+      <View
+        style={[
+          tw`bg-white dark:bg-gray-800 rounded-lg shadow-md p-3`,
+          {
+            position: 'absolute',
+            bottom: '100%',
+            left: 0,
+            right: 0,
+            zIndex: 999,
+          },
+        ]}
+      >
         <ActivityIndicator size="small" color={tw.color('primary')} />
       </View>
     )
@@ -35,7 +46,18 @@ const SuggestionList: React.FC<SuggestionListProps> = ({
   if (suggestions.length === 0) return null
 
   return (
-    <View style={tw`bg-white dark:bg-gray-800 rounded-lg shadow-md mb-1`}>
+    <View
+      style={[
+        tw`bg-white dark:bg-gray-800 rounded-lg shadow-md`,
+        {
+          position: 'absolute',
+          bottom: '100%',
+          left: 0,
+          right: 0,
+          zIndex: 999,
+        },
+      ]}
+    >
       <FlatList
         data={suggestions}
         keyExtractor={(item) => item.id}
