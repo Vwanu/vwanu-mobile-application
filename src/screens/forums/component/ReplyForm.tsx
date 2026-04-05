@@ -7,6 +7,7 @@ import { string, object } from 'yup'
 import tw from 'lib/tailwind'
 import { MentionInput, Form, Submit } from 'components/form'
 import { useReplyToDiscussionMutation } from 'store/discussion-api-slice'
+import extractMentionIds from 'utils/extractMentionIds'
 
 interface ReplyFormProps {
   onClose: () => void
@@ -68,7 +69,13 @@ const ReplyForm: React.FC<ReplyFormProps> = ({
   const [replyToDiscussion, { isLoading }] = useReplyToDiscussionMutation()
 
   const handleSubmit = async ({ body }: ReplyFormValues) => {
-    await replyToDiscussion({ interestId, discussionId, body }).unwrap()
+    const mentions = extractMentionIds(body)
+    await replyToDiscussion({
+      interestId,
+      discussionId,
+      body,
+      mentions,
+    }).unwrap()
     onClose()
   }
 

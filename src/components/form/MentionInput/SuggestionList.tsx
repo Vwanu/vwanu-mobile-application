@@ -5,7 +5,6 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native'
-import { Avatar } from 'react-native-paper'
 import type { Suggestion } from 'react-native-controlled-mentions'
 
 import tw from 'lib/tailwind'
@@ -45,10 +44,15 @@ const SuggestionList: React.FC<SuggestionListProps> = ({
         renderItem={({ item }) => (
           <TouchableOpacity
             style={tw`flex-row items-center px-3 py-2`}
-            onPress={() => onSelect(item)}
+            onPress={() =>
+              onSelect({
+                id: item.id,
+                name: `${item.firstName} ${item.lastName}`,
+              })
+            }
           >
             <Text style={tw`text-sm text-gray-800 dark:text-gray-200`}>
-              {item.name}
+              {item.firstName} {item.lastName}
             </Text>
           </TouchableOpacity>
         )}
