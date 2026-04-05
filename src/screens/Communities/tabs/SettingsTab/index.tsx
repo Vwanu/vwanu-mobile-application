@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import routes from 'navigation/routes'
 import JoinRequestTab from './JoinRequestTab'
+import BannedMembersTab from './BannedMembersTab'
 
 import { CommunityStackParams } from '../../../../../types'
 import Button from 'components/Button'
@@ -17,6 +18,7 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true)
   const [postsEnabled, setPostsEnabled] = React.useState(true)
   const [showJoinRequests, setShowJoinRequests] = React.useState(false)
+  const [showBannedMembers, setShowBannedMembers] = React.useState(false)
   const navigation = useNavigation<StackNavigationProp<CommunityStackParams>>()
 
   // Show join requests view if active
@@ -33,6 +35,24 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
         </View>
         {/* Join Request Content */}
         <JoinRequestTab communityId={communityId} onError={onError} />
+      </View>
+    )
+  }
+
+  // Show banned members view if active
+  if (showBannedMembers) {
+    return (
+      <View style={tw`flex-1 bg-gray-50`}>
+        {/* Back Button Header */}
+        <View style={tw`bg-white px-2 pt-2`}>
+          <Button
+            appearance="ghost"
+            accessoryRight={() => <Ionicons name="arrow-back" size={20} />}
+            onPress={() => setShowBannedMembers(false)}
+          />
+        </View>
+        {/* Banned Members Content */}
+        <BannedMembersTab communityId={communityId} onError={onError} />
       </View>
     )
   }
@@ -101,7 +121,7 @@ const SettingsTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
           icon="ban-outline"
           title="Blocked Users"
           subtitle="Manage blocked members"
-          onPress={() => console.log('Blocked users')}
+          onPress={() => setShowBannedMembers(true)}
         />
       </View>
 

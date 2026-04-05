@@ -12,11 +12,15 @@ import routes from 'navigation/routes'
 
 interface CommunityMemberProps {
   item: any
+  isBanned?: boolean
+  onBan?: (userId: string) => void
+  onUnban?: (userId: string) => void
 }
 const CommunityMember: React.FC<CommunityMemberProps> = ({
   item,
-}: {
-  item: any
+  isBanned,
+  onBan,
+  onUnban,
 }) => {
   const [isEditing, toggleEditing] = useToggle(false)
   const navigation = useNavigation<StackNavigationProp<ProfileStackParams>>()
@@ -26,7 +30,7 @@ const CommunityMember: React.FC<CommunityMemberProps> = ({
     >
       <ProfAvatar
         user={item.user}
-        subtitle={item.communityRole.name.toUpperCase()}
+        subtitle={isBanned ? 'BANNED' : item.communityRole.name.toUpperCase()}
         size={40}
       />
       <Popover
@@ -49,11 +53,28 @@ const CommunityMember: React.FC<CommunityMemberProps> = ({
               toggleEditing()
             }}
           />
-          {/* <Button title="Report User" accessoryLeft={<Ionicons name="flag" size={15} />}  appearance="ghost"/>
-            <Divider style={tw`my-2`} />
-            <Button title="Ban User" accessoryLeft={<Ionicons name="ban" size={15} />}  appearance="ghost"/>
-            <Button title="Promote to Admin" accessoryLeft={<Ionicons name="star" size={15} />}  appearance="ghost"/>
-            <Button title="Promote to Moderator" accessoryLeft={<Ionicons name="star" size={15} />}  appearance="ghost"/> */}
+          {!isBanned && onBan && (
+            <Button
+              title="Ban User"
+              accessoryLeft={<Ionicons name="ban" size={15} color="#EF4444" />}
+              appearance="ghost"
+              onPress={() => {
+                onBan(item.user.id)
+                toggleEditing()
+              }}
+            />
+          )}
+          {isBanned && onUnban && (
+            <Button
+              title="Unban User"
+              accessoryLeft={<Ionicons name="checkmark-circle" size={15} />}
+              appearance="ghost"
+              onPress={() => {
+                onUnban(item.user.id)
+                toggleEditing()
+              }}
+            />
+          )}
         </View>
       </Popover>
     </View>

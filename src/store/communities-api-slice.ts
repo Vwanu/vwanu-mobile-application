@@ -254,6 +254,51 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
         method: HttpMethods.PATCH,
       }),
     }),
+
+    // Fetch banned members for a community
+    fetchBannedMembers: builder.query<
+      PaginatedResponse<{
+        communityId: string
+        user: User
+        communityRole: CommunityRole
+      }>,
+      { id: string }
+    >({
+      query: ({ id }) => ({
+        url: `/communities/${id}/bans`,
+        method: HttpMethods.GET,
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Community', id: arg.id }],
+    }),
+
+    // Ban a community member
+    banMember: builder.mutation<
+      { success: boolean },
+      { communityId: string; userId: string }
+    >({
+      query: ({ communityId, userId }) => ({
+        url: `/communities/${communityId}/bans`,
+        method: HttpMethods.POST,
+        body: { userId },
+      }),
+      invalidatesTags: (result, error, { communityId }) => [
+        { type: 'Community', id: communityId },
+      ],
+    }),
+
+    // Unban a community member
+    unbanMember: builder.mutation<
+      { success: boolean },
+      { communityId: string; userId: string }
+    >({
+      query: ({ communityId, userId }) => ({
+        url: `/communities/${communityId}/bans/${userId}`,
+        method: HttpMethods.DELETE,
+      }),
+      invalidatesTags: (result, error, { communityId }) => [
+        { type: 'Community', id: communityId },
+      ],
+    }),
   }),
 })
 
@@ -273,6 +318,9 @@ export const {
   useSendCommunityInvitationsMutation,
   useDeleteCommunityInvitationMutation,
   useUpdateCommunityInvitationMutation,
+  useFetchBannedMembersQuery,
+  useBanMemberMutation,
+  useUnbanMemberMutation,
 } = communitiesApiSlice
 
 export default communitiesApiSlice
