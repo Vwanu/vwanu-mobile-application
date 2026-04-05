@@ -6,6 +6,7 @@ import tw from 'lib/tailwind'
 import {
   useFetchCommunityMembersQuery,
   useFetchCommunityRolesQuery,
+  useBanMemberMutation,
 } from '../../../store/communities-api-slice'
 
 import SearchBox from '../components/SearchBox'
@@ -22,6 +23,7 @@ const MembersTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   } = useFetchCommunityMembersQuery({ id: communityId, filter })
 
   const { data: roles, error: roleFetchError } = useFetchCommunityRolesQuery()
+  const [banMember] = useBanMemberMutation()
 
   useEffect(() => {
     if (!error || !roleFetchError) return
@@ -33,6 +35,14 @@ const MembersTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
   const handleFilter = (item: any) => {
     console.log(item)
     setFilter(item.id.toString())
+  }
+
+  const handleBan = async (userId: string, duration: string) => {
+    try {
+      await banMember({ communityId, userId, duration }).unwrap()
+    } catch (err) {
+      console.error('Error banning member:', err)
+    }
   }
 
   return (
@@ -50,7 +60,9 @@ const MembersTab: React.FC<TabInterFace> = ({ communityId, onError }) => {
       )}
       <FlatList
         data={members?.data || []}
-        renderItem={({ item }) => <CommunityMember item={item} />}
+        renderItem={({ item }) => (
+          <CommunityMember item={item} onBan={handleBan} />
+        )}
         keyExtractor={(item) => item.user.id}
         contentContainerStyle={tw`pb-4`}
       />
