@@ -43,9 +43,18 @@ const ForumDetailScreen: React.FC = () => {
 
   const discussions = discussionsData?.data ?? []
 
-  const handleCreateDiscussion = async (title: string, body: string) => {
+  const handleCreateDiscussion = async (
+    title: string,
+    body: string,
+    mentions?: string[]
+  ) => {
     try {
-      await createDiscussion({ interestId: forum.id, title, body }).unwrap()
+      await createDiscussion({
+        interestId: forum.id,
+        title,
+        body,
+        mentions,
+      }).unwrap()
     } catch (err) {
       console.error('Failed to create discussion:', err)
     }
