@@ -1,9 +1,10 @@
 import React, { memo } from 'react'
-import { View } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import { formatDate } from 'date-fns'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
+import MentionText from 'components/MentionText'
 import LikeForm from 'components/LikeForm'
 import ProfAvatar from 'components/ProfAvatar'
 import { Discussion } from '../../../../types'
@@ -13,8 +14,11 @@ import {
 } from 'store/discussion-api-slice'
 import useToggle from 'hooks/useToggle'
 import LikerPopover from 'components/LikersPopOver'
+import routes from 'navigation/routes'
+import { useNavigation } from '@react-navigation/native'
 
 const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
+  const navigation = useNavigation()
   const [isShowLikers, toggleShowLikers] = useToggle(false)
   const date = formatDate(new Date(reply.createdAt), 'MMM dd, yyyy')
 
@@ -30,15 +34,26 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
       parentId: reply.parentId,
     }).unwrap()
   }
+  const handleNavigateToProfile = (id: string) => {
+    // navigate to user profile
+    // @ts-ignore
+    navigation.navigate(routes.ACCOUNT, {
+      screen: routes.PROFILE,
+      params: { profileId: id },
+    })
+  }
 
   return (
     <View
       style={tw`ml-6 mt-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700`}
     >
       <ProfAvatar user={reply.user} size={28} subtitle={date} />
-      <Text style={tw`text-gray-600 dark:text-gray-400 text-sm mt-2 leading-5`}>
+      <MentionText
+        style={tw`text-gray-600 dark:text-gray-400 text-sm mt-2 leading-5`}
+        onMentionPress={handleNavigateToProfile}
+      >
         {reply.body}
-      </Text>
+      </MentionText>
       <LikeForm
         id={reply.id}
         isReactor={!!reply.isReactor}
@@ -67,30 +82,20 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
               discussionId: reply.id,
             })
           }}
+          anchorContent={
+            <TouchableOpacity onPress={toggleShowLikers}>
+              <Text style={tw`text-xs text-primary`}>
+                {reply.amountOfLikes}{' '}
+                {reply.amountOfLikes === 1 ? 'like' : 'likes'}
+              </Text>
+            </TouchableOpacity>
+          }
         />
       )}
     </View>
   )
   {
-    /* <TouchableOpacity
-        style={tw`flex-row items-center mt-2`}
-        onPress={toggleLike}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name={liked ? 'heart' : 'heart-outline'}
-          size={14}
-          color={liked ? '#EF4444' : tw.color('gray-400')}
-        />
-        <Text
-          style={tw`text-xs ${liked ? 'text-red-500' : 'text-gray-400'} ml-1`}
-        >
-          {likes}
-        </Text>
-      </TouchableOpacity> */
   }
-  // </View>
-  //   )
 }
 
 export default memo(ReplyCard)

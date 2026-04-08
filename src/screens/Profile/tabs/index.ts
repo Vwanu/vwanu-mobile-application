@@ -4,7 +4,6 @@
  */
 
 export { default as PostsTab } from './PostsTab'
-export { default as PicturesTab } from './PicturesTab'
 export { default as FriendsTab } from './FriendsTab'
 export { default as FollowersTab } from './FollowersTab'
 export { default as FollowingTab } from './FollowingTab'

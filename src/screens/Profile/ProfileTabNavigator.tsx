@@ -8,7 +8,6 @@ import { useTheme } from '../../hooks/useTheme'
 import { TabContentProps, TAB_CONFIGS } from './types'
 import {
   PostsTab,
-  PicturesTab,
   FriendsTab,
   FollowersTab,
   FollowingTab,
@@ -18,7 +17,7 @@ import {
 
 interface ProfileTabNavigatorProps {
   userId: string | null
-  targetUserId: string | null
+  targetUserId: string
   navigation: any
 }
 
@@ -46,16 +45,14 @@ const ProfileTabNavigator: React.FC<ProfileTabNavigatorProps> = ({
       case 0:
         return <PostsTab {...commonProps} />
       case 1:
-        return <PicturesTab {...commonProps} />
-      case 2:
         return <FriendsTab {...commonProps} />
-      case 3:
+      case 2:
         return <FollowersTab {...commonProps} />
-      case 4:
+      case 3:
         return <FollowingTab {...commonProps} />
-      case 5:
+      case 4:
         return <CommunitiesTab {...commonProps} />
-      case 6:
+      case 5:
         return <BlogsTab {...commonProps} />
       default:
         return <PostsTab {...commonProps} />

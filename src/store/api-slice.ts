@@ -91,6 +91,7 @@ const apiSlice = createApi({
     'Message',
     'Blog',
     'Discussion',
+    'Follower',
   ],
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),

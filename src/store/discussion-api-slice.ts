@@ -90,12 +90,17 @@ export const discussionApiSlice = apiSlice.injectEndpoints({
     // Reply to a discussion — sends the parent discussion's id as `parentId`
     replyToDiscussion: builder.mutation<
       Discussion,
-      { interestId: string; discussionId: string; body: string }
+      {
+        interestId: string
+        discussionId: string
+        body: string
+        mentions?: string[]
+      }
     >({
-      query: ({ interestId, discussionId, body }) => ({
+      query: ({ interestId, discussionId, body, mentions }) => ({
         url: discussionUrl(interestId),
         method: HttpMethods.POST,
-        body: { body, parentId: discussionId, interestId },
+        body: { body, parentId: discussionId, interestId, mentions },
       }),
       invalidatesTags: (_result, _error, { discussionId, interestId }) => [
         { type: 'Discussion', id: discussionId },

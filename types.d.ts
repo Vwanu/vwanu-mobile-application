@@ -184,7 +184,10 @@ interface Profiles extends User {
   searchVector?: string | null
   online: boolean
 }
-
+export interface Member {
+  user: User
+  communityRole: CommunityRole
+}
 export interface CommunityInterface {
   name: string
   profilePicture: string
