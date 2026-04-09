@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 
 import tw from 'lib/tailwind'
 import Text from './Text'
+import MentionText from './MentionText'
 import ProfAvatar from './ProfAvatar'
 import { PostProps } from '../../types'
 import LikeForm from './LikeForm'
@@ -57,7 +58,12 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
         }}
       />
       <View style={tw`flex-1 flex-row justify-between ml-3`}>
-        <Text style={tw`items-center mt-2`}>{comment.postText}</Text>
+        <MentionText
+          style={tw`items-center mt-2`}
+          onMentionPress={(id) => handleProfileNavigation(id)}
+        >
+          {comment.postText || ''}
+        </MentionText>
         <LikeForm
           id={comment.id.toString()}
           isReactor={!!comment.isReactor}

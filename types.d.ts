@@ -395,6 +395,7 @@ export interface CreateDiscussionParams {
   interestId: string
   title: string
   body: string
+  mentions?: string[]
 }
 
 export interface CreateDiscussionReplyParams {
