@@ -34,7 +34,7 @@ const CreateDiscussionFormContent: React.FC<{
   return (
     <>
       {/* Header */}
-      <View style={tw`flex-row items-center justify-between mb-5`}>
+      <View style={tw`flex-row items-center justify-between mb-5 `}>
         <TouchableOpacity onPress={onClose}>
           <Ionicons name="close" size={24} color={tw.color('gray-500')} />
         </TouchableOpacity>
@@ -66,7 +66,7 @@ const CreateDiscussionFormContent: React.FC<{
         name="body"
         placeholder="What would you like to discuss?"
         placeholderTextColor={tw.color('gray-400')}
-        style={tw`text-sm text-gray-700 dark:text-gray-300 flex-1`}
+        style={tw`text-gray-700 dark:text-gray-300 h-48`}
         multiline
         textAlignVertical="top"
       />
