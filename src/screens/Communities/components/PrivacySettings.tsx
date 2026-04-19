@@ -68,10 +68,10 @@ const PrivacySettings: React.FC<Props> = ({ name = 'privacyType' }) => {
             color={isSelected ? PRIMARY_3 : SOFT}
           />
         </View>
-        <Text style={tw`font-bold text-[13.5px] text-[#1A1A2E] mb-0.5`}>
+        <Text style={tw`font-poppins-bold text-[13.5px] text-[#1A1A2E] mb-0.5`}>
           {option.title}
         </Text>
-        <Text style={tw`text-[11.5px] text-[#8A8A9E] leading-4`}>
+        <Text style={tw`font-poppins text-[11.5px] text-[#8A8A9E] leading-4`}>
           {option.description}
         </Text>
       </TouchableOpacity>
@@ -79,9 +79,11 @@ const PrivacySettings: React.FC<Props> = ({ name = 'privacyType' }) => {
   }
 
   return (
-    <View style={tw` px-4 py-6 border-b border-gray-100`}>
-      <View style={tw`mb-6`}>
-        <Text style={tw`font-medium text-base mb-3`}>Visibility</Text>
+    <View style={tw`my-2 border-b border-gray-100`}>
+      <View style={tw``}>
+        <Text category="h6" style={tw`font-poppins-bold text-lg mb-4`}>
+          Visibility
+        </Text>
         <View style={tw`flex-row gap-2.5`}>
           {privacyOptions.map(renderPrivacyOption)}
         </View>

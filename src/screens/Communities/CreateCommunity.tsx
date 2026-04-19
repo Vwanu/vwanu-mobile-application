@@ -167,18 +167,23 @@ const CreateCommunity = () => {
             isLoading={isLoading}
             submitTitle={isEditMode ? 'Update' : 'Create'}
             submittingText={isEditMode ? 'Updating...' : 'Creating...'}
+            title="Creating community"
           />
 
           <FormContent>
+            <Text category="h6" style={tw`font-poppins-bold text-lg mb-2 mt-4`}>
+              Community Image
+            </Text>
             <ImageUploadSection name="profilePicture" />
 
-            <Text category="h6" style={tw`font-semibold text-lg mb-4`}>
+            <Text category="h6" style={tw`font-poppins-bold text-lg mb-3 mt-4`}>
               Basic Information
             </Text>
             <Field
               name="name"
               placeholder="Enter community name"
-              style={tw`bg-gray-50`}
+              style={tw`bg-gray-50 rounded-lg mb-3`}
+              textStyle={tw`font-poppins`}
               required
               label="Community Name"
             />
@@ -186,13 +191,14 @@ const CreateCommunity = () => {
             <Field
               name="description"
               placeholder="Describe your community..."
-              style={tw`bg-gray-50 text-base min-h-20`}
+              style={tw`bg-gray-50 text-base rounded-lg`}
+              textStyle={tw`min-h-32 font-poppins`}
               required
               multiline
-              numberOfLines={4}
+              numberOfLines={6}
               label="Description"
             />
-            <PrivacySettings />
+            <View style={tw`mt-4`} />
             <InterestSelector
               name="interests"
               Label="Interests"
@@ -200,6 +206,7 @@ const CreateCommunity = () => {
               maxSelected={5}
               required={true}
             />
+            <PrivacySettings />
 
             {/* Bottom spacing */}
             <View style={tw`h-20`} />
