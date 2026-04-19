@@ -1,15 +1,15 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { Ionicons } from '@expo/vector-icons'
-import { View, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Popover } from '@ui-kitten/components'
+import { Avatar as PaperAvatar } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 import tw from 'lib/tailwind'
 import { RootState } from 'store'
 import Text from 'components/Text'
-import { useTheme } from 'hooks/useTheme'
-import ProfAvatar from 'components/ProfAvatar'
 import ProfileNotFound from './ProfileNotFound'
 import { useFetchProfileQuery } from 'store/profiles'
 import {
@@ -17,9 +17,8 @@ import {
   useUnfollowUserMutation,
 } from 'store/followers-api-slice'
 import ConnectionStatus from './ConnectionStatus'
-import NotificationIndicator from 'components/NotificationIndicator'
+import { useFetchUnreadNotificationsQuery } from 'store/notifications-api-slice'
 
-import { SafeAreaView } from 'react-native-safe-area-context'
 import useToggle from 'hooks/useToggle'
 import ProfileStats from './ProfileStats'
 
@@ -27,12 +26,42 @@ interface ProfileHeaderProps {
   profileId: string
 }
 
+interface PillIconButtonProps {
+  iconName: React.ComponentProps<typeof Ionicons>['name']
+  onPress: () => void
+  badge?: number
+}
+
+const PillIconButton: React.FC<PillIconButtonProps> = ({
+  iconName,
+  onPress,
+  badge,
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={tw`relative w-9 h-9 rounded-full border border-warm-border-strong bg-warm-surface items-center justify-center`}
+  >
+    <Ionicons name={iconName} size={16} color="#4A4A5E" />
+    {badge !== undefined && badge > 0 && (
+      <View
+        style={tw`absolute -top-1 -right-1 bg-coral rounded-full min-w-4 h-4 border-[1.5px] border-warm-surface items-center justify-center px-1`}
+      >
+        <Text style={tw`text-white text-[8.5px] font-poppins-bold`}>
+          {badge > 9 ? '9+' : String(badge)}
+        </Text>
+      </View>
+    )}
+  </TouchableOpacity>
+)
+
 const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
   const navigation = useNavigation()
-  const { isDarkMode } = useTheme()
   const { data } = useFetchProfileQuery(props.profileId)
   const { userId } = useSelector((state: RootState) => state.auth)
   const [showAction, toggleShowActions] = useToggle(false)
+
+  const { data: unreadNotifications } = useFetchUnreadNotificationsQuery()
+  const unreadCount = unreadNotifications?.data?.length || 0
 
   const [followUser, { isLoading: isFollowing }] = useFollowUserMutation()
   const [unfollowUser, { isLoading: isUnfollowing }] = useUnfollowUserMutation()
@@ -42,6 +71,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
     return <ProfileNotFound />
   }
 
+  const isOwnProfile = userId === user.id
+
   const handleFollowToggle = async () => {
     if (user.isFollowing) {
       await unfollowUser(user.id)
@@ -50,93 +81,130 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
     }
   }
 
+  const handleEditProfile = () => {
+    Alert.alert('Edit Profile', 'This feature will be implemented soon.')
+  }
+
+  const handleNotificationsPress = () => {
+    // @ts-ignore
+    navigation.navigate('ACCOUNT', { screen: 'Notifications' })
+  }
+
+  const handleSettingsPress = () => {
+    // @ts-ignore
+    navigation.navigate('Settings')
+  }
+
   const isFollowLoading = isFollowing || isUnfollowing
 
   return (
-    <SafeAreaView
-      style={tw`pt-3 px-6 w-full border-b ${
-        isDarkMode ? 'border-gray-700' : 'border-gray-300'
-      }`}
-    >
-      {/* Profile Avatar and Action Icons */}
-      <View style={tw`flex flex-row justify-between items-center`}>
-        <ProfAvatar
-          user={user}
-          subtitle={
-            userId !== user?.id
-              ? `Member since ${new Date(user.createdAt).getFullYear()}`
-              : undefined
-          }
-        />
-        {userId === user?.id ? (
-          <View style={tw`flex-row items-center gap-4`}>
-            {/* Notification Bell */}
-            <NotificationIndicator />
+    <SafeAreaView edges={['top']} style={tw`bg-white  border-warm-bg border-t`}>
+      {/* Row 1: Avatar + action pills */}
+      <View style={tw`flex-row justify-between -mt-10 px-4 pb-3 `}>
+        <View
+          style={tw`w-[68px] h-[68px] rounded-full border-2 border-warm-border items-center justify-center overflow-hidden bg-primary-deep-2`}
+        >
+          {user.profilePicture ? (
+            <PaperAvatar.Image
+              size={64}
+              source={{ uri: user.profilePicture }}
+            />
+          ) : (
+            <Text style={tw`text-white font-poppins-bold text-lg`}>
+              {(user.firstName?.[0] || '').toUpperCase()}
+              {(user.lastName?.[0] || '').toUpperCase()}
+            </Text>
+          )}
+        </View>
+
+        {isOwnProfile ? (
+          <View style={tw`flex-row items-center gap-2`}>
+            <PillIconButton
+              iconName="notifications-outline"
+              onPress={handleNotificationsPress}
+              badge={unreadCount}
+            />
+            <PillIconButton
+              iconName="settings-outline"
+              onPress={handleSettingsPress}
+            />
             <TouchableOpacity
-              onPress={() => {
-                // @ts-ignore
-                navigation.navigate('Settings')
-              }}
+              onPress={handleEditProfile}
+              style={tw`px-4 py-2 rounded-full border border-warm-border-strong bg-warm-surface`}
             >
-              <Ionicons
-                name="settings-outline"
-                size={20}
-                color={isDarkMode ? 'white' : 'black'}
-              />
+              <Text style={tw`font-poppins-bold text-xs text-primary-deep`}>
+                Edit Profile
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <Popover
-            visible={showAction}
-            anchor={() => (
-              <TouchableOpacity onPress={toggleShowActions}>
-                <Ionicons
-                  name="ellipsis-vertical-outline"
-                  size={24}
-                  color={isDarkMode ? 'white' : 'black'}
-                />
-              </TouchableOpacity>
-            )}
-          >
-            <Text style={tw`p-4`}>some profile actions here ...</Text>
-          </Popover>
-        )}
-      </View>
-      {/* Profile Bio and Connection Actions */}
-      <View style={tw`flex flex-row justify-between items-center mt-2 pr-6`}>
-        <View style={tw`flex-1`}>
-          <Text category="p1" style={[tw`font-poppins-medium text-sm`]}>
-            {user?.about || 'Encourage them to set a bio!'}
-          </Text>
-        </View>
-        {userId !== user?.id && (
-          <View
-            style={tw`flex flex-row justify-between items-center mt-2 flex-shrink-0 `}
-          >
+          <View style={tw`flex-row items-center gap-2`}>
             <ConnectionStatus currentUserId={userId || ''} targetUser={user} />
             <TouchableOpacity
               onPress={handleFollowToggle}
               disabled={isFollowLoading}
-              style={tw`px-3 ml-2 py-1 rounded-full ${
-                user.isFollowing ? 'bg-gray-300' : 'bg-blue-600'
+              style={tw`px-4 py-2 rounded-full border ${
+                user.isFollowing
+                  ? 'bg-warm-surface border-warm-border-strong'
+                  : 'bg-primary-deep border-primary-deep'
               }`}
             >
               {isFollowLoading ? (
-                <ActivityIndicator size="small" color="white" />
+                <ActivityIndicator
+                  size="small"
+                  color={user.isFollowing ? '#1B1F5E' : '#FFFFFF'}
+                />
               ) : (
                 <Text
-                  style={tw`${
-                    user.isFollowing ? 'text-black' : 'text-white'
-                  } font-poppins-bold text-xs`}
+                  style={tw`font-poppins-bold text-xs ${
+                    user.isFollowing ? 'text-primary-deep' : 'text-white'
+                  }`}
                 >
                   {user.isFollowing ? 'Unfollow' : 'Follow'}
                 </Text>
               )}
             </TouchableOpacity>
+            <Popover
+              visible={showAction}
+              anchor={() => (
+                <TouchableOpacity
+                  onPress={toggleShowActions}
+                  style={tw`w-9 h-9 rounded-full border border-warm-border-strong bg-warm-surface items-center justify-center`}
+                >
+                  <Ionicons
+                    name="ellipsis-horizontal"
+                    size={16}
+                    color="#4A4A5E"
+                  />
+                </TouchableOpacity>
+              )}
+              onBackdropPress={toggleShowActions}
+            >
+              <Text style={tw`p-4`}>some profile actions here ...</Text>
+            </Popover>
           </View>
         )}
       </View>
-      {/* Profile Stats */}
+
+      {/* Row 2: Name + location + bio */}
+      <View style={tw`px-4 pb-3`}>
+        <Text category="h2" style={tw`font-poppins-bold uppercase`}>
+          {user.firstName} {user.lastName}
+        </Text>
+        <View style={tw`flex-row items-center gap-1 mt-1`}>
+          <Ionicons name="location-outline" size={12} color="#8A8A9E" />
+          <Text appearance="hint" category="c1">
+            {user.location || 'Not specified'}
+          </Text>
+        </View>
+        {user.about && (
+          <Text style={tw`text-[13.5px] text-soft font-poppins leading-5 mt-2`}>
+            {user.about}
+          </Text>
+        )}
+      </View>
+
+      {/* Row 3: Stats */}
       <ProfileStats user={user} />
     </SafeAreaView>
   )
