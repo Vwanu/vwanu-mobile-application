@@ -22,6 +22,7 @@ import { InferType } from 'yup'
 import { isEqual } from 'lodash'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { SerializedError } from '@reduxjs/toolkit'
+import PrivacySettings from './components/PrivacySettings'
 
 type NavigationProp = StackNavigationProp<
   CommunityStackParams,
@@ -154,7 +155,7 @@ const CreateCommunity = () => {
   }
   return (
     <Screen loading={isLoading} error={unifiedError as any}>
-      <View style={tw`flex-1 bg-gray-50 px-3`}>
+      <View style={tw`flex-1  px-3`}>
         <Form
           validationSchema={ValidationSchema}
           initialValues={initialValues}
@@ -191,7 +192,7 @@ const CreateCommunity = () => {
               numberOfLines={4}
               label="Description"
             />
-
+            <PrivacySettings />
             <InterestSelector
               name="interests"
               Label="Interests"
@@ -199,13 +200,6 @@ const CreateCommunity = () => {
               maxSelected={5}
               required={true}
             />
-
-            {/* <PrivacySettings
-            privacyType={(values['privacyType'] || 'public') as CommunityPrivacyType}
-            requireApproval={values['requireApproval'] || false}
-            onPrivacyTypeChange={(privacyType) => setFieldValue('privacyType', privacyType)}
-            onApprovalChange={(requireApproval) => setFieldValue('requireApproval', requireApproval)}
-          /> */}
 
             {/* Bottom spacing */}
             <View style={tw`h-20`} />
