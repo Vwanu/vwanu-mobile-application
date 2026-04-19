@@ -8,7 +8,6 @@ import {
   View,
   Modal,
   TouchableOpacity,
-  StatusBar,
   Animated,
   ScrollView,
 } from 'react-native'
@@ -29,7 +28,6 @@ import extractMentionIds from 'utils/extractMentionIds'
 import { Notice } from '../../../../types'
 import { useFetchProfileQuery } from 'store/profiles'
 import { RootState } from 'store'
-import nameToPicture from 'lib/nameToPicture'
 import { useFormikContext } from 'formik'
 import routes from 'navigation/routes'
 import { useTheme } from 'hooks/useTheme'
