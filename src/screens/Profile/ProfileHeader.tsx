@@ -100,7 +100,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
   return (
     <SafeAreaView edges={['top']} style={tw`bg-white  border-warm-bg border-t`}>
       {/* Row 1: Avatar + action pills */}
-      <View style={tw`flex-row justify-between -mt-10 px-4 pb-3 `}>
+      <View style={tw`flex-row justify-between pt-1 px-4 pb-3 `}>
         <View
           style={tw`w-[68px] h-[68px] rounded-full border-2 border-warm-border items-center justify-center overflow-hidden bg-primary-deep-2`}
         >
@@ -128,14 +128,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
               iconName="settings-outline"
               onPress={handleSettingsPress}
             />
-            <TouchableOpacity
-              onPress={handleEditProfile}
-              style={tw`px-4 py-2 rounded-full border border-warm-border-strong bg-warm-surface`}
-            >
-              <Text style={tw`font-poppins-bold text-xs text-primary-deep`}>
-                Edit Profile
-              </Text>
-            </TouchableOpacity>
           </View>
         ) : (
           <View style={tw`flex-row items-center gap-2`}>
@@ -188,7 +180,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
 
       {/* Row 2: Name + location + bio */}
       <View style={tw`px-4 pb-3`}>
-        <Text category="h2" style={tw`font-poppins-bold uppercase`}>
+        <Text category="h2" style={tw`font-poppins-bold `}>
           {user.firstName} {user.lastName}
         </Text>
         <View style={tw`flex-row items-center gap-1 mt-1`}>
