@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
+    "start:local": "npm run api:use-ngrok && expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -12,7 +12,8 @@
     "pre-commit": "lint-staged",
     "postinstall": "rndebugger://set-debugger-loc?host=localhost&port=19001",
     "generate-types": "node scripts/generateTypes.js",
-    "commit": "cz"
+    "commit": "cz",
+    "api:use-ngrok": "./scripts/ngrok.ts"
   },
   "lint": "eslint .",
   "lint-staged": {
@@ -104,6 +105,7 @@
     "@typescript-eslint/eslint-plugin": "^5.31.0",
     "@typescript-eslint/parser": "^5.31.0",
     "cz-conventional-changelog": "^3.3.0",
+    "envfile": "^7.1.0",
     "eslint": "^8.20.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.26.0",
@@ -114,6 +116,7 @@
     "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "redux-devtools-extension": "^2.13.9",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "~5.3.3"
   },
