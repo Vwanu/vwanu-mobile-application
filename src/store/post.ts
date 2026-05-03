@@ -15,8 +15,11 @@ interface Rep {
   skip: number
 }
 
-type PostCreationProps = PostProps & { postImage: string[] }
-type CommentType = Partial<PostProps> & { postId: number }
+type PostCreationProps = PostProps & {
+  postImage: string[]
+  mentions?: string[]
+}
+type CommentType = Partial<PostProps> & { postId: number; mentions?: string[] }
 
 export type PostMediaType = 'image' | 'video' | 'audio'
 
@@ -38,6 +41,11 @@ const _toFormData = (values: Partial<PostCreationProps>): FormData => {
   formData.append('privacyType', values?.privacyType || 'public')
   if (values?.communityId) {
     formData.append('communityId', values?.communityId || '')
+  }
+  if (values?.mentions?.length) {
+    values.mentions.forEach((id) => {
+      formData.append('mentions[]', id)
+    })
   }
   if (values?.postImage?.length) {
     values.postImage.forEach((uri) => {

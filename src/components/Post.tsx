@@ -55,7 +55,11 @@ const Post: React.FC<Props> = ({
     }
   }
   return (
-    <View style={tw`static my-3`}>
+    <View
+      style={tw`static my-3 bg-white p-4 rounded-lg ${
+        isDarkMode ? 'bg-dark-surface' : 'bg-white'
+      }`}
+    >
       <PostHeader
         {...props}
         updatePostMeta={updatePostMeta}

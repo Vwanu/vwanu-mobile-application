@@ -15,10 +15,12 @@ enum FriendShipStatus {
 }
 
 interface FetchProfilesParams {
+  userId?: string
   search?: string
   $limit?: number
   $skip?: number
   $sort?: Record<string, 1 | -1>
+  status?: FriendShipStatus
 }
 /**
  * Friends API Slice
@@ -71,6 +73,13 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
         const queryParams: Record<string, any> = {}
 
         if (params && typeof params === 'object') {
+          if (params.userId) {
+            queryParams.userId = params.userId
+          }
+          if (params.status !== undefined) {
+            queryParams.status = params.status
+          }
+
           // Add search param if provided
           if (params.search?.trim()) {
             queryParams.search = params.search.trim()
@@ -93,7 +102,16 @@ export const friendsApiSlice = apiSlice.injectEndpoints({
           params: queryParams,
         }
       },
-      //   providesTags: ['Profile'],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({
+                type: 'friendship' as const,
+                id,
+              })),
+              { type: 'friendship', id: 'LIST' },
+            ]
+          : [{ type: 'friendship', id: 'LIST' }],
     }),
 
     /**

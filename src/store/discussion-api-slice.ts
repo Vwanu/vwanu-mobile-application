@@ -42,11 +42,14 @@ export const discussionApiSlice = apiSlice.injectEndpoints({
           : [{ type: 'Discussion', id: `LIST-${interestId}` }],
     }),
 
-    createDiscussion: builder.mutation<Discussion, CreateDiscussionParams>({
-      query: ({ interestId, title, body }) => ({
+    createDiscussion: builder.mutation<
+      Discussion,
+      CreateDiscussionParams & { mentions?: string[] }
+    >({
+      query: ({ interestId, title, body, mentions }) => ({
         url: discussionUrl(interestId),
         method: HttpMethods.POST,
-        body: { title, body, interestId },
+        body: { title, body, interestId, mentions },
       }),
       invalidatesTags: (_result, _error, { interestId }) => [
         { type: 'Discussion', id: `LIST-${interestId}` },

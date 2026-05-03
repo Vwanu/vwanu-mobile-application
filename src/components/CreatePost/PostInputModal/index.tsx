@@ -9,7 +9,6 @@ import {
   View,
   Modal,
   TouchableOpacity,
-  StatusBar,
   Animated,
   ScrollView,
 } from 'react-native'
@@ -18,21 +17,22 @@ import { styles } from './style'
 import tw from 'lib/tailwind'
 import ProfAvatar from '../../ProfAvatar'
 import {
-  Field,
   Form,
   Submit,
   ImageFields,
   PrivacyNoticeField,
+  MentionInput,
 } from '../../form'
 import Text from '../../Text'
 import {
   useCreatePostMutation,
   useCreatePostWithMediaKeysMutation,
 } from 'store/post'
+import extractMentionIds from 'utils/extractMentionIds'
+
 import { Notice } from '../../../../types'
 import { useFetchProfileQuery } from 'store/profiles'
 import { RootState } from 'store'
-import nameToPicture from 'lib/nameToPicture'
 import { useFormikContext } from 'formik'
 import routes from 'navigation/routes'
 import { useTheme } from 'hooks/useTheme'
@@ -227,8 +227,11 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               })
               return
             }
+
+            const mentions = extractMentionIds(values.postText || '')
+
             //@ts-ignore
-            await createPost(values)
+            await createPost({ ...values, mentions })
           }}
           style={tw`flex-1`}
         >
@@ -299,16 +302,16 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
 
             {/* Enhanced Text Input */}
             <View style={styles.textInputSection}>
-              <CustomField
-                //  ref={textInputRef}
+              <MentionInput
                 name="postText"
                 placeholder="What's on your mind?"
                 autoCapitalize="sentences"
                 style={styles.textInput}
                 multiline={true}
-                onChangeText={setPostText}
                 textAlignVertical="top"
               />
+
+              <PostTextSync onTextChange={setPostText} />
 
               {/* Character counter */}
               <View style={styles.characterCounter}>
@@ -428,17 +431,14 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     </Modal>
   )
 }
-const CustomField = ({ onChangeText, ...props }: any) => {
-  const { setFieldValue } = useFormikContext()
-  return (
-    <Field
-      {...props}
-      onChangeText={(e) => {
-        setFieldValue(props.name, e)
-        onChangeText(e)
-      }}
-    />
-  )
+const PostTextSync: React.FC<{ onTextChange: (text: string) => void }> = ({
+  onTextChange,
+}) => {
+  const { values } = useFormikContext<any>()
+  React.useEffect(() => {
+    onTextChange(values.postText || '')
+  }, [values.postText])
+  return null
 }
 
 const MAX_PRESIGN_FILES_PER_POST = 5
