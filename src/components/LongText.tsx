@@ -7,8 +7,11 @@ import {
   StyleProp,
 } from 'react-native'
 import Text from './Text'
+import MentionText from './MentionText'
 import tw from '../lib/tailwind'
 import useToggle from '../hooks/useToggle'
+import routes from '../navigation/routes'
+import { useNavigation } from '@react-navigation/native'
 
 interface LongTextProps extends TextProps {
   text: string
@@ -28,11 +31,22 @@ const LongText: React.FC<LongTextProps> = ({
   showShowMoreText = true,
   ...textProps
 }) => {
+  const navigation = useNavigation()
   const [isExpanded, toggleExpanded] = useToggle(false)
   const shouldTruncate = text.length > maxLength
 
   const displayText =
     shouldTruncate && !isExpanded ? `${text.slice(0, maxLength)}...` : text
+
+  const handleMentionPress = (id: string) => {
+    const parentNavigation = navigation.getParent()
+    const nav = parentNavigation || navigation
+    // @ts-ignore
+    nav.navigate(routes.ACCOUNT, {
+      screen: routes.PROFILE,
+      params: { profileId: id },
+    })
+  }
 
   const toggleButton = shouldTruncate && showShowMoreText && (
     <TouchableOpacity onPress={toggleExpanded}>
@@ -44,9 +58,9 @@ const LongText: React.FC<LongTextProps> = ({
 
   return (
     <View style={tw`flex flex-row flex-wrap items-center`}>
-      <Text style={textStyles} {...textProps}>
+      <MentionText style={textStyles} onMentionPress={handleMentionPress}>
         {displayText}
-      </Text>
+      </MentionText>
       {toggleButton}
     </View>
   )

@@ -1,10 +1,8 @@
 import React from 'react'
-import { Ionicons } from '@expo/vector-icons'
 import { View, TouchableOpacity, ScrollView } from 'react-native'
 
 import tw from '../../lib/tailwind'
 import Text from '../../components/Text'
-import { useTheme } from '../../hooks/useTheme'
 import { TabContentProps, TAB_CONFIGS } from './types'
 import {
   PostsTab,
@@ -23,20 +21,18 @@ interface ProfileTabNavigatorProps {
 
 /**
  * Tab Navigator for Profile screens using custom tab bar
- * This provides scrollable tabs with UI Kitten styling
  */
 const ProfileTabNavigator: React.FC<ProfileTabNavigatorProps> = ({
   userId,
   targetUserId,
   navigation: parentNavigation,
 }) => {
-  const { isDarkMode } = useTheme()
   const [selectedIndex, setSelectedIndex] = React.useState(0)
 
   const commonProps: TabContentProps = {
     userId,
     targetUserId,
-    user: null, // Will be fetched within each tab component as needed
+    user: null,
     navigation: parentNavigation,
   }
 
@@ -66,50 +62,27 @@ const ProfileTabNavigator: React.FC<ProfileTabNavigatorProps> = ({
       <TouchableOpacity
         key={index}
         onPress={() => setSelectedIndex(index)}
-        style={tw`py-3 px-4 items-center justify-center min-w-20 ${
-          isSelected
-            ? isDarkMode
-              ? 'border-b-2 border-blue-400'
-              : 'border-b-2 border-blue-600'
-            : ''
+        style={tw`px-4 py-3 ${
+          isSelected ? 'border-b-[2.5px] border-primary-deep' : ''
         }`}
       >
-        <View style={tw`items-center`}>
-          <Ionicons
-            name={tab.icon as any}
-            size={20}
-            color={
-              isSelected
-                ? isDarkMode
-                  ? '#60A5FA'
-                  : '#2563EB'
-                : isDarkMode
-                ? '#9CA3AF'
-                : '#6B7280'
-            }
-          />
-          <Text
-            style={tw`text-sm mt-1 font-poppins ${
-              isSelected
-                ? isDarkMode
-                  ? 'text-blue-400 font-poppins-semibold'
-                  : 'text-blue-600 font-poppins-semibold'
-                : isDarkMode
-                ? 'text-gray-400'
-                : 'text-gray-600'
-            }`}
-          >
-            {tab.title}
-          </Text>
-        </View>
+        <Text
+          style={tw`text-[13px] ${
+            isSelected
+              ? 'text-primary-deep font-poppins-semibold'
+              : 'text-mute font-poppins-medium'
+          }`}
+        >
+          {tab.title}
+        </Text>
       </TouchableOpacity>
     )
   }
 
   return (
     <View style={tw`flex-1`}>
-      {/* Custom Tab Bar - Horizontally Scrollable */}
-      <View style={tw`border-b border-gray-200`}>
+      {/* Text-only horizontally scrollable tab bar */}
+      <View style={tw`bg-warm-surface border-b border-warm-border`}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -119,8 +92,8 @@ const ProfileTabNavigator: React.FC<ProfileTabNavigatorProps> = ({
         </ScrollView>
       </View>
 
-      {/* Tab Content */}
-      <View style={tw`flex-1 p-3`}>{renderTabContent()}</View>
+      {/* Tab Content on warm background */}
+      <View style={tw`flex-1 bg-warm-bg px-4 py-2`}>{renderTabContent()}</View>
     </View>
   )
 }

@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux'
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
+import * as ImagePicker from 'expo-image-picker'
 import {
   View,
   Modal,
   TouchableOpacity,
-  StatusBar,
   Animated,
   ScrollView,
 } from 'react-native'
@@ -17,21 +17,49 @@ import { styles } from './style'
 import tw from 'lib/tailwind'
 import ProfAvatar from '../../ProfAvatar'
 import {
-  Field,
   Form,
   Submit,
   ImageFields,
   PrivacyNoticeField,
+  MentionInput,
 } from '../../form'
 import Text from '../../Text'
-import { useCreatePostMutation } from 'store/post'
+import {
+  useCreatePostMutation,
+  useCreatePostWithMediaKeysMutation,
+} from 'store/post'
+import extractMentionIds from 'utils/extractMentionIds'
+
 import { Notice } from '../../../../types'
 import { useFetchProfileQuery } from 'store/profiles'
 import { RootState } from 'store'
-import nameToPicture from 'lib/nameToPicture'
 import { useFormikContext } from 'formik'
 import routes from 'navigation/routes'
 import { useTheme } from 'hooks/useTheme'
+import { useMediaUploads, MediaItemInput } from '../useMediaUploads'
+import MediaTile from '../MediaTile'
+
+const PRESIGN_ENABLED = process.env.EXPO_PUBLIC_USE_PRESIGN_UPLOAD === 'true'
+
+const EXTENSION_FROM_MIME: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+}
+
+const inferMediaInputs = (
+  assets: ImagePicker.ImagePickerAsset[]
+): MediaItemInput[] =>
+  assets.map((asset) => {
+    const fallbackName = asset.uri.split('/').pop() || 'media'
+    const mimeType = asset.mimeType || 'image/jpeg'
+    const ext = EXTENSION_FROM_MIME[mimeType] || 'jpg'
+    const filename =
+      asset.fileName ||
+      (fallbackName.includes('.') ? fallbackName : `${fallbackName}.${ext}`)
+    return { uri: asset.uri, mimeType, filename }
+  })
 
 interface PostInputModalInterface {
   visible: boolean
@@ -64,7 +92,13 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   const bottomSheetRef = useRef<BottomSheet>(null)
   const snapPoints = React.useMemo(() => [40, 100], [])
   const iniTialsnapPointIndex = openBottomSheet ? 1 : 0
-  const [createPost, result] = useCreatePostMutation()
+  const [createPost, multipartResult] = useCreatePostMutation()
+  const [createPostWithMediaKeys, presignResult] =
+    useCreatePostWithMediaKeysMutation()
+  const mediaUploads = useMediaUploads({ uploadType: 'post' })
+
+  const result = PRESIGN_ENABLED ? presignResult : multipartResult
+
   const [postText, setPostText] = useState('')
   const fadeAnim = useRef(new Animated.Value(0)).current
   const slideAnim = useRef(new Animated.Value(50)).current
@@ -151,10 +185,15 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   }, [result.isSuccess, result.isError, navigation])
 
   const handleClose = () => {
+    if (PRESIGN_ENABLED) mediaUploads.clearAll()
     if (onClose) onClose()
   }
 
   const isPostReady = postText.trim().length > 0
+  const isSubmitDisabled =
+    !isPostReady ||
+    result.isLoading ||
+    (PRESIGN_ENABLED && mediaUploads.isAnyUploading)
   const { isDarkMode } = useTheme()
 
   return (
@@ -179,8 +218,20 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           validationSchema={ValidationSchema}
           initialValues={initialValues}
           onSubmit={async (values) => {
+            if (PRESIGN_ENABLED) {
+              await createPostWithMediaKeys({
+                postText: values.postText,
+                privacyType: values.privacyType,
+                communityId: values.communityId,
+                mediaKeys: mediaUploads.getCompletedKeys(),
+              })
+              return
+            }
+
+            const mentions = extractMentionIds(values.postText || '')
+
             //@ts-ignore
-            await createPost(values)
+            await createPost({ ...values, mentions })
           }}
           style={tw`flex-1`}
         >
@@ -205,7 +256,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
             <Submit
               title={result.isLoading ? 'Posting...' : 'Post'}
               size="small"
-              disabled={!isPostReady || result.isLoading}
+              disabled={isSubmitDisabled}
               style={[
                 styles.postButton,
                 isPostReady && styles.postButtonActive,
@@ -251,16 +302,16 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
 
             {/* Enhanced Text Input */}
             <View style={styles.textInputSection}>
-              <CustomField
-                //  ref={textInputRef}
+              <MentionInput
                 name="postText"
                 placeholder="What's on your mind?"
                 autoCapitalize="sentences"
                 style={styles.textInput}
                 multiline={true}
-                onChangeText={setPostText}
                 textAlignVertical="top"
               />
+
+              <PostTextSync onTextChange={setPostText} />
 
               {/* Character counter */}
               <View style={styles.characterCounter}>
@@ -322,7 +373,11 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           >
             {/*@ts-ignore */}
             <BottomSheetView style={styles.bottomSheetContent}>
-              <ImageFields name="postImage" />
+              {PRESIGN_ENABLED ? (
+                <PresignMediaPicker mediaUploads={mediaUploads} />
+              ) : (
+                <ImageFields name="postImage" />
+              )}
             </BottomSheetView>
           </BottomSheet>
         </Form>
@@ -376,17 +431,169 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     </Modal>
   )
 }
-const CustomField = ({ onChangeText, ...props }: any) => {
-  const { setFieldValue } = useFormikContext()
+const PostTextSync: React.FC<{ onTextChange: (text: string) => void }> = ({
+  onTextChange,
+}) => {
+  const { values } = useFormikContext<any>()
+  React.useEffect(() => {
+    onTextChange(values.postText || '')
+  }, [values.postText])
+  return null
+}
+
+const MAX_PRESIGN_FILES_PER_POST = 5
+
+interface PresignMediaPickerProps {
+  mediaUploads: ReturnType<typeof useMediaUploads>
+}
+
+const PresignMediaPicker: React.FC<PresignMediaPickerProps> = ({
+  mediaUploads,
+}) => {
+  const [picking, setPicking] = useState(false)
+
+  const remainingSlots = MAX_PRESIGN_FILES_PER_POST - mediaUploads.items.length
+
+  const handlePick = async () => {
+    if (picking || remainingSlots <= 0) return
+    setPicking(true)
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (status !== 'granted') return
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        selectionLimit: remainingSlots,
+        quality: 0.8,
+      })
+
+      if (result.canceled) return
+
+      const inputs = inferMediaInputs(result.assets).slice(0, remainingSlots)
+      await mediaUploads.addFiles(inputs)
+    } catch (error) {
+      console.error('PresignMediaPicker: image picker error:', error)
+    } finally {
+      setPicking(false)
+    }
+  }
+
   return (
-    <Field
-      {...props}
-      onChangeText={(e) => {
-        setFieldValue(props.name, e)
-        onChangeText(e)
-      }}
-    />
+    <View style={presignPickerStyles.container}>
+      <View style={presignPickerStyles.header}>
+        <View style={presignPickerStyles.headerLeft}>
+          <MaterialCommunityIcons name="file-image" size={20} color="#374151" />
+          <Text style={presignPickerStyles.headerTitle}>Photos</Text>
+        </View>
+        <View style={presignPickerStyles.countBadge}>
+          <Text style={presignPickerStyles.countText}>
+            {mediaUploads.items.length}/{MAX_PRESIGN_FILES_PER_POST}
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={presignPickerStyles.tilesRow}
+      >
+        <TouchableOpacity
+          onPress={handlePick}
+          disabled={picking || remainingSlots <= 0}
+          style={[
+            presignPickerStyles.addButton,
+            (picking || remainingSlots <= 0) &&
+              presignPickerStyles.addButtonDisabled,
+          ]}
+          accessibilityLabel="Add media"
+        >
+          <MaterialCommunityIcons
+            name={picking ? 'loading' : 'camera-plus'}
+            size={28}
+            color="#3B82F6"
+          />
+        </TouchableOpacity>
+
+        {mediaUploads.items.map((item) => (
+          <MediaTile
+            key={item.id}
+            item={item}
+            onRemove={mediaUploads.removeItem}
+            onRetry={mediaUploads.retryItem}
+          />
+        ))}
+      </ScrollView>
+
+      {mediaUploads.hasError && (
+        <Text style={presignPickerStyles.warningText}>
+          Some media failed to upload. Tap retry on the red tile, or remove it
+          and post anyway.
+        </Text>
+      )}
+    </View>
   )
+}
+
+const presignPickerStyles = {
+  container: {
+    paddingVertical: 16,
+  },
+  header: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  headerLeft: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: '#374151',
+    marginLeft: 8,
+  },
+  countBadge: {
+    backgroundColor: '#EBF4FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+  countText: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    color: '#3B82F6',
+  },
+  tilesRow: {
+    paddingHorizontal: 4,
+    alignItems: 'center' as const,
+  },
+  addButton: {
+    width: 100,
+    height: 100,
+    marginRight: 8,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#DBEAFE',
+    borderStyle: 'dashed' as const,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  addButtonDisabled: {
+    opacity: 0.5,
+  },
+  warningText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#B45309',
+    paddingHorizontal: 4,
+  },
 }
 
 export default PostInputModal

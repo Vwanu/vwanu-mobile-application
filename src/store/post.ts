@@ -15,8 +15,25 @@ interface Rep {
   skip: number
 }
 
-type PostCreationProps = PostProps & { postImage: string[] }
-type CommentType = Partial<PostProps> & { postId: number }
+type PostCreationProps = PostProps & {
+  postImage: string[]
+  mentions?: string[]
+}
+type CommentType = Partial<PostProps> & { postId: number; mentions?: string[] }
+
+export type PostMediaType = 'image' | 'video' | 'audio'
+
+export interface PostMediaKey {
+  key: string
+  type: PostMediaType
+}
+
+export interface CreatePostWithMediaKeysBody {
+  postText?: string
+  privacyType?: string
+  communityId?: string
+  mediaKeys?: PostMediaKey[]
+}
 
 const _toFormData = (values: Partial<PostCreationProps>): FormData => {
   const formData = new FormData()
@@ -24,6 +41,11 @@ const _toFormData = (values: Partial<PostCreationProps>): FormData => {
   formData.append('privacyType', values?.privacyType || 'public')
   if (values?.communityId) {
     formData.append('communityId', values?.communityId || '')
+  }
+  if (values?.mentions?.length) {
+    values.mentions.forEach((id) => {
+      formData.append('mentions[]', id)
+    })
   }
   if (values?.postImage?.length) {
     values.postImage.forEach((uri) => {
@@ -198,6 +220,31 @@ const post = apiSlice.injectEndpoints({
       },
     }),
 
+    createPostWithMediaKeys: build.mutation<
+      PostProps,
+      CreatePostWithMediaKeysBody
+    >({
+      query: (body) => ({
+        url: `${endpoints.POSTS}?upload=presign`,
+        method: HttpMethods.POST,
+        body: {
+          postText: body.postText ?? '',
+          privacyType: body.privacyType ?? 'public',
+          ...(body.communityId ? { communityId: body.communityId } : {}),
+          mediaKeys: body.mediaKeys ?? [],
+        },
+      }),
+
+      async onQueryStarted(_args, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled
+          dispatch(apiSlice.util.invalidateTags([{ type: 'Post', id: 'LIST' }]))
+        } catch (error) {
+          console.error('Create post (mediaKeys) failed:', error)
+        }
+      },
+    }),
+
     updatePost: build.mutation<
       PostProps,
       { id: string | number; data: Partial<PostProps> }
@@ -305,6 +352,7 @@ const post = apiSlice.injectEndpoints({
 const {
   useFetchPostsQuery,
   useCreatePostMutation,
+  useCreatePostWithMediaKeysMutation,
   useFetchLikesQuery,
   useUpdatePostMutation,
   useCreateCommentMutation,
@@ -317,6 +365,7 @@ const {
 export {
   useFetchPostsQuery,
   useCreatePostMutation,
+  useCreatePostWithMediaKeysMutation,
   useFetchLikesQuery,
   useUpdatePostMutation,
   useCreateCommentMutation,

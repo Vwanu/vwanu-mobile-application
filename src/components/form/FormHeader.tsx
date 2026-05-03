@@ -24,12 +24,12 @@ const FormHeader = ({
   const idleText = submitTitle || 'Create'
   return (
     <View
-      style={tw`flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100`}
+      style={tw`flex-row items-center justify-between px-4 py-3 bg-white border-b border-t border-gray-200`}
     >
       <AppCloseBtn onPress={() => onClose()} />
 
       {title && (
-        <Text category="h6" style={tw`font-semibold text-lg `}>
+        <Text category="h6" style={tw`font-poppins-bold text-lg`}>
           {title}
         </Text>
       )}
@@ -38,7 +38,9 @@ const FormHeader = ({
         title={isLoading ? sumitting : idleText}
         size="small"
         disabled={isLoading}
-        style={tw`px-4 py-2 rounded-full`}
+        style={tw`px-4 py-2 rounded-full border border-gray-300 bg-[${
+          isLoading ? '#E5E7EB' : '#F5F3EE'
+        }]`}
       />
     </View>
   )

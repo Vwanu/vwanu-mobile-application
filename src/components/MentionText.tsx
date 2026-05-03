@@ -10,6 +10,7 @@ interface MentionTextProps {
   style?: StyleProp<TextStyle>
   mentionStyle?: StyleProp<TextStyle>
   onMentionPress?: (id: string, name: string) => void
+  numberOfLines?: number
 }
 
 const MentionText: React.FC<MentionTextProps> = ({
@@ -17,6 +18,7 @@ const MentionText: React.FC<MentionTextProps> = ({
   style,
   mentionStyle,
   onMentionPress,
+  numberOfLines,
 }) => {
   const { parts } = useMemo(
     () => parseValue(children, mentionConfigs),
@@ -24,7 +26,7 @@ const MentionText: React.FC<MentionTextProps> = ({
   )
 
   return (
-    <Text style={style}>
+    <Text style={style} numberOfLines={numberOfLines}>
       {parts.map((part, index) =>
         part.data ? (
           <Text

@@ -10,14 +10,16 @@ import {
   Text,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 import { useFormikContext } from 'formik'
 
 import tw from 'lib/tailwind'
 import { Notice } from '../../types'
-import { Form, Field, Submit } from './form'
+import { Form, MentionInput, Submit } from './form'
 import { useCreateCommentMutation } from 'store/post'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useTheme } from 'hooks/useTheme'
+import extractMentionIds from 'utils/extractMentionIds'
 
 const validationSchema = object().shape({
   postText: string().label('Comment'),
@@ -55,9 +57,6 @@ const CommentForm = forwardRef<CommentFormHandle, CommentFormProps>(
     const inputRef = useRef<TextInput>(null)
     const { isDarkMode } = useTheme()
 
-    const MAX_CHARACTERS = 500
-    const remainingChars = MAX_CHARACTERS - commentText.length
-
     React.useEffect(() => {
       const keyboardWillShow = (event: any) => {
         const keyboardHeight = event.endCoordinates.height
@@ -93,7 +92,8 @@ const CommentForm = forwardRef<CommentFormHandle, CommentFormProps>(
     }, [insets.bottom])
 
     const handleSubmit = async (values: any, { resetForm }: any) => {
-      if (commentText.trim().length === 0) return
+      const postText = values.postText || ''
+      if (postText.trim().length === 0) return
 
       setIsSubmitting(true)
 
@@ -112,7 +112,8 @@ const CommentForm = forwardRef<CommentFormHandle, CommentFormProps>(
       ]).start()
 
       try {
-        await createComment({ ...values, postText: commentText })
+        const mentions = extractMentionIds(postText)
+        await createComment({ ...values, postText, mentions })
         onSubmit?.()
         resetForm()
         setCommentText('')
@@ -162,119 +163,124 @@ const CommentForm = forwardRef<CommentFormHandle, CommentFormProps>(
           onSubmit={handleSubmit}
           style={styles.formContainer}
         >
-          <View style={[styles.inputContainer]}>
-            <View
-              style={[
-                styles.inputWrapper,
-                {
-                  backgroundColor: isDarkMode
-                    ? tw.color('bg-gray-300')
-                    : tw.color('bg-white'),
-                },
-              ]}
-            >
-              <CustomField
-                ref={inputRef}
-                multiline
-                name="postText"
-                onChangeText={handleTextChange}
-                onContentSizeChange={handleContentSizeChange}
-                style={[styles.textInput, { height: inputHeight }]}
-                placeholder="Write a comment..."
-                placeholderTextColor="#9CA3AF"
-                maxLength={MAX_CHARACTERS}
-                textAlignVertical="top"
-                isDarkMode={isDarkMode}
-              />
-
-              {/* Character counter */}
-              <View style={styles.characterCounter}>
-                <Text
-                  style={[
-                    styles.counterText,
-                    remainingChars < 50 && styles.counterWarning,
-                    remainingChars === 0 && styles.counterError,
-                  ]}
-                >
-                  {remainingChars}
-                </Text>
-              </View>
-            </View>
-
-            {/* Send button */}
-            <Animated.View style={{ transform: [{ scale: sendButtonScale }] }}>
-              <Submit
-                appearance="ghost"
-                disabled={commentText.trim().length === 0 || isSubmitting}
-                accessoryRight={() =>
-                  isSubmitting ? (
-                    <MaterialCommunityIcons
-                      name="loading"
-                      size={18}
-                      color={
-                        commentText.trim().length > 0
-                          ? tw.color('bg-primary')
-                          : '#D1D5DB'
-                      }
-                    />
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="send"
-                      size={18}
-                      color={
-                        commentText.trim().length > 0
-                          ? tw.color('bg-primary')
-                          : '#D1D5DB'
-                      }
-                    />
-                  )
-                }
-                size="small"
-                style={[
-                  styles.sendButton,
-                  commentText.trim().length > 0 && styles.sendButtonActive,
-                ]}
-              />
-            </Animated.View>
-          </View>
+          <CommentFormContent
+            commentText={commentText}
+            setCommentText={setCommentText}
+            inputHeight={inputHeight}
+            handleContentSizeChange={handleContentSizeChange}
+            isSubmitting={isSubmitting}
+            sendButtonScale={sendButtonScale}
+            isDarkMode={isDarkMode}
+          />
         </Form>
       </Animated.View>
     )
   }
 )
 
-interface CustomFieldProps {
-  name: string
-  onChangeText: (text: string) => void
-  onContentSizeChange: (event: any) => void
-  style: any
-  placeholder: string
-  placeholderTextColor: string
-  maxLength: number
-  textAlignVertical: 'auto' | 'center' | 'bottom' | 'top'
-  multiline: boolean
+const MAX_CHARACTERS = 500
+
+const CommentFormContent: React.FC<{
+  commentText: string
+  setCommentText: (text: string) => void
+  inputHeight: number
+  handleContentSizeChange: (event: any) => void
+  isSubmitting: boolean
+  sendButtonScale: Animated.Value
   isDarkMode: boolean
+}> = ({
+  commentText,
+  setCommentText,
+  inputHeight,
+  handleContentSizeChange,
+  isSubmitting,
+  sendButtonScale,
+  isDarkMode,
+}) => {
+  const { values } = useFormikContext<any>()
+  const postText = values.postText || ''
+
+  React.useEffect(() => {
+    setCommentText(postText)
+  }, [postText])
+
+  const remainingChars = MAX_CHARACTERS - commentText.length
+
+  return (
+    <View style={[styles.inputContainer]}>
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            backgroundColor: isDarkMode
+              ? tw.color('bg-gray-300')
+              : tw.color('bg-white'),
+          },
+        ]}
+      >
+        <MentionInput
+          multiline
+          name="postText"
+          onContentSizeChange={handleContentSizeChange}
+          style={[styles.textInput, { height: inputHeight }]}
+          placeholder="Write a comment..."
+          placeholderTextColor="#9CA3AF"
+          maxLength={MAX_CHARACTERS}
+          textAlignVertical="top"
+        />
+
+        {/* Character counter */}
+        <View style={styles.characterCounter}>
+          <Text
+            style={[
+              styles.counterText,
+              remainingChars < 50 && styles.counterWarning,
+              remainingChars === 0 && styles.counterError,
+            ]}
+          >
+            {remainingChars}
+          </Text>
+        </View>
+      </View>
+
+      {/* Send button */}
+      <Animated.View style={{ transform: [{ scale: sendButtonScale }] }}>
+        <Submit
+          appearance="ghost"
+          disabled={commentText.trim().length === 0 || isSubmitting}
+          accessoryRight={() =>
+            isSubmitting ? (
+              <MaterialCommunityIcons
+                name="loading"
+                size={18}
+                color={
+                  commentText.trim().length > 0
+                    ? tw.color('bg-primary')
+                    : '#D1D5DB'
+                }
+              />
+            ) : (
+              <MaterialCommunityIcons
+                name="send"
+                size={18}
+                color={
+                  commentText.trim().length > 0
+                    ? tw.color('bg-primary')
+                    : '#D1D5DB'
+                }
+              />
+            )
+          }
+          size="small"
+          style={[
+            styles.sendButton,
+            commentText.trim().length > 0 && styles.sendButtonActive,
+          ]}
+        />
+      </Animated.View>
+    </View>
+  )
 }
-
-const CustomField = forwardRef<TextInput, CustomFieldProps>(
-  ({ onChangeText, name, isDarkMode, ...props }, ref) => {
-    const { setFieldValue } = useFormikContext<any>()
-
-    return (
-      <Field
-        name={name}
-        {...props}
-        onChangeText={(text: string) => {
-          setFieldValue(name, text)
-          onChangeText(text)
-        }}
-        style={tw`flex-1 rounded-lg border-transparent ${
-          isDarkMode ? 'bg-gray-300' : 'bg-transparent'
-        }`}
-      />
-    )
-  }
-)
 
 const styles = StyleSheet.create({
   container: {

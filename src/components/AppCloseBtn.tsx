@@ -11,7 +11,7 @@ const AppCloseBtn = ({ onPress }: AppCloseBtnProps) => {
   return (
     <Button
       onPress={onPress}
-      style={tw`px-4 py-2 rounded-full`}
+      style={tw`p-2 rounded-full border border-gray-300`}
       textStyle={tw`text-black`}
       appearance="ghost"
       size="small"

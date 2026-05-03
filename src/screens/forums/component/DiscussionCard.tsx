@@ -6,6 +6,7 @@ import { formatDate } from 'date-fns'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
+import MentionText from 'components/MentionText'
 import ProfAvatar from 'components/ProfAvatar'
 import { Discussion } from '../../../../types'
 import ReplyCard from './ReplyCard'
@@ -18,11 +19,14 @@ import {
 } from 'store/discussion-api-slice'
 import LikerPopover from 'components/LikersPopOver'
 import useToggle from 'hooks/useToggle'
+import routes from 'navigation/routes'
+import { useNavigation } from '@react-navigation/native'
 
 interface DiscussionCardProps {
   discussion: Discussion
 }
 const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
+  const navigation = useNavigation()
   const [expanded, setExpanded] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
   const date = formatDate(new Date(discussion.createdAt), 'MMM dd, yyyy')
@@ -66,12 +70,19 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
       <Text style={tw`font-bold text-gray-900 dark:text-white text-base mt-3`}>
         {discussion.title}
       </Text>
-      <Text
+      <MentionText
         style={tw`text-gray-600 dark:text-gray-400 text-sm mt-1 leading-5`}
         numberOfLines={expanded ? undefined : 3}
+        onMentionPress={(id) => {
+          // @ts-ignore
+          navigation.navigate(routes.ACCOUNT, {
+            screen: routes.PROFILE,
+            params: { profileId: id },
+          })
+        }}
       >
         {discussion.body}
-      </Text>
+      </MentionText>
 
       {/* Likes, replies count, and reply button */}
       <View style={tw`flex-row items-center mt-3 gap-4`}>

@@ -25,16 +25,15 @@ const Profile: React.FC = () => {
 
   return (
     <Screen>
-      <>
-        {/* Profile Header */}
+      <View style={tw`flex-1 bg-warm-bg`}>
         <ProfileHeader profileId={profileId!} />
 
         <ProfileTabNavigator
           userId={userId}
-          targetUserId={profileId}
+          targetUserId={profileId!}
           navigation={navigation}
         />
-      </>
+      </View>
     </Screen>
   )
 }
