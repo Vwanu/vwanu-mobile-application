@@ -29,11 +29,13 @@ interface ListItem {
 
 interface Media {
   id: number
+  /**
+   * S3 key (e.g. `posts/2026/05/03/<uuid>.jpg`) or external URL passthrough
+   * (Cloudinary/UI-Avatars/etc.). Build the rendered URL via cdnImageUrl().
+   * Variant fields (large/medium/small/tiny) are gone — VWA-131's
+   * CloudFront image-handler generates them on demand.
+   */
   original: string
-  medium: string
-  large: string
-  small: string
-  tiny: string
   post_id: number
   UserId: number
   height: number
