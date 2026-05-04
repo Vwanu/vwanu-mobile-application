@@ -7,6 +7,7 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import LongText from './LongText'
 import routes from 'navigation/routes'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 interface ProfAvatarProps {
   user: User
@@ -64,7 +65,15 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
       disabled={disableDefaultNavigation}
     >
       <View>
-        <Avatar.Image size={size} source={{ uri: props.user.profilePicture }} />
+        <Avatar.Image
+          size={size}
+          source={{
+            uri: cdnImageUrl(props.user.profilePicture, {
+              width: size * 2, // 2x for retina
+              height: size * 2,
+            }),
+          }}
+        />
         {showOnlineStatus && props.user.online !== undefined && (
           <View
             style={tw`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${

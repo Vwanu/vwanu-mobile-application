@@ -13,6 +13,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
 import tw from '../lib/tailwind'
 import { Media } from '../../types'
 import { splitImages } from '../lib/splitImages'
+import { cdnImageUrl } from '../lib/cdnImageUrl'
 
 /**
  * Props for the ImageGrid component.
@@ -86,7 +87,7 @@ const ImageGrid: React.FC<ImageGridProps> = (props) => {
           </>
         ) : (
           <Image
-            source={{ uri: item.original }}
+            source={{ uri: cdnImageUrl(item.original, 'medium') }}
             style={style}
             contentFit="cover"
             placeholder="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
