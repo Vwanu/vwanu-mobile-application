@@ -71,6 +71,7 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
             uri: cdnImageUrl(props.user.profilePicture, {
               width: size * 2, // 2x for retina
               height: size * 2,
+              smartCrop: true, // focus on face if Rekognition finds one
             }),
           }}
         />

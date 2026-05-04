@@ -22,11 +22,28 @@ export type ImagePreset = 'thumb' | 'small' | 'medium' | 'large' | 'original'
 
 export type ImageFit = 'cover' | 'contain' | 'inside' | 'outside' | 'fill'
 
+export interface SmartCropOptions {
+  /**
+   * 0-based index into faces detected by Rekognition, ordered largest →
+   * smallest. Default 0 = primary (largest) face.
+   */
+  faceIndex?: number
+  /** Padding in pixels around the cropped face. */
+  padding?: number
+}
+
 export interface ImageOptions {
   preset?: ImagePreset
   width?: number
   height?: number
   fit?: ImageFit
+  /**
+   * Focus the crop on a face detected via Amazon Rekognition. Costs a
+   * Rekognition.DetectFaces call per cache-miss (~$0.001/image). Pair
+   * with explicit width+height for square avatar-style crops.
+   * Not supported for animated GIFs — handler returns an error.
+   */
+  smartCrop?: boolean | SmartCropOptions
 }
 
 const PRESETS: Record<ImagePreset, { width?: number; height?: number }> = {
@@ -107,13 +124,18 @@ export const cdnImageUrl = (
     bucket: BUCKET,
     key,
   }
+  const edits: Record<string, unknown> = {}
   if (size.width !== undefined || size.height !== undefined) {
     const resize: Record<string, unknown> = {}
     if (size.width !== undefined) resize.width = size.width
     if (size.height !== undefined) resize.height = size.height
     if (size.fit !== undefined) resize.fit = size.fit
-    request.edits = { resize }
+    edits.resize = resize
   }
+  if (opts.smartCrop !== undefined && opts.smartCrop !== false) {
+    edits.smartCrop = opts.smartCrop
+  }
+  if (Object.keys(edits).length > 0) request.edits = edits
 
   const encoded = base64Encode(JSON.stringify(request))
   return `${CDN_URL.replace(/\/$/, '')}/${encoded}`
