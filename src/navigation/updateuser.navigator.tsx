@@ -68,6 +68,12 @@ const RegisterNavigator = () => {
       case NextCompletionStep.PROFILE_PICTURE:
         navigation.navigate(routes.PROFILE_PICTURE)
         break
+      case NextCompletionStep.PROFILE_COMPLETE:
+        // No-op — parent navigator (src/navigation/index.tsx) swaps this
+        // out for DrawerNavigator. Hitting `default` here would re-route
+        // back to PROFILE_PICTURE during the swap-out frame and the user
+        // would briefly see the picker again after registering.
+        break
       case NextCompletionStep.START:
       default:
         // navigation.navigate(routes.MORE_INFO)
