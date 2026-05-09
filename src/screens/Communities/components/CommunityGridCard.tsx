@@ -15,6 +15,7 @@ import {
   useUpdateCommunityInvitationMutation,
 } from 'store/communities-api-slice'
 import { ActivityIndicator } from 'react-native-paper'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 type NavigationProp = StackNavigationProp<CommunityStackParams, 'Communities'>
 
@@ -87,10 +88,17 @@ const CommunityGridCard: React.FC<Props> = ({
       : tw`text-white text-2xl font-bold mb-2 leading-6`
   }, [size])
 
+  if (!community) return null
+
   return (
     <TouchableOpacity style={[computeStyle, style]} onPress={handlePress}>
       <ImageBackground
-        source={{ uri: community?.profilePicture }}
+        source={{
+          uri: cdnImageUrl(community?.profilePicture, {
+            width: 600,
+            height: 600,
+          }),
+        }}
         style={tw`w-full h-full`}
         resizeMode="cover"
       >
@@ -146,7 +154,7 @@ const CommunityGridCard: React.FC<Props> = ({
               showShowMoreText={size === 'extra-small' ? false : true}
             />
 
-            {size !== 'extra-small' ? (
+            {size !== 'extra-small' && community?.description ? (
               <LongText
                 text={community.description}
                 maxLength={size === 'small' ? 10 : 150}
@@ -158,7 +166,9 @@ const CommunityGridCard: React.FC<Props> = ({
 
             <View style={tw`flex-row items-center justify-between mt-5`}>
               <View style={tw`flex-row items-center`}>
-                <AvatarGroup avatars={community.members || []} size={25} />
+                {community?.members && (
+                  <AvatarGroup avatars={community.members} size={25} />
+                )}
                 {amountOfMembers && (
                   <Text style={tw`text-white text-xs ml-2`}>
                     {amountOfMembers < 100
