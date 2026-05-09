@@ -17,43 +17,29 @@ interface FetchCommunitiesParams {
 }
 
 type CommunityCreationProps = Partial<CommunityInterface> & {
-  profilePicture?: string
+  /**
+   * S3 key (from /uploads/presign with uploadType: 'community') of the
+   * community profile picture. Backend's applyProfileMediaKeys hook
+   * resolves this into the persisted `profilePicture` column.
+   */
+  profilePictureKey?: string
 }
 
-const _toFormData = (values: Partial<CommunityCreationProps>): FormData => {
-  const formData = new FormData()
-  values.name && formData.append('name', values.name)
-  values.description && formData.append('description', values.description)
-  values.privacyType && formData.append('privacyType', values.privacyType)
-
-  if (values.interests) {
-    values.interests.forEach((interest) => {
-      formData.append('interests', interest.toString())
-    })
+// Strip undefined fields and ensure interests are JSON-encoded as strings.
+// The backend now accepts JSON for community create/patch; multipart upload
+// is gone (VWA-128).
+const buildBody = (values: Partial<CommunityCreationProps>) => {
+  const body: Record<string, unknown> = {}
+  if (values.name !== undefined) body.name = values.name
+  if (values.description !== undefined) body.description = values.description
+  if (values.privacyType !== undefined) body.privacyType = values.privacyType
+  if (values.interests !== undefined) {
+    body.interests = values.interests.map((i) => i.toString())
   }
-
-  if (values.profilePicture) {
-    const filename =
-      values.profilePicture.split('/').pop() || 'profilePicture.jpg'
-    let mimeType = 'image/jpeg' // default
-
-    // Determine mime type based on file extension
-    if (filename.endsWith('.png')) {
-      mimeType = 'image/png'
-    } else if (filename.endsWith('.gif')) {
-      mimeType = 'image/gif'
-    } else if (filename.endsWith('.webp')) {
-      mimeType = 'image/webp'
-    }
-
-    const imageBlob = {
-      uri: values.profilePicture,
-      type: mimeType,
-      name: filename,
-    } as any
-    formData.append('profilePicture', imageBlob)
+  if (values.profilePictureKey !== undefined) {
+    body.profilePictureKey = values.profilePictureKey
   }
-  return formData
+  return body
 }
 
 // Community API endpoints
@@ -64,18 +50,11 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       CommunityInterface,
       Partial<CommunityCreationProps>
     >({
-      query: (communityData) => {
-        const formData = _toFormData(communityData)
-        return {
-          url: '/communities',
-          method: HttpMethods.POST,
-          body: formData,
-          prepareHeaders: (headers: Headers) => {
-            headers.set('Content-Type', 'multipart/form-data')
-            return headers
-          },
-        }
-      },
+      query: (communityData) => ({
+        url: '/communities',
+        method: HttpMethods.POST,
+        body: buildBody(communityData),
+      }),
       invalidatesTags: ['Community'],
     }),
 
@@ -125,18 +104,11 @@ export const communitiesApiSlice = apiSlice.injectEndpoints({
       CommunityInterface,
       Partial<CommunityCreationProps> & { id: string }
     >({
-      query: ({ id, ...data }) => {
-        const formData = _toFormData(data)
-        return {
-          url: `/communities/${id}`,
-          method: 'PATCH',
-          body: formData,
-          prepareHeaders: (headers: Headers) => {
-            headers.set('Content-Type', 'multipart/form-data')
-            return headers
-          },
-        }
-      },
+      query: ({ id, ...data }) => ({
+        url: `/communities/${id}`,
+        method: 'PATCH',
+        body: buildBody(data),
+      }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Community', id }],
     }),
 
