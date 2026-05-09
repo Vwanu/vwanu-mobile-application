@@ -21,6 +21,7 @@ import { useFetchUnreadNotificationsQuery } from 'store/notifications-api-slice'
 
 import useToggle from 'hooks/useToggle'
 import ProfileStats from './ProfileStats'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 interface ProfileHeaderProps {
   profileId: string
@@ -107,7 +108,13 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
           {user.profilePicture ? (
             <PaperAvatar.Image
               size={64}
-              source={{ uri: user.profilePicture }}
+              source={{
+                uri: cdnImageUrl(user.profilePicture, {
+                  width: 128, // 2x for retina
+                  height: 128,
+                  smartCrop: true,
+                }),
+              }}
             />
           ) : (
             <Text style={tw`text-white font-poppins-bold text-lg`}>

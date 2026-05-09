@@ -7,6 +7,7 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import AvatarGroup from 'components/AvatarGroups'
 import { CommunityStackParams, CommunityInterface } from '../../../../types'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 type NavigationProp = StackNavigationProp<CommunityStackParams, 'Communities'>
 
@@ -37,7 +38,12 @@ const FeaturedCommunityCard: React.FC<Props> = ({
       onPress={handlePress}
     >
       <ImageBackground
-        source={{ uri: community.profilePicture }}
+        source={{
+          uri: cdnImageUrl(community.profilePicture, {
+            width: 800,
+            height: 800,
+          }),
+        }}
         style={tw`w-full h-full`}
         resizeMode="cover"
       >
