@@ -3,10 +3,18 @@ import { HttpMethods } from '../config'
 
 export type UploadType = 'post' | 'profile' | 'message' | 'blog' | 'community'
 
+export type ProfileFileType = 'profilePicture' | 'coverPicture'
+
 export interface PresignFileRequest {
   filename: string
   mimeType: string
   uploadType: UploadType
+  /**
+   * Discriminator for `uploadType: 'profile'` to choose between
+   * profilePicture / coverPicture (drives the S3 key prefix on the
+   * backend via generateS3Key). Ignored for other upload types.
+   */
+  fileType?: ProfileFileType
 }
 
 export interface PresignFileResponse {
