@@ -15,10 +15,6 @@ interface Rep {
   skip: number
 }
 
-type PostCreationProps = PostProps & {
-  postImage: string[]
-  mentions?: string[]
-}
 type CommentType = Partial<PostProps> & { postId: number; mentions?: string[] }
 
 export type PostMediaType = 'image' | 'video' | 'audio'
@@ -28,57 +24,12 @@ export interface PostMediaKey {
   type: PostMediaType
 }
 
-export interface CreatePostWithMediaKeysBody {
+export interface CreatePostBody {
   postText?: string
   privacyType?: string
   communityId?: string
   mediaKeys?: PostMediaKey[]
 }
-
-const _toFormData = (values: Partial<PostCreationProps>): FormData => {
-  const formData = new FormData()
-  formData.append('postText', values.postText || '')
-  formData.append('privacyType', values?.privacyType || 'public')
-  if (values?.communityId) {
-    formData.append('communityId', values?.communityId || '')
-  }
-  if (values?.mentions?.length) {
-    values.mentions.forEach((id) => {
-      formData.append('mentions[]', id)
-    })
-  }
-  if (values?.postImage?.length) {
-    values.postImage.forEach((uri) => {
-      const filename = uri.split('/').pop() || 'postMedia.jpg'
-      let mimeType = 'image/jpeg' // default
-
-      if (filename.endsWith('.png')) {
-        mimeType = 'image/png'
-      } else if (filename.endsWith('.gif')) {
-        mimeType = 'image/gif'
-      } else if (filename.endsWith('.mp4')) {
-        mimeType = 'video/mp4'
-      } else if (filename.endsWith('.mov')) {
-        mimeType = 'video/quicktime'
-      } else if (filename.endsWith('.avi')) {
-        mimeType = 'video/x-msvideo'
-      } else if (filename.endsWith('.webm')) {
-        mimeType = 'video/webm'
-      } else if (uri.includes('video')) {
-        mimeType = 'video/mp4' // fallback for video
-      }
-
-      const mediaBlob = {
-        uri,
-        type: mimeType,
-        name: filename,
-      } as any
-      formData.append('postImage', mediaBlob)
-    })
-  }
-  return formData
-}
-// type Post = Response<PostProps>;
 
 interface FetchPostsParams {
   userId?: string | number
@@ -165,67 +116,10 @@ const post = apiSlice.injectEndpoints({
         }
       },
     }),
-    createPost: build.mutation<PostProps, Partial<PostCreationProps>>({
-      query: (values) => {
-        const formData = _toFormData(values)
-        return {
-          url: endpoints.POSTS,
-          method: HttpMethods.POST,
-          body: formData,
-          prepareHeaders: (headers: Headers) => {
-            headers.set('Content-Type', 'multipart/form-data')
-            console.log('Headers set:', headers)
-            return headers
-          },
-        }
-      },
 
-      async onQueryStarted(args, { dispatch, queryFulfilled }) {
-        try {
-          const { data: newPost } = await queryFulfilled
-
-          // Update all active fetchPosts queries by invalidating the cache
-          // This will trigger a refetch for all active queries
-          dispatch(apiSlice.util.invalidateTags([{ type: 'Post', id: 'LIST' }]))
-
-          // Alternatively, update specific known query patterns
-          // Update the main timeline query (most common case)
-          const timelineQueryArgs = {
-            $limit: 10,
-            $skip: 0,
-            $sort: { createdAt: -1 as const },
-          }
-
-          dispatch(
-            post.util.updateQueryData(
-              'fetchPosts',
-              timelineQueryArgs,
-              (draft) => {
-                // Insert the new post at the top of the 'data' array
-                draft.data.unshift(newPost)
-              }
-            )
-          )
-
-          // Also update the query without parameters (for profile pages, etc.)
-          dispatch(
-            post.util.updateQueryData('fetchPosts', undefined, (draft) => {
-              // Insert the new post at the top of the 'data' array
-              draft.data.unshift(newPost)
-            })
-          )
-        } catch (error) {
-          console.error('Create post failed:', error)
-        }
-      },
-    }),
-
-    createPostWithMediaKeys: build.mutation<
-      PostProps,
-      CreatePostWithMediaKeysBody
-    >({
+    createPost: build.mutation<PostProps, CreatePostBody>({
       query: (body) => ({
-        url: `${endpoints.POSTS}?upload=presign`,
+        url: endpoints.POSTS,
         method: HttpMethods.POST,
         body: {
           postText: body.postText ?? '',
@@ -240,7 +134,7 @@ const post = apiSlice.injectEndpoints({
           await queryFulfilled
           dispatch(apiSlice.util.invalidateTags([{ type: 'Post', id: 'LIST' }]))
         } catch (error) {
-          console.error('Create post (mediaKeys) failed:', error)
+          console.error('Create post failed:', error)
         }
       },
     }),
@@ -352,7 +246,6 @@ const post = apiSlice.injectEndpoints({
 const {
   useFetchPostsQuery,
   useCreatePostMutation,
-  useCreatePostWithMediaKeysMutation,
   useFetchLikesQuery,
   useUpdatePostMutation,
   useCreateCommentMutation,
@@ -365,7 +258,6 @@ const {
 export {
   useFetchPostsQuery,
   useCreatePostMutation,
-  useCreatePostWithMediaKeysMutation,
   useFetchLikesQuery,
   useUpdatePostMutation,
   useCreateCommentMutation,

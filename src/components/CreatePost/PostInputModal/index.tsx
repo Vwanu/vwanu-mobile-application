@@ -16,19 +16,9 @@ import { styles } from './style'
 
 import tw from 'lib/tailwind'
 import ProfAvatar from '../../ProfAvatar'
-import {
-  Form,
-  Submit,
-  ImageFields,
-  PrivacyNoticeField,
-  MentionInput,
-} from '../../form'
+import { Form, Submit, PrivacyNoticeField, MentionInput } from '../../form'
 import Text from '../../Text'
-import {
-  useCreatePostMutation,
-  useCreatePostWithMediaKeysMutation,
-} from 'store/post'
-import extractMentionIds from 'utils/extractMentionIds'
+import { useCreatePostMutation } from 'store/post'
 
 import { Notice } from '../../../../types'
 import { useFetchProfileQuery } from 'store/profiles'
@@ -38,8 +28,6 @@ import routes from 'navigation/routes'
 import { useTheme } from 'hooks/useTheme'
 import { useMediaUploads, MediaItemInput } from '../useMediaUploads'
 import MediaTile from '../MediaTile'
-
-const PRESIGN_ENABLED = process.env.EXPO_PUBLIC_USE_PRESIGN_UPLOAD === 'true'
 
 const EXTENSION_FROM_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -92,12 +80,8 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   const bottomSheetRef = useRef<BottomSheet>(null)
   const snapPoints = React.useMemo(() => [40, 100], [])
   const iniTialsnapPointIndex = openBottomSheet ? 1 : 0
-  const [createPost, multipartResult] = useCreatePostMutation()
-  const [createPostWithMediaKeys, presignResult] =
-    useCreatePostWithMediaKeysMutation()
+  const [createPost, result] = useCreatePostMutation()
   const mediaUploads = useMediaUploads({ uploadType: 'post' })
-
-  const result = PRESIGN_ENABLED ? presignResult : multipartResult
 
   const [postText, setPostText] = useState('')
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -185,15 +169,13 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   }, [result.isSuccess, result.isError, navigation])
 
   const handleClose = () => {
-    if (PRESIGN_ENABLED) mediaUploads.clearAll()
+    mediaUploads.clearAll()
     if (onClose) onClose()
   }
 
   const isPostReady = postText.trim().length > 0
   const isSubmitDisabled =
-    !isPostReady ||
-    result.isLoading ||
-    (PRESIGN_ENABLED && mediaUploads.isAnyUploading)
+    !isPostReady || result.isLoading || mediaUploads.isAnyUploading
   const { isDarkMode } = useTheme()
 
   return (
@@ -218,20 +200,12 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           validationSchema={ValidationSchema}
           initialValues={initialValues}
           onSubmit={async (values) => {
-            if (PRESIGN_ENABLED) {
-              await createPostWithMediaKeys({
-                postText: values.postText,
-                privacyType: values.privacyType,
-                communityId: values.communityId,
-                mediaKeys: mediaUploads.getCompletedKeys(),
-              })
-              return
-            }
-
-            const mentions = extractMentionIds(values.postText || '')
-
-            //@ts-ignore
-            await createPost({ ...values, mentions })
+            await createPost({
+              postText: values.postText,
+              privacyType: values.privacyType,
+              communityId: values.communityId,
+              mediaKeys: mediaUploads.getCompletedKeys(),
+            })
           }}
           style={tw`flex-1`}
         >
@@ -373,11 +347,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           >
             {/*@ts-ignore */}
             <BottomSheetView style={styles.bottomSheetContent}>
-              {PRESIGN_ENABLED ? (
-                <PresignMediaPicker mediaUploads={mediaUploads} />
-              ) : (
-                <ImageFields name="postImage" />
-              )}
+              <PresignMediaPicker mediaUploads={mediaUploads} />
             </BottomSheetView>
           </BottomSheet>
         </Form>
