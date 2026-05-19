@@ -25,12 +25,19 @@ interface BlogImage {
   formRef?: React.Ref<FormikProps<any>>
   onSubmit: (values: typeof initialValues) => void
   values?: typeof initialValues
+  /**
+   * Fires with the freshly-picked local file URI. The parent owns the
+   * upload lifecycle and only sends the resulting titlePictureKey on
+   * final submit — the Formik field value here is preview-only.
+   */
+  onImagePicked?: (uri: string) => void
 }
 
 const BlogImageInterest: React.FC<BlogImage> = ({
   formRef,
   onSubmit,
   values,
+  onImagePicked,
 }) => {
   if (values) {
     initialValues = values
@@ -51,6 +58,7 @@ const BlogImageInterest: React.FC<BlogImage> = ({
           name="titlePicture"
           label="Cover Image"
           helperText="Tap to upload a cover image for your blog"
+          onImagePicked={onImagePicked}
         />
 
         <View style={tw`px-4 py-6`}>

@@ -9,6 +9,7 @@ import Screen from 'components/screen'
 import Button from 'components/Button'
 import AppCloseBtn from 'components/AppCloseBtn'
 import Toast, { ToastType } from 'components/Toast'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 import { FeedStackParams, CreateBlogParams } from '../../../../types'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -16,10 +17,22 @@ import {
   useUpdateBlogMutation,
   useFetchBlogQuery,
 } from '../../../store/blog-api-slice'
+import { useGetPresignedUploadUrlsMutation } from '../../../store/uploads-api-slice'
+import { uploadToS3 } from '../../../lib/uploadToS3'
 import BlogContent from './BlogContent'
 import BlogImageInterest from './BlogImageInterest'
 
 type NavigationProp = StackNavigationProp<FeedStackParams, 'CreateBlog'>
+
+type UploadStatus = 'idle' | 'uploading' | 'done' | 'error'
+
+const inferMime = (filename: string): string => {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  if (ext === 'png') return 'image/png'
+  if (ext === 'webp') return 'image/webp'
+  if (ext === 'gif') return 'image/gif'
+  return 'image/jpeg'
+}
 
 const CreateBlogScreen = () => {
   const formRef = useRef<FormikProps<any>>(null)
@@ -47,13 +60,25 @@ const CreateBlogScreen = () => {
 
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation()
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation()
+  const [getPresignedUploadUrls] = useGetPresignedUploadUrlsMutation()
   const isSubmitting = isCreating || isUpdating
 
-  // Pre-fill form values when editing an existing blog
+  // Picture upload state — owned outside Formik so the upload lifecycle
+  // survives the step 0 ↔ step 1 transitions. Mirrors the pattern in
+  // CreateCommunity.tsx (VWA-128).
+  const [pictureKey, setPictureKey] = useState<string | undefined>()
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle')
+  const abortRef = useRef<AbortController | null>(null)
+
+  // Pre-fill form values when editing an existing blog. Cover preview goes
+  // through cdnImageUrl so the bare S3 key (VWA-133) renders via CloudFront.
+  // Note: we don't seed pictureKey from existingBlog.titlePicture — the
+  // patch payload should only include titlePictureKey when the user picks
+  // a new image; otherwise the server keeps the existing column value.
   useEffect(() => {
     if (existingBlog) {
       setStep1Values({
-        titlePicture: existingBlog.titlePicture,
+        titlePicture: cdnImageUrl(existingBlog.titlePicture, 'large') ?? '',
         interests: existingBlog.interests?.map((i) => i.id) || [],
       })
       setContentValues({
@@ -63,17 +88,69 @@ const CreateBlogScreen = () => {
     }
   }, [existingBlog])
 
+  const startPictureUpload = async (uri: string) => {
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    const filename = uri.split('/').pop() || 'titlePicture.jpg'
+    const mimeType = inferMime(filename)
+
+    setUploadStatus('uploading')
+    try {
+      const { files } = await getPresignedUploadUrls({
+        files: [{ filename, mimeType, uploadType: 'blog' }],
+      }).unwrap()
+      await uploadToS3(files[0].uploadUrl, uri, mimeType, {
+        signal: controller.signal,
+      })
+      setPictureKey(files[0].key)
+      setUploadStatus('done')
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return
+      console.error('Blog cover upload failed:', err)
+      setUploadStatus('error')
+    }
+  }
+
+  const handleImagePicked = (uri: string) => {
+    setPictureKey(undefined)
+    void startPictureUpload(uri)
+  }
+
   const handleSubmit = async (value: any) => {
     if (step === 1) {
-      const allData: CreateBlogParams = {
-        ...step1Values,
-        ...value,
+      // Block submit if a picture is mid-upload or errored. We deliberately
+      // don't block when no picture was picked at all (cover is optional).
+      if (uploadStatus === 'uploading') {
+        setToast({
+          visible: true,
+          type: 'info',
+          message: 'Cover image is still uploading — try again in a moment.',
+        })
+        return
       }
+      if (uploadStatus === 'error') {
+        setToast({
+          visible: true,
+          type: 'error',
+          message: 'Cover image upload failed. Pick a new image to retry.',
+        })
+        return
+      }
+
+      const payload: CreateBlogParams = {
+        title: value.title,
+        content: value.content,
+        interests: (step1Values?.interests ?? []) as string[],
+        ...(pictureKey ? { titlePictureKey: pictureKey } : {}),
+      }
+
       try {
         if (isEditing) {
-          await updateBlog({ id: blogId, ...allData }).unwrap()
+          await updateBlog({ id: blogId, ...payload }).unwrap()
         } else {
-          await createBlog(allData).unwrap()
+          await createBlog(payload).unwrap()
         }
         setToast({
           visible: true,
@@ -93,7 +170,7 @@ const CreateBlogScreen = () => {
               typeof error.data === 'string'
                 ? JSON.parse(error.data)
                 : error.data
-            message = parsed.error || message
+            message = parsed.error || parsed.message || message
           } catch {
             // use default message
           }
@@ -156,6 +233,7 @@ const CreateBlogScreen = () => {
             formRef={formRef}
             onSubmit={handleSubmit}
             values={step1Values}
+            onImagePicked={handleImagePicked}
           />
         ) : (
           <BlogContent
