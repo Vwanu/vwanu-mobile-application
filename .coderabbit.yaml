@@ -1,3 +1,10 @@
+version: 1
+auto-review:
+  enabled: true
+  scope:
+    # Use standard globbing where '*' acts as the wildcard flag
+    base_branches:
+      - "qa/cycle-*"
 reviews:
   auto_title_instructions: |
     Generate a concise, descriptive PR title based on the changes in this pull request.
