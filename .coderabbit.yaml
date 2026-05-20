@@ -4,7 +4,7 @@ auto-review:
   scope:
     # Use standard globbing where '*' acts as the wildcard flag
     base_branches:
-      - "qa/cycle*"
+      - "qa/cycle-*"
 reviews:
   auto_title_instructions: |
     Generate a concise, descriptive PR title based on the changes in this pull request.
