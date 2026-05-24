@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
+import { View } from 'react-native'
 import * as eva from '@eva-design/eva'
 import { Provider } from 'react-redux'
 import { Amplify } from 'aws-amplify'
@@ -11,6 +12,28 @@ import {
 } from '@react-navigation/native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
+import * as SplashScreen from 'expo-splash-screen'
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_900Black,
+} from '@expo-google-fonts/poppins'
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter'
+import {
+  Syne_400Regular,
+  Syne_500Medium,
+  Syne_600SemiBold,
+  Syne_700Bold,
+  Syne_800ExtraBold,
+} from '@expo-google-fonts/syne'
 
 import Routes from './src/navigation'
 import { store } from './src/store'
@@ -21,6 +44,8 @@ import { ScrollProvider } from 'contexts/ScrollContext'
 import { useTheme } from './src/hooks/useTheme'
 
 Amplify.configure(amplifyconfig)
+
+SplashScreen.preventAutoHideAsync().catch(() => {})
 
 // Theme wrapper component that has access to Redux state
 const ThemedApp: React.FC = () => {
@@ -60,12 +85,47 @@ const ThemedApp: React.FC = () => {
 }
 
 const App: React.FC = () => {
+  const [fontsLoaded, fontError] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+    Poppins_900Black,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Syne_400Regular,
+    Syne_500Medium,
+    Syne_600SemiBold,
+    Syne_700Bold,
+    Syne_800ExtraBold,
+  })
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync()
+    }
+  }, [fontsLoaded, fontError])
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync().catch(() => {})
+    }
+  }, [fontsLoaded, fontError])
+
+  if (!fontsLoaded && !fontError) {
+    return null
+  }
+
   return (
-    <Provider store={store}>
-      <SafeAreaProvider>
-        <ThemedApp />
-      </SafeAreaProvider>
-    </Provider>
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <Provider store={store}>
+        <SafeAreaProvider>
+          <ThemedApp />
+        </SafeAreaProvider>
+      </Provider>
+    </View>
   )
 }
 

@@ -160,6 +160,23 @@ const directColorMapping = {
   'color-basic-transparent-600': (tailwindColors as any)[
     'color-basic-transparent-600'
   ],
+
+  // Warm surface + redesign tokens (referenced by mapping.json extensions)
+  'warm-bg': (tailwindColors as any)['warm-bg'],
+  'warm-surface': (tailwindColors as any)['warm-surface'],
+  'warm-border': (tailwindColors as any)['warm-border'],
+  'warm-border-strong': (tailwindColors as any)['warm-border-strong'],
+  'warm-dim': (tailwindColors as any)['warm-dim'],
+  ink: (tailwindColors as any)['ink'],
+  soft: (tailwindColors as any)['soft'],
+  mute: (tailwindColors as any)['mute'],
+  'primary-deep': (tailwindColors as any)['primary-deep'],
+  'primary-deep-2': (tailwindColors as any)['primary-deep-2'],
+  'primary-soft': (tailwindColors as any)['primary-soft'],
+  coral: (tailwindColors as any)['coral'],
+  amber: (tailwindColors as any)['amber'],
+  'amber-deep': (tailwindColors as any)['amber-deep'],
+  'amber-soft': (tailwindColors as any)['amber-soft'],
 }
 
 /**

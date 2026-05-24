@@ -1,5 +1,72 @@
 {
   "components": {
+    "Card": {
+      "meta": {
+        "appearances": {
+          "warm": {
+            "default": false
+          }
+        }
+      },
+      "appearances": {
+        "warm": {
+          "mapping": {
+            "backgroundColor": "warm-surface",
+            "borderColor": "warm-border",
+            "borderWidth": 1,
+            "borderRadius": 16,
+            "bodyPaddingHorizontal": 16,
+            "bodyPaddingVertical": 16,
+            "headerPaddingHorizontal": 16,
+            "headerPaddingVertical": 12,
+            "footerPaddingHorizontal": 16,
+            "footerPaddingVertical": 12,
+            "accentBackgroundColor": "warm-border",
+            "accentHeight": 0
+          },
+          "variantGroups": {
+            "status": {
+              "basic": {}
+            }
+          }
+        }
+      }
+    },
+    "Button": {
+      "meta": {
+        "variantGroups": {
+          "status": {
+            "amber": {
+              "default": false
+            }
+          }
+        }
+      },
+      "appearances": {
+        "filled": {
+          "variantGroups": {
+            "status": {
+              "amber": {
+                "backgroundColor": "amber",
+                "borderColor": "amber",
+                "textColor": "color-basic-100",
+                "state": {
+                  "active": {
+                    "backgroundColor": "amber-deep",
+                    "borderColor": "amber-deep"
+                  },
+                  "disabled": {
+                    "backgroundColor": "amber-soft",
+                    "borderColor": "amber-soft",
+                    "textColor": "amber-deep"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Input": {
       "meta": {
         "scope": "all",
@@ -317,6 +384,56 @@
                 "paddingVertical": 11,
                 "textFontSize": "text-subtitle-1-font-size",
                 "textFontWeight": "normal"
+              }
+            }
+          }
+        },
+        "pill": {
+          "meta": {
+            "default": false
+          },
+          "mapping": {
+            "borderRadius": 9999,
+            "borderWidth": 1,
+            "borderColor": "warm-border-strong",
+            "backgroundColor": "warm-surface",
+            "textColor": "ink",
+            "placeholderColor": "mute",
+            "iconTintColor": "mute",
+            "paddingHorizontal": 16,
+            "minHeight": 40,
+            "state": {
+              "focused": {
+                "borderColor": "primary-deep"
+              },
+              "disabled": {
+                "borderColor": "warm-border",
+                "backgroundColor": "warm-bg",
+                "textColor": "warm-dim",
+                "placeholderColor": "warm-dim",
+                "iconTintColor": "warm-dim"
+              }
+            }
+          },
+          "variantGroups": {
+            "status": {
+              "basic": {}
+            },
+            "size": {
+              "small": {
+                "minHeight": 36,
+                "paddingVertical": 6,
+                "textFontSize": 13
+              },
+              "medium": {
+                "minHeight": 40,
+                "paddingVertical": 8,
+                "textFontSize": 14
+              },
+              "large": {
+                "minHeight": 48,
+                "paddingVertical": 10,
+                "textFontSize": 15
               }
             }
           }

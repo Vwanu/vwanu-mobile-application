@@ -14,6 +14,11 @@ module.exports = {
         'inter-medium': ['Inter_500Medium'],
         'inter-semibold': ['Inter_600SemiBold'],
         'inter-bold': ['Inter_700Bold'],
+        syne: ['Syne_400Regular'],
+        'syne-medium': ['Syne_500Medium'],
+        'syne-semibold': ['Syne_600SemiBold'],
+        'syne-bold': ['Syne_700Bold'],
+        'syne-extrabold': ['Syne_800ExtraBold'],
       },
       colors: {
         danger: '#FF4200',
@@ -96,6 +101,15 @@ module.exports = {
         'primary-deep-2': '#2B3180',
         'primary-soft': '#EEF0FA',
         coral: '#F76C5E',
+        amber: '#F4A300',
+        'amber-deep': '#C58400',
+        'amber-soft': '#FDF0D6',
+      },
+      borderRadius: {
+        card: '16px',
+      },
+      boxShadow: {
+        card: '0 1px 3px rgba(26, 26, 46, 0.06), 0 1px 2px rgba(26, 26, 46, 0.04)',
       },
       screens: {
         '3xl': '2000px',
