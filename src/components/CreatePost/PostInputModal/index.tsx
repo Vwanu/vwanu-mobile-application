@@ -110,12 +110,6 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     postImage: [],
     communityId: communityId,
   }
-  // React.useEffect(() => {
-  //   if (communityId) {
-  //      initialValues.communityId = communityId
-  //   }
-  // }, [communityId])
-  // console.log('communityId', communityId)
 
   React.useEffect(() => {
     if (visible) {
@@ -196,14 +190,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     (PRESIGN_ENABLED && mediaUploads.isAnyUploading)
 
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      onRequestClose={handleClose}
-      // statusBarTranslucent
-    >
-      {/* <StatusBar barStyle="light-content" backgroundColor="rgba(0,0,0,0.5)" /> */}
-
+    <Modal visible={visible} animationType="fade" onRequestClose={handleClose}>
       <Animated.View
         style={[
           { flex: 1 },
@@ -242,15 +229,24 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
 
             <Text style={styles.headerTitle}>Create Post</Text>
 
-            {/* status="amber" comes from our mapping.json deep-merge; EvaStatus type doesn't know it */}
             <Submit
               title={result.isLoading ? 'Posting…' : 'Post'}
               size="small"
-              status={'amber' as any}
-              appearance="filled"
               disabled={isSubmitDisabled}
+              style={{
+                backgroundColor: isSubmitDisabled
+                  ? colors.warmBg
+                  : tw.color('secondary'),
+                borderColor: isSubmitDisabled
+                  ? colors.warmBorder
+                  : colors.amber,
+                borderWidth: 1,
+                borderRadius: 9999,
+                paddingHorizontal: 18,
+                minHeight: 36,
+              }}
               textStyle={{
-                color: isSubmitDisabled ? colors.amberDeep : '#FFFFFF',
+                color: isSubmitDisabled ? colors.mute : '#FFFFFF',
                 fontFamily: 'Poppins_700Bold',
                 fontSize: 13,
               }}
@@ -262,21 +258,24 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
             showsVerticalScrollIndicator={false}
           >
             {/* User Section */}
-            <View style={styles.userSection}>
-              <ProfAvatar
-                user={user!}
-                subtitle="Share your thoughts with the community"
-              />
 
-              <PrivacyNoticeField
-                displayLong
-                name="privacyType"
-                canEdit={true}
-                isEditing={false}
-              />
+            <View style={styles.userSection}>
+              <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden`}>
+                <ProfAvatar
+                  user={user!}
+                  subtitle="Share your thoughts with the community"
+                />
+              </View>
+              <View style={tw`border p-2 rounded-full border-gray-300`}>
+                <PrivacyNoticeField
+                  displayLong
+                  name="privacyType"
+                  canEdit={true}
+                  isEditing={false}
+                />
+              </View>
             </View>
 
-            {/* Enhanced Text Input */}
             <View style={styles.textInputSection}>
               <MentionInput
                 name="postText"

@@ -30,8 +30,8 @@ export const styles = {
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
-    backgroundColor: colors.warmBg,
+    // paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
   },
   userSection: {
     flexDirection: 'row' as const,
@@ -41,6 +41,7 @@ export const styles = {
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.warmBorder,
+    paddingHorizontal: 16,
   },
   userInfoCol: {
     flex: 1,
@@ -74,6 +75,7 @@ export const styles = {
   textInputSection: {
     paddingVertical: 20,
     position: 'relative' as const,
+    paddingHorizontal: 16,
   },
   textInput: {
     fontFamily: 'Poppins_400Regular',
@@ -108,7 +110,6 @@ export const styles = {
   quickActions: {
     flexDirection: 'row' as const,
     justifyContent: 'flex-start' as const,
-    flexWrap: 'wrap' as const,
     gap: 8,
     paddingVertical: 16,
     borderTopWidth: 1,
@@ -160,7 +161,7 @@ export const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(245, 243, 238, 0.92)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     zIndex: 1000,
