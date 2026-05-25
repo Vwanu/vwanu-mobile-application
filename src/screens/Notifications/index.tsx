@@ -1,9 +1,8 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback } from 'react'
 import { View, RefreshControl, TouchableOpacity } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator } from 'react-native-paper'
-import { isToday, isYesterday, differenceInCalendarDays } from 'date-fns'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
@@ -15,24 +14,12 @@ import {
 } from 'store/notifications-api-slice'
 import { NotificationInterface } from '../../../types'
 import Screen from 'components/screen'
+import ScreenHeader from 'components/ScreenHeader'
 import { colors } from 'components/ui/tokens'
 import { FlatList } from 'react-native-gesture-handler'
 import { isNotificationRead } from './lib/isNotificationRead'
 import { resolveNotificationTarget } from './lib/routing'
-
-type Row =
-  | { kind: 'separator'; key: string; label: string }
-  | { kind: 'item'; key: string; notification: NotificationInterface }
-
-// Bucket label for grouping notifications by recency.
-// Today / Yesterday / "N days ago" (2-7) / Earlier (8+).
-const bucketLabel = (date: Date, now: Date): string => {
-  if (isToday(date)) return 'Today'
-  if (isYesterday(date)) return 'Yesterday'
-  const days = differenceInCalendarDays(now, date)
-  if (days <= 7) return `${days} days ago`
-  return 'Earlier'
-}
+import { useGroupedNotifications, Row } from './lib/useGroupedNotifications'
 
 const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation()
@@ -92,67 +79,38 @@ const NotificationsScreen: React.FC = () => {
   const unreadCount =
     notifications?.data?.filter((n) => !isNotificationRead(n)).length || 0
 
-  // Walk items in order, emit a separator row when the bucket label changes,
-  // skip the very first "Today" separator (most-recent group needs no header).
-  const rows = useMemo((): Row[] => {
-    const items = notifications?.data || []
-    const now = new Date()
-    const out: Row[] = []
-    let lastLabel: string | null = null
-    for (const item of items) {
-      const label = bucketLabel(new Date(item.createdAt), now)
-      if (label !== lastLabel) {
-        const isFirst = out.length === 0
-        if (!(isFirst && label === 'Today')) {
-          out.push({
-            kind: 'separator',
-            key: `sep:${label}:${item.id}`,
-            label,
-          })
-        }
-        lastLabel = label
-      }
-      out.push({
-        kind: 'item',
-        key: `item:${item.id}`,
-        notification: item,
-      })
-    }
-    return out
-  }, [notifications])
+  const rows = useGroupedNotifications(notifications?.data)
+
   const renderHeader = () => {
     const activeStyle = 'border-b-primary-deep'
     const inactiveStyle = 'border-b-warm-border-strong'
     const baseStyle = 'px-4 py-2 border-b-2 w-1/2'
     const textStyle = 'font-poppins-semibold text-center text-primary-deep'
+
+    const markAllRead = (
+      <TouchableOpacity
+        onPress={handleMarkAllAsRead}
+        disabled={unreadCount === 0}
+        hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+      >
+        <Text
+          style={tw`font-poppins-semibold text-sm ${
+            unreadCount > 0 ? 'text-primary-deep' : 'text-warm-dim'
+          }`}
+        >
+          Mark all read
+        </Text>
+      </TouchableOpacity>
+    )
+
     return (
       <View>
-        {/* Title row */}
-        <View style={tw`flex-row items-start justify-between px-4 pt-4 pb-3`}>
-          <View>
-            <Text style={tw`text-2xl font-syne-bold text-ink`}>
-              Notifications
-            </Text>
-            <Text style={tw`text-sm font-poppins text-mute -mt-1`}>
-              Stay up to date
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={handleMarkAllAsRead}
-            disabled={unreadCount === 0}
-            hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-          >
-            <Text
-              style={tw`font-poppins-semibold text-sm ${
-                unreadCount > 0 ? 'text-primary-deep' : 'text-warm-dim'
-              }`}
-            >
-              Mark all read
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <ScreenHeader
+          title="Notifications"
+          subtitle="Stay up to date"
+          rightAction={markAllRead}
+        />
 
-        {/* All / Unread pills */}
         <View style={tw`flex-row w-full justify-between`}>
           <Text
             onPress={() => setShowUnreadOnly(false)}

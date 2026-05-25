@@ -246,7 +246,7 @@ export interface NotificationInterface {
   type: NotificationType
   title: string
   message: string
-  read: boolean
+  readAt: Date | null
   createdAt: Date
   updatedAt: Date
   userId: string
