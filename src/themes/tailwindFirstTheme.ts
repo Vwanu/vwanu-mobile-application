@@ -9,10 +9,10 @@ const tailwindColors = tailwindConfig.theme?.extend?.colors
  * Uses Tailwind colors as the single source of truth for all UI theming
  */
 
-// Light theme backgrounds - use lighter Tailwind colors
+// Light theme backgrounds — warm-bg is now the default screen background
+// so any view that doesn't set its own bg inherits the redesigned warm surface.
 const lightBackgrounds = {
-  'background-basic-color-1':
-    (tailwindColors as any)['color-basic-100'] || '#FFFFFF', // Main background
+  'background-basic-color-1': (tailwindColors as any)['warm-bg'] || '#F5F3EE', // Main background (warm)
   'background-basic-color-2':
     (tailwindColors as any)['color-basic-200'] || '#F8FAFF', // Card background
   'background-basic-color-3':
