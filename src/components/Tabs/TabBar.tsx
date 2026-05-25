@@ -29,11 +29,15 @@ interface TabBarProps {
   activeColor?: string
   inactiveColor?: string
   underlineColor?: string
-  // List-level style applied to the underlying FlatList.
+  // Container style. Applied to the FlatList (scroll mode) or the
+  // flex-row View (fullWidth mode).
   style?: StyleProp<ViewStyle>
   // Per-tab style applied to each tab's TouchableOpacity (after the defaults).
-  // Useful for equal-width tabs: pass `tw\`flex-1 mr-0 items-center\``.
   tabStyle?: StyleProp<ViewStyle>
+  // Render as flex-row View instead of horizontal FlatList. Each tab gets
+  // flex-1 by default so they share the row equally. No scroll, no
+  // auto-scroll-to-active behavior.
+  fullWidth?: boolean
 }
 
 const TabBar: React.FC<TabBarProps> = ({
@@ -48,6 +52,7 @@ const TabBar: React.FC<TabBarProps> = ({
   underlineColor,
   style,
   tabStyle,
+  fullWidth = false,
 }) => {
   const activeBorder = underlineColor ?? activeColor
   const flatListRef = useRef<FlatList>(null)
@@ -72,6 +77,11 @@ const TabBar: React.FC<TabBarProps> = ({
   const renderTab = ({ item }: { item: Tab }) => {
     const isActive = activeTab === item.id
     const isDisabled = item.disabled
+    // In fullWidth mode the wrapper is a flex-row; flex-1 splits the row evenly
+    // and we drop the right margin so totals fit. In scroll mode keep mr-3.
+    const defaultLayout = fullWidth
+      ? tw`flex-1 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''}`
+      : tw`mr-3 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''}`
 
     return (
       <TouchableOpacity
@@ -79,7 +89,7 @@ const TabBar: React.FC<TabBarProps> = ({
         onPress={() => onTabChange(item.id)}
         activeOpacity={0.7}
         style={[
-          tw`mr-3 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''}`,
+          defaultLayout,
           {
             borderBottomWidth: 2,
             borderBottomColor: isActive ? activeBorder : 'transparent',
@@ -113,6 +123,16 @@ const TabBar: React.FC<TabBarProps> = ({
           {item.badge ? <View style={tw`ml-1.5`}>{item.badge}</View> : null}
         </View>
       </TouchableOpacity>
+    )
+  }
+
+  if (fullWidth) {
+    return (
+      <View style={[tw`flex-row`, style]}>
+        {tabs.map((item) => (
+          <React.Fragment key={item.id}>{renderTab({ item })}</React.Fragment>
+        ))}
+      </View>
     )
   }
 
