@@ -18,7 +18,7 @@ import { FlatList } from 'react-native-gesture-handler'
 import { isNotificationRead } from './lib/isNotificationRead'
 import { resolveNotificationTarget } from './lib/routing'
 import { useGroupedNotifications, Row } from './lib/useGroupedNotifications'
-import NotificationListHeader from './components/NotificatioHeader'
+import NotificationListHeader from './components/NotificationHeader'
 import EmptyList from 'components/EmptyList'
 
 const NotificationsScreen: React.FC = () => {
