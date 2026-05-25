@@ -90,11 +90,13 @@ const TabBar: React.FC<TabBarProps> = ({
         activeOpacity={0.7}
         style={[
           defaultLayout,
+          tabStyle,
+          // Active-state underline goes LAST so a consumer-provided `border`
+          // in tabStyle can't override the borderBottom back to 1px.
           {
             borderBottomWidth: 2,
             borderBottomColor: isActive ? activeBorder : 'transparent',
           },
-          tabStyle,
         ]}
       >
         <View style={tw`flex-row items-center justify-center`}>
