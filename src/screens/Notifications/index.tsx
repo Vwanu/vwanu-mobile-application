@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react'
-import { View, RefreshControl, TouchableOpacity } from 'react-native'
+import { View, RefreshControl } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator } from 'react-native-paper'
 
 import tw from 'lib/tailwind'
@@ -14,12 +13,13 @@ import {
 } from 'store/notifications-api-slice'
 import { NotificationInterface } from '../../../types'
 import Screen from 'components/screen'
-import ScreenHeader from 'components/ScreenHeader'
 import { colors } from 'components/ui/tokens'
 import { FlatList } from 'react-native-gesture-handler'
 import { isNotificationRead } from './lib/isNotificationRead'
 import { resolveNotificationTarget } from './lib/routing'
 import { useGroupedNotifications, Row } from './lib/useGroupedNotifications'
+import NotificationListHeader from './components/NotificatioHeader'
+import EmptyList from 'components/EmptyList'
 
 const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation()
@@ -81,68 +81,6 @@ const NotificationsScreen: React.FC = () => {
 
   const rows = useGroupedNotifications(notifications?.data)
 
-  const renderHeader = () => {
-    const activeStyle = 'border-b-primary-deep'
-    const inactiveStyle = 'border-b-warm-border-strong'
-    const baseStyle = 'px-4 py-2 border-b-2 w-1/2'
-    const textStyle = 'font-poppins-semibold text-center text-primary-deep'
-
-    const markAllRead = (
-      <TouchableOpacity
-        onPress={handleMarkAllAsRead}
-        disabled={unreadCount === 0}
-        hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-      >
-        <Text
-          style={tw`font-poppins-semibold text-sm ${
-            unreadCount > 0 ? 'text-primary-deep' : 'text-warm-dim'
-          }`}
-        >
-          Mark all read
-        </Text>
-      </TouchableOpacity>
-    )
-
-    return (
-      <View>
-        <ScreenHeader
-          title="Notifications"
-          subtitle="Stay up to date"
-          rightAction={markAllRead}
-        />
-
-        <View style={tw`flex-row w-full justify-between`}>
-          <Text
-            onPress={() => setShowUnreadOnly(false)}
-            style={tw`${textStyle} ${baseStyle} ${
-              !showUnreadOnly ? activeStyle : inactiveStyle
-            }`}
-          >
-            All
-          </Text>
-
-          <Text
-            onPress={() => setShowUnreadOnly(true)}
-            style={tw`${textStyle} ${baseStyle} ${
-              showUnreadOnly ? activeStyle : inactiveStyle
-            }`}
-          >
-            Unread
-            <>
-              {unreadCount > 0 && (
-                <View style={tw`ml-1.5 px-2  rounded-full bg-coral`}>
-                  <Text style={tw`font-poppins-bold text-[10px] text-white`}>
-                    {unreadCount > 99 ? '99+' : String(unreadCount)}
-                  </Text>
-                </View>
-              )}
-            </>
-          </Text>
-        </View>
-      </View>
-    )
-  }
-
   const renderRow = ({ item }: { item: Row }) => {
     if (item.kind === 'separator') {
       return (
@@ -163,34 +101,15 @@ const NotificationsScreen: React.FC = () => {
     )
   }
 
-  const renderEmptyState = () => (
-    <View style={tw`flex-1 justify-center items-center px-8 pt-24`}>
-      <View
-        style={tw`w-16 h-16 rounded-full bg-warm-surface border border-warm-border items-center justify-center mb-4`}
-      >
-        <Ionicons
-          name="notifications-off-outline"
-          size={28}
-          color={colors.mute}
-        />
-      </View>
-      <Text style={tw`text-base font-syne-bold text-ink text-center`}>
-        {showUnreadOnly ? 'No unread notifications' : 'No notifications yet'}
-      </Text>
-      <Text
-        style={tw`text-sm font-poppins text-mute mt-1 text-center leading-5`}
-      >
-        {showUnreadOnly
-          ? "You're all caught up!"
-          : "When you get notifications, they'll show up here"}
-      </Text>
-    </View>
-  )
-
   if (isLoading) {
     return (
       <Screen>
-        {renderHeader()}
+        <NotificationListHeader
+          unreadCount={unreadCount}
+          showUnreadOnly={showUnreadOnly}
+          setShowUnreadOnly={setShowUnreadOnly}
+          handleMarkAllAsRead={handleMarkAllAsRead}
+        />
         <View style={tw`flex-1 justify-center items-center`}>
           <ActivityIndicator color={colors.primaryDeep} />
         </View>
@@ -204,8 +123,29 @@ const NotificationsScreen: React.FC = () => {
         data={rows}
         keyExtractor={(row) => row.key}
         renderItem={renderRow}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyState}
+        ListHeaderComponent={() => (
+          <NotificationListHeader
+            unreadCount={unreadCount}
+            showUnreadOnly={showUnreadOnly}
+            setShowUnreadOnly={setShowUnreadOnly}
+            handleMarkAllAsRead={handleMarkAllAsRead}
+          />
+        )}
+        ListEmptyComponent={() => (
+          <EmptyList
+            title={
+              showUnreadOnly
+                ? 'No unread notifications'
+                : 'No notifications yet'
+            }
+            subtitle={
+              showUnreadOnly
+                ? "You're all caught up!"
+                : "When you get notifications, they'll show up here"
+            }
+            icon="notifications-off-outline"
+          />
+        )}
         contentContainerStyle={tw`pb-6`}
         refreshControl={
           <RefreshControl
