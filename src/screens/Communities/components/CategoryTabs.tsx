@@ -51,6 +51,7 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
       onTabChange={handleTabChange}
       tabStyle={tabStyle}
       style={style}
+      isPill={true}
     />
   )
 }

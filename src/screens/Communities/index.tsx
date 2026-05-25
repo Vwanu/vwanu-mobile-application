@@ -36,7 +36,7 @@ const CommunitiesListNavigator: React.FC = () => {
         fullWidth
         selectedIndex={selectedTab === 'mine' ? 0 : 1}
         onSelect={handleTabSelect}
-        style={tw` border-b border-warm border-b-2`}
+        style={tw` border-b border-warm-border border-b`}
       >
         <Tab title="Mine" />
         <Tab title="Others" />

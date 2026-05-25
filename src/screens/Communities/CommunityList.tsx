@@ -63,14 +63,14 @@ const CommunityList: React.FC<Props> = ({ communityListType, searchQuery }) => {
 
   return (
     <Screen loading={isLoading}>
-      <View>
+      <View style={tw`px-4 border-b border-warm-border`}>
         {interests && interests.length > 0 && (
           <CategoryTabs
             interests={interests}
             selectedInterest={selectedInterest}
             onInterestChange={handleInterestChange}
-            tabStyle={tw`border border-red-500 rounded-t-lg`}
-            style={tw`h-12 mb-5 mt-3`}
+            tabStyle={tw`border`}
+            style={tw`h-12 mb-2 mt-3`}
           />
         )}
       </View>

@@ -18,6 +18,7 @@ interface TabBarProps {
   style?: StyleProp<ViewStyle>
   tabStyle?: StyleProp<ViewStyle>
   fullWidth?: boolean
+  isPill?: boolean
 }
 
 const TabBar: React.FC<TabBarProps> = ({
@@ -33,6 +34,7 @@ const TabBar: React.FC<TabBarProps> = ({
   style,
   tabStyle,
   fullWidth = false,
+  isPill = false,
 }) => {
   const flatListRef = useRef<FlatList>(null)
 
@@ -67,6 +69,7 @@ const TabBar: React.FC<TabBarProps> = ({
       disableTextColor={disableTextColor}
       tabStyle={tabStyle}
       fullWidth={fullWidth}
+      isPill={isPill}
     />
   )
 
@@ -83,7 +86,7 @@ const TabBar: React.FC<TabBarProps> = ({
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={tw`px-4`}
+        contentContainerStyle={tw`px-4 items-center`}
         style={style}
         onScrollToIndexFailed={(info) => {
           const wait = new Promise((resolve) => setTimeout(resolve, 500))

@@ -27,6 +27,7 @@ interface TabProps {
   disableTextColor?: string
   tabStyle?: StyleProp<ViewStyle>
   fullWidth?: boolean
+  isPill?: boolean
 }
 
 const TabItem: React.FC<TabProps> = ({
@@ -41,13 +42,15 @@ const TabItem: React.FC<TabProps> = ({
   disableTextColor,
   tabStyle,
   fullWidth = false,
+  isPill = false,
 }) => {
   const isDisabled = item.disabled
   const activeBorder = underlineColor ?? activeColor
 
+  const shape = isPill ? 'rounded-full' : ''
   const defaultLayout = fullWidth
-    ? tw`flex-1 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''}`
-    : tw`mr-3 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''}`
+    ? tw`flex-1 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''} ${shape}`
+    : tw`mr-3 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''} ${shape}`
 
   return (
     <TouchableOpacity
@@ -57,11 +60,17 @@ const TabItem: React.FC<TabProps> = ({
       style={[
         defaultLayout,
         tabStyle,
-        // Active-state underline goes LAST so a consumer-provided `border`
-        // in tabStyle can't override the borderBottom back to 1px.
-        {
-          borderBottomWidth: 2,
-        },
+        // Active overrides go LAST so a consumer-provided `border` in
+        // tabStyle can't override the active visual back to defaults.
+        // Inactive tabs apply no overrides — consumer styles win.
+        // - Pill mode + active: filled primary background.
+        // - Non-pill + active: 2px underline using activeBorder.
+        isActive && isPill && { backgroundColor: activeColor },
+        isActive &&
+          !isPill && {
+            borderColor: activeBorder,
+            borderBottomWidth: 2,
+          },
       ]}
     >
       <View style={tw`flex-row items-center justify-center`}>
@@ -80,7 +89,9 @@ const TabItem: React.FC<TabProps> = ({
               isDisabled
                 ? disableTextColor || 'text-gray-400'
                 : isActive
-                ? activeTextColor || 'text-primary'
+                ? isPill
+                  ? 'text-white'
+                  : activeTextColor || 'text-primary'
                 : 'text-gray-700 dark:text-gray-300'
             }`}
           >
