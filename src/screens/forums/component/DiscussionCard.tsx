@@ -67,11 +67,11 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
       ]}
     >
       <ProfAvatar user={discussion.user} size={36} subtitle={date} />
-      <Text style={tw`font-bold text-gray-900 dark:text-white text-base mt-3`}>
+      <Text style={tw`font-syne-bold text-ink dark:text-white text-base mt-3`}>
         {discussion.title}
       </Text>
       <MentionText
-        style={tw`text-gray-600 dark:text-gray-400 text-sm mt-1 leading-5`}
+        style={tw`font-poppins text-soft dark:text-gray-400 text-sm mt-1 leading-5`}
         numberOfLines={expanded ? undefined : 3}
         onMentionPress={(id) => {
           // @ts-ignore
@@ -85,77 +85,85 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
       </MentionText>
 
       {/* Likes, replies count, and reply button */}
-      <View style={tw`flex-row items-center mt-3 gap-4`}>
-        <LikeForm
-          id={discussion.id}
-          isReactor={!!discussion.isReactor}
-          likersCount={discussion.amountOfLikes || 0}
-          flexDir="row"
-          size={15}
-          onLike={handleLike}
-          onToggleLikers={() => {
-            toggleShowLikers()
-            fetchLikers({
-              interestId: discussion.interestId,
-              discussionId: discussion.id,
-            })
-          }}
-        />
-        {isShowLikers && (
-          <LikerPopover
-            visible={isShowLikers}
-            onDismiss={toggleShowLikers}
-            likers={likersData?.data || []}
-            isFetching={isFetchingLikers}
-            onRefetch={() => {
+      <View style={tw`flex-row justify-between items-center mt-3 gap-4`}>
+        <>
+          {replyCount > 0 && (
+            <TouchableOpacity
+              style={tw`flex-row items-center`}
+              onPress={handleToggleExpand}
+            >
+              <Ionicons
+                name="chatbubble-outline"
+                size={15}
+                color={tw.color('primary-deep')}
+              />
+              <Text style={tw`font-poppins-medium text-xs text-primary ml-1`}>
+                {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+              </Text>
+              <Ionicons
+                name={expanded ? 'chevron-up' : 'chevron-down'}
+                size={14}
+                color={tw.color('primary')}
+                style={tw`ml-1`}
+              />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={tw`flex-row items-center`}
+            onPress={() => setShowReplyInput((prev) => !prev)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="arrow-undo-outline"
+              size={15}
+              color={tw.color('primary-deep')}
+            />
+            <Text
+              style={tw`font-poppins-medium text-xs text-primary-deep ml-1`}
+            >
+              Reply
+            </Text>
+          </TouchableOpacity>
+        </>
+        <>
+          <LikeForm
+            id={discussion.id}
+            isReactor={!!discussion.isReactor}
+            likersCount={discussion.amountOfLikes || 0}
+            flexDir="row"
+            size={15}
+            onLike={handleLike}
+            onToggleLikers={() => {
+              toggleShowLikers()
               fetchLikers({
                 interestId: discussion.interestId,
                 discussionId: discussion.id,
               })
             }}
-            anchorContent={
-              <TouchableOpacity onPress={toggleShowLikers}>
-                <Text style={tw`text-xs text-primary`}>
-                  {discussion.amountOfLikes}{' '}
-                  {discussion.amountOfLikes === 1 ? 'like' : 'likes'}
-                </Text>
-              </TouchableOpacity>
-            }
           />
-        )}
-        {replyCount > 0 && (
-          <TouchableOpacity
-            style={tw`flex-row items-center`}
-            onPress={handleToggleExpand}
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={15}
-              color={tw.color('primary')}
+          {isShowLikers && (
+            <LikerPopover
+              visible={isShowLikers}
+              onDismiss={toggleShowLikers}
+              likers={likersData?.data || []}
+              isFetching={isFetchingLikers}
+              onRefetch={() => {
+                fetchLikers({
+                  interestId: discussion.interestId,
+                  discussionId: discussion.id,
+                })
+              }}
+              anchorContent={
+                <TouchableOpacity onPress={toggleShowLikers}>
+                  <Text style={tw`font-poppins-medium text-xs text-primary`}>
+                    {discussion.amountOfLikes}{' '}
+                    {discussion.amountOfLikes === 1 ? 'like' : 'likes'}
+                  </Text>
+                </TouchableOpacity>
+              }
             />
-            <Text style={tw`text-xs text-primary ml-1`}>
-              {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
-            </Text>
-            <Ionicons
-              name={expanded ? 'chevron-up' : 'chevron-down'}
-              size={14}
-              color={tw.color('primary')}
-              style={tw`ml-1`}
-            />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={tw`flex-row items-center`}
-          onPress={() => setShowReplyInput((prev) => !prev)}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="arrow-undo-outline"
-            size={15}
-            color={tw.color('gray-500')}
-          />
-          <Text style={tw`text-xs text-gray-500 ml-1`}>Reply</Text>
-        </TouchableOpacity>
+          )}
+        </>
       </View>
 
       {/* Inline reply input */}

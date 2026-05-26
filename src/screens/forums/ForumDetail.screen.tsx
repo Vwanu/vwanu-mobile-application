@@ -1,14 +1,9 @@
 import React, { useCallback, useState } from 'react'
-import {
-  View,
-  FlatList,
-  Platform,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native'
+import { View, FlatList, TouchableOpacity, RefreshControl } from 'react-native'
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { ImageBackground } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
 import { ActivityIndicator } from 'react-native-paper'
 
 import tw from 'lib/tailwind'
@@ -19,10 +14,40 @@ import { FeedStackParams, Discussion } from '../../../types'
 import CreateDiscussionForm from './component/CreateDiscussionFrom'
 import DiscussionCard from './component/DiscussionCard'
 import EmptyList from 'components/EmptyList'
+import TabBar, { Tab } from 'components/Tabs/TabBar'
+import { colors } from 'components/ui/tokens'
 import {
   useFetchDiscussionsQuery,
   useCreateDiscussionMutation,
 } from 'store/discussion-api-slice'
+
+const DISCUSSION_FILTERS: Tab[] = [
+  { id: 'latest', label: 'Latest' },
+  { id: 'top', label: 'Top' },
+  { id: 'unanswered', label: 'Unanswered' },
+]
+
+const GRADIENT_PAIRS: ReadonlyArray<readonly [string, string]> = [
+  ['rgba(27,31,94,0.85)', 'rgba(247,108,94,0.45)'],
+  ['rgba(27,31,94,0.85)', 'rgba(244,163,0,0.45)'],
+  ['rgba(43,49,128,0.85)', 'rgba(247,108,94,0.5)'],
+  ['rgba(27,31,94,0.9)', 'rgba(59,130,246,0.45)'],
+  ['rgba(43,49,128,0.85)', 'rgba(197,132,0,0.45)'],
+]
+const EMOJIS = ['💬', '🗣️', '📣', '🌐', '🔥', '✨', '🧠']
+
+const hashId = (id: string | number) => {
+  const key = String(id)
+  let hash = 0
+  for (let i = 0; i < key.length; i++)
+    hash = (hash * 31 + key.charCodeAt(i)) | 0
+  return Math.abs(hash)
+}
+const gradientFor = (id: string | number) =>
+  GRADIENT_PAIRS[hashId(id) % GRADIENT_PAIRS.length]
+const emojiFor = (id: string | number) => EMOJIS[hashId(id) % EMOJIS.length]
+const mockThreadCount = (id: string | number) => (hashId(id) % 240) + 6
+const mockMemberCount = (id: string | number) => (hashId(id) % 1800) + 120
 
 type ForumDetailRoute = RouteProp<FeedStackParams, 'ForumDetail'>
 
@@ -31,6 +56,7 @@ const ForumDetailScreen: React.FC = () => {
   const navigation = useNavigation()
   const { forum } = route.params
   const [showForm, setShowForm] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<string>('latest')
 
   const {
     data: discussionsData,
@@ -67,27 +93,100 @@ const ForumDetailScreen: React.FC = () => {
 
   return (
     <Screen safeArea={false}>
-      <View style={tw`flex-1 bg-gray-50 dark:bg-gray-900`}>
-        {/* Header with cover image */}
+      <View style={tw`flex-1`}>
         <ImageBackground
           source={forum.coverPicture ? { uri: forum.coverPicture } : undefined}
-          style={tw`h-[200px] w-full`}
+          style={tw`h-[220px] w-full`}
         >
-          <View style={tw`flex-1 bg-black/50 justify-end p-4`}>
-            <TouchableOpacity
-              style={tw`absolute top-12 left-4 bg-black/30 rounded-full p-2`}
-              onPress={() => navigation.goBack()}
+          <LinearGradient
+            colors={gradientFor(forum.id)}
+            start={{ x: 0, y: 1 }}
+            end={{ x: 1, y: 0 }}
+            style={tw`flex-1 px-4 pt-12 pb-5 justify-end overflow-hidden`}
+          >
+            <Text
+              style={[
+                tw`absolute right-3 top-8`,
+                { fontSize: 130, opacity: 0.18 },
+              ]}
             >
-              <Ionicons name="arrow-back" size={22} color="white" />
+              {emojiFor(forum.id)}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.85}
+              style={[
+                tw`absolute top-12 left-4 w-10 h-10 rounded-full items-center justify-center border border-white/30`,
+                { backgroundColor: 'rgba(255,255,255,0.18)' },
+              ]}
+            >
+              <Ionicons name="arrow-back" size={20} color="white" />
             </TouchableOpacity>
-            <Text style={tw`text-white text-2xl font-bold`}>{forum.name}</Text>
+
+            <Text style={tw`text-white font-syne-bold text-2xl`}>
+              {forum.name}
+            </Text>
             {forum.description ? (
-              <Text style={tw`text-white/80 text-sm mt-1`} numberOfLines={2}>
+              <Text
+                style={tw`text-white/80 font-poppins text-sm mt-1`}
+                numberOfLines={2}
+              >
                 {forum.description}
               </Text>
             ) : null}
-          </View>
+
+            <View style={tw`flex-row gap-2 mt-3`}>
+              <View
+                style={[
+                  tw`flex-row items-center px-3 py-1 rounded-full border border-white/30`,
+                  { backgroundColor: 'rgba(255,255,255,0.15)' },
+                ]}
+              >
+                <Ionicons name="chatbubbles-outline" size={12} color="white" />
+                <Text style={tw`text-white text-xs font-poppins-medium ml-1`}>
+                  {mockThreadCount(forum.id)} threads
+                </Text>
+              </View>
+              <View
+                style={[
+                  tw`flex-row items-center px-3 py-1 rounded-full border border-white/30`,
+                  { backgroundColor: 'rgba(255,255,255,0.15)' },
+                ]}
+              >
+                <Ionicons name="people-outline" size={12} color="white" />
+                <Text style={tw`text-white text-xs font-poppins-medium ml-1`}>
+                  {mockMemberCount(forum.id).toLocaleString()} members
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
         </ImageBackground>
+
+        <View
+          style={tw`flex-row items-center bg-white align-center justify-between mb-1`}
+        >
+          <View style={tw`flex-1 min-w-0 overflow-hidden`}>
+            <TabBar
+              tabs={DISCUSSION_FILTERS}
+              activeTab={activeFilter}
+              onTabChange={setActiveFilter}
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() => setShowForm(true)}
+            activeOpacity={0.85}
+            style={[
+              tw`shrink-0 mr-2 ml-3 px-3 py-2 rounded-full flex-row items-center`,
+              { backgroundColor: colors.primaryDeep },
+            ]}
+          >
+            <Ionicons name="add" size={14} color="#FFFFFF" />
+            <Text style={tw`text-white text-xs font-poppins-semibold ml-1`}>
+              New thread
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Discussions list */}
         <FlatList
@@ -117,18 +216,6 @@ const ForumDetailScreen: React.FC = () => {
           }
         />
 
-        {/* FAB */}
-        <TouchableOpacity
-          style={[
-            tw`absolute bottom-8 right-5 bg-white rounded-full w-14 h-14 items-center justify-center`,
-            fabShadow,
-          ]}
-          onPress={() => setShowForm(true)}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="add" size={28} color={tw.color('primary')} />
-        </TouchableOpacity>
-
         {/* Create Discussion Modal */}
         <CreateDiscussionForm
           visible={showForm}
@@ -138,20 +225,6 @@ const ForumDetailScreen: React.FC = () => {
       </View>
     </Screen>
   )
-}
-
-const fabShadow = {
-  ...Platform.select({
-    ios: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 6,
-    },
-    android: {
-      elevation: 8,
-    },
-  }),
 }
 
 export default ForumDetailScreen
