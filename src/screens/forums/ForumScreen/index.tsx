@@ -7,24 +7,15 @@ import { Ionicons } from '@expo/vector-icons'
 import tw from 'lib/tailwind'
 import Screen from 'components/screen'
 import ScreenHeader from 'components/ScreenHeader'
-import TabBar, { Tab } from 'components/Tabs/TabBar'
 import EmptyList from 'components/EmptyList'
 import { colors } from 'components/ui/tokens'
 
 import { useFetchInterestsQuery, Interest } from 'store/interests'
 import { FeedStackParams } from '../../../../types'
+import CategoryTabs from 'screens/Communities/components/CategoryTabs'
 import ForumFeaturedCard from './components/ForumFeaturedCard'
 import ForumCategoryCard from './components/ForumCategoryCard'
 import ForumFAB from './components/ForumFAB'
-
-type FilterId = 'all' | 'trending' | 'new' | 'mine'
-
-const FILTERS: Tab[] = [
-  { id: 'all', label: 'All' },
-  { id: 'trending', label: 'Trending' },
-  { id: 'new', label: 'New' },
-  { id: 'mine', label: 'My Topics' },
-]
 
 const mockThreadCount = (id: string | number) => {
   const key = String(id)
@@ -36,7 +27,9 @@ const mockThreadCount = (id: string | number) => {
 
 const ForumScreen: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<FeedStackParams>>()
-  const [filter, setFilter] = useState<FilterId>('all')
+  const [selectedInterest, setSelectedInterest] = useState<Interest | null>(
+    null
+  )
   const [search, setSearch] = useState('')
 
   const { data: interests, isFetching, refetch } = useFetchInterestsQuery()
@@ -52,16 +45,12 @@ const ForumScreen: React.FC = () => {
     console.log('TODO: navigate to new thread flow')
   }, [])
 
-  const handleFilterChange = useCallback((id: string) => {
-    setFilter(id as FilterId)
-    if (id !== 'all') console.log(`TODO: wire filter "${id}"`)
-  }, [])
-
-  const filteredInterests = (interests || []).filter((i) =>
-    search.trim()
-      ? i.name.toLowerCase().includes(search.trim().toLowerCase())
-      : true
-  )
+  const filteredInterests = (interests || []).filter((i) => {
+    if (selectedInterest && i.id !== selectedInterest.id) return false
+    if (search.trim())
+      return i.name.toLowerCase().includes(search.trim().toLowerCase())
+    return true
+  })
 
   const renderHeader = () => (
     <View>
@@ -78,13 +67,14 @@ const ForumScreen: React.FC = () => {
           onChangeText={setSearch}
         />
       </View>
-      <TabBar
-        tabs={FILTERS}
-        activeTab={filter}
-        onTabChange={handleFilterChange}
-        activeColor={colors.primaryDeep}
-        inactiveColor={colors.mute}
-      />
+      {interests && interests.length > 0 ? (
+        <CategoryTabs
+          interests={interests}
+          selectedInterest={selectedInterest}
+          onInterestChange={setSelectedInterest}
+          onClear={() => setSelectedInterest(null)}
+        />
+      ) : null}
       <ForumFeaturedCard
         title="Building Vwanu Together"
         subLabel="Trending Discussion"
