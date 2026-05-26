@@ -221,6 +221,7 @@ const ForumDetailScreen: React.FC = () => {
           visible={showForm}
           onClose={() => setShowForm(false)}
           onSubmit={handleCreateDiscussion}
+          categoryName={forum.name}
         />
       </View>
     </Screen>
