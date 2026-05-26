@@ -51,6 +51,7 @@ const AppInput = (props: P) => {
         {...rest}
         onFocus={onFocus && onFocus}
         onBlur={props.onBlur && props.onBlur}
+        style={style}
       />
       {/* </Wrapper> */}
     </>

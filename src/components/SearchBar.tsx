@@ -28,7 +28,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <Input
         placeholder={placeholder}
         value={value}
-        iconLeft={
+        // @ts-ignore
+        accessoryLeft={
           <Ionicons name="search" size={24} color={tw.color('gray-400')} />
         }
         onChangeText={onSearchChange}
