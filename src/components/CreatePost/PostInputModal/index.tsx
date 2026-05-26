@@ -11,18 +11,18 @@ import {
   TouchableOpacity,
   Animated,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native'
 import { styles } from './style'
 
 import tw from 'lib/tailwind'
 import ProfAvatar from '../../ProfAvatar'
-import {
-  Form,
-  Submit,
-  ImageFields,
-  PrivacyNoticeField,
-  MentionInput,
-} from '../../form'
+import { Form, ImageFields, PrivacyNoticeField, MentionInput } from '../../form'
+import ModalSubmitPill from 'components/ui/ModalSubmitPill'
+import ModalCloseButton from 'components/ui/ModalCloseButton'
+import ModalActionPill from 'components/ui/ModalActionPill'
+import { useFetchCommunityQuery } from 'store/communities-api-slice'
 import Text from '../../Text'
 import {
   useCreatePostMutation,
@@ -100,8 +100,6 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   const result = PRESIGN_ENABLED ? presignResult : multipartResult
 
   const [postText, setPostText] = useState('')
-  const fadeAnim = useRef(new Animated.Value(0)).current
-  const slideAnim = useRef(new Animated.Value(50)).current
   const spinAnim = useRef(new Animated.Value(0)).current
 
   const initialValues: InferType<typeof ValidationSchema> = {
@@ -110,36 +108,6 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     postImage: [],
     communityId: communityId,
   }
-
-  React.useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start()
-    } else {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 50,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start()
-    }
-  }, [visible])
 
   // Spinning animation for loading icon
   React.useEffect(() => {
@@ -190,219 +158,222 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     (PRESIGN_ENABLED && mediaUploads.isAnyUploading)
 
   return (
-    <Modal visible={visible} animationType="fade" onRequestClose={handleClose}>
-      <Animated.View
-        style={[
-          { flex: 1 },
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={handleClose}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={tw`flex-1`}
       >
-        <Form
-          validationSchema={ValidationSchema}
-          initialValues={initialValues}
-          onSubmit={async (values) => {
-            if (PRESIGN_ENABLED) {
-              await createPostWithMediaKeys({
-                postText: values.postText,
-                privacyType: values.privacyType,
-                communityId: values.communityId,
-                mediaKeys: mediaUploads.getCompletedKeys(),
-              })
-              return
-            }
-
-            const mentions = extractMentionIds(values.postText || '')
-
-            //@ts-ignore
-            await createPost({ ...values, mentions })
-          }}
-          style={tw`flex-1`}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={20} color={colors.soft} />
-            </TouchableOpacity>
-
-            <Text style={styles.headerTitle}>Create Post</Text>
-
-            <Submit
-              title={result.isLoading ? 'Posting…' : 'Post'}
-              size="small"
-              disabled={isSubmitDisabled}
-              style={{
-                backgroundColor: isSubmitDisabled
-                  ? colors.warmBg
-                  : tw.color('secondary'),
-                borderColor: isSubmitDisabled
-                  ? colors.warmBorder
-                  : colors.amber,
-                borderWidth: 1,
-                borderRadius: 9999,
-                paddingHorizontal: 18,
-                minHeight: 36,
-              }}
-              textStyle={{
-                color: isSubmitDisabled ? colors.mute : '#FFFFFF',
-                fontFamily: 'Poppins_700Bold',
-                fontSize: 13,
-              }}
-            />
-          </View>
-
-          <ScrollView
-            style={styles.content}
-            showsVerticalScrollIndicator={false}
+        <View style={tw`flex-1 bg-black/40 justify-end`}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={tw`flex-1`}
+            onPress={handleClose}
+          />
+          <View
+            style={[
+              tw`rounded-t-3xl pb-3`,
+              {
+                backgroundColor: colors.warmSurface,
+                maxHeight: '92%',
+                minHeight: 540,
+              },
+            ]}
           >
-            {/* User Section */}
-
-            <View style={styles.userSection}>
-              <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden`}>
-                <ProfAvatar
-                  user={user!}
-                  subtitle="Share your thoughts with the community"
-                />
-              </View>
-              <View style={tw`border p-2 rounded-full border-gray-300`}>
-                <PrivacyNoticeField
-                  displayLong
-                  name="privacyType"
-                  canEdit={true}
-                  isEditing={false}
-                />
-              </View>
+            <View style={tw`items-center pt-2 pb-1`}>
+              <View
+                style={[
+                  tw`h-1 w-12 rounded-full`,
+                  { backgroundColor: colors.warmBorderStrong },
+                ]}
+              />
             </View>
 
-            <View style={styles.textInputSection}>
-              <MentionInput
-                name="postText"
-                placeholder="What's on your mind?"
-                autoCapitalize="sentences"
-                style={styles.textInput}
-                multiline={true}
-                textAlignVertical="top"
-              />
+            <Form
+              validationSchema={ValidationSchema}
+              initialValues={initialValues}
+              onSubmit={async (values) => {
+                if (PRESIGN_ENABLED) {
+                  await createPostWithMediaKeys({
+                    postText: values.postText,
+                    privacyType: values.privacyType,
+                    communityId: values.communityId,
+                    mediaKeys: mediaUploads.getCompletedKeys(),
+                  })
+                  return
+                }
 
-              <PostTextSync onTextChange={setPostText} />
+                const mentions = extractMentionIds(values.postText || '')
 
-              {/* Character counter */}
-              <View style={styles.characterCounter}>
-                <Text
+                //@ts-ignore
+                await createPost({ ...values, mentions })
+              }}
+              style={tw`flex-1`}
+            >
+              <View
+                style={tw`flex-row items-center justify-between px-4 pt-3 pb-3`}
+              >
+                <ModalCloseButton onPress={handleClose} />
+                <Text style={tw`font-syne-bold text-base text-ink`}>
+                  Create Post
+                </Text>
+                <FormSubmitPill
+                  enabled={!isSubmitDisabled}
+                  loading={result.isLoading}
+                />
+              </View>
+
+              <PostingInPill communityId={communityId} />
+
+              <View style={tw`flex-row items-center justify-between px-4 py-2`}>
+                <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden`}>
+                  <ProfAvatar
+                    user={user!}
+                    subtitle="Share your thoughts with the community"
+                  />
+                </View>
+                <View
                   style={[
-                    styles.counterText,
-                    postText.length > 280 && styles.counterWarning,
+                    tw`p-2 rounded-full border`,
+                    { borderColor: colors.warmBorder },
                   ]}
                 >
-                  {postText.length}/500
-                </Text>
+                  <PrivacyNoticeField
+                    displayLong
+                    name="privacyType"
+                    canEdit={true}
+                    isEditing={false}
+                  />
+                </View>
               </View>
-            </View>
 
-            {/* Quick Actions */}
-            <View style={styles.quickActions}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => bottomSheetRef.current?.expand()}
+              <ScrollView
+                style={tw`flex-1 px-4`}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                <MentionInput
+                  name="postText"
+                  placeholder="What's on your mind?"
+                  autoCapitalize="sentences"
+                  style={styles.textInput}
+                  multiline={true}
+                  textAlignVertical="top"
+                />
+
+                <PostTextSync onTextChange={setPostText} />
+
+                <View style={tw`flex-row justify-end pb-2`}>
+                  <Text
+                    style={[
+                      tw`font-poppins-medium text-xs`,
+                      {
+                        color:
+                          postText.length > 280 ? colors.coral : colors.mute,
+                      },
+                    ]}
+                  >
+                    {postText.length}/500
+                  </Text>
+                </View>
+              </ScrollView>
+
+              <View
+                style={[
+                  tw`flex-row items-center px-4 py-3 border-t`,
+                  { borderColor: colors.warmBorder },
+                ]}
+              >
+                <ModalActionPill
+                  icon="image-multiple"
+                  iconSet="material-community"
+                  label="Add Media"
+                  onPress={() => bottomSheetRef.current?.expand()}
+                />
+                <ModalActionPill
+                  icon="map-marker"
+                  iconSet="material-community"
+                  label="Location"
+                />
+                <ModalActionPill
+                  icon="account-group"
+                  iconSet="material-community"
+                  label="Tag People"
+                />
+              </View>
+
+              {/*@ts-ignore */}
+              <BottomSheet
+                ref={bottomSheetRef}
+                snapPoints={snapPoints}
+                index={iniTialsnapPointIndex}
+                enablePanDownToClose={false}
+                style={styles.bottomSheet}
+                handleIndicatorStyle={styles.bottomSheetHandle}
+                backgroundStyle={styles.bottomSheetBackground}
+              >
+                {/*@ts-ignore */}
+                <BottomSheetView style={styles.bottomSheetContent}>
+                  {PRESIGN_ENABLED ? (
+                    <PresignMediaPicker mediaUploads={mediaUploads} />
+                  ) : (
+                    <ImageFields name="postImage" />
+                  )}
+                </BottomSheetView>
+              </BottomSheet>
+            </Form>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+
+      {result.isLoading && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingContent}>
+            {result.isSuccess ? (
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={40}
+                color="#10B981"
+                style={styles.loadingIcon}
+              />
+            ) : (
+              <Animated.View
+                style={{
+                  transform: [
+                    {
+                      rotate: spinAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                }}
               >
                 <MaterialCommunityIcons
-                  name="image-multiple"
-                  size={18}
-                  color={colors.soft}
-                />
-                <Text style={styles.actionText}>Add Media</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.actionButton}>
-                <MaterialCommunityIcons
-                  name="map-marker"
-                  size={18}
-                  color={colors.soft}
-                />
-                <Text style={styles.actionText}>Location</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.actionButton}>
-                <MaterialCommunityIcons
-                  name="account-group"
-                  size={18}
-                  color={colors.soft}
-                />
-                <Text style={styles.actionText}>Tag People</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-
-          {/* Enhanced Bottom Sheet */}
-          {/*@ts-ignore */}
-          <BottomSheet
-            ref={bottomSheetRef}
-            snapPoints={snapPoints}
-            index={iniTialsnapPointIndex}
-            enablePanDownToClose={false}
-            style={styles.bottomSheet}
-            handleIndicatorStyle={styles.bottomSheetHandle}
-            backgroundStyle={styles.bottomSheetBackground}
-          >
-            {/*@ts-ignore */}
-            <BottomSheetView style={styles.bottomSheetContent}>
-              {PRESIGN_ENABLED ? (
-                <PresignMediaPicker mediaUploads={mediaUploads} />
-              ) : (
-                <ImageFields name="postImage" />
-              )}
-            </BottomSheetView>
-          </BottomSheet>
-        </Form>
-
-        {/* Loading Overlay */}
-        {result.isLoading && (
-          <View style={styles.loadingOverlay}>
-            <View style={styles.loadingContent}>
-              {result.isSuccess ? (
-                <MaterialCommunityIcons
-                  name="check-circle"
+                  name="loading"
                   size={40}
-                  color="#10B981"
+                  color={colors.primaryDeep}
                   style={styles.loadingIcon}
                 />
-              ) : (
-                <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        rotate: spinAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '360deg'],
-                        }),
-                      },
-                    ],
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="loading"
-                    size={40}
-                    color={colors.primaryDeep}
-                    style={styles.loadingIcon}
-                  />
-                </Animated.View>
-              )}
-              <Text style={styles.loadingText}>
-                {result.isSuccess
-                  ? 'Post created successfully!'
-                  : 'Creating your post...'}
-              </Text>
-              <Text style={styles.loadingSubtext}>
-                {result.isSuccess
-                  ? 'Your post has been shared with the community'
-                  : 'Please wait while we upload your content'}
-              </Text>
-            </View>
+              </Animated.View>
+            )}
+            <Text style={styles.loadingText}>
+              {result.isSuccess
+                ? 'Post created successfully!'
+                : 'Creating your post...'}
+            </Text>
+            <Text style={styles.loadingSubtext}>
+              {result.isSuccess
+                ? 'Your post has been shared with the community'
+                : 'Please wait while we upload your content'}
+            </Text>
           </View>
-        )}
-      </Animated.View>
+        </View>
+      )}
     </Modal>
   )
 }
@@ -414,6 +385,51 @@ const PostTextSync: React.FC<{ onTextChange: (text: string) => void }> = ({
     onTextChange(values.postText || '')
   }, [values.postText])
   return null
+}
+
+const FormSubmitPill: React.FC<{ enabled: boolean; loading?: boolean }> = ({
+  enabled,
+  loading,
+}) => {
+  const { handleSubmit } = useFormikContext()
+  return (
+    <ModalSubmitPill
+      enabled={enabled}
+      loading={loading}
+      onPress={() => handleSubmit()}
+    />
+  )
+}
+
+const PostingInPill: React.FC<{ communityId?: string }> = ({ communityId }) => {
+  const { data: community } = useFetchCommunityQuery(communityId!, {
+    skip: !communityId,
+  })
+  const label = community?.name ?? 'Feed'
+  return (
+    <View style={tw`px-4 pb-1`}>
+      <View
+        style={[
+          tw`flex-row items-center self-start px-3 py-1.5 rounded-full`,
+          { backgroundColor: colors.primarySoft },
+        ]}
+      >
+        <Ionicons
+          name={communityId ? 'people-outline' : 'globe-outline'}
+          size={12}
+          color={colors.primaryDeep}
+        />
+        <Text
+          style={[
+            tw`ml-1.5 font-poppins-medium text-xs`,
+            { color: colors.primaryDeep },
+          ]}
+        >
+          Posting in {label}
+        </Text>
+      </View>
+    </View>
+  )
 }
 
 const MAX_PRESIGN_FILES_PER_POST = 5
