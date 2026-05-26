@@ -56,11 +56,7 @@ const Timeline = () => {
         {/* Blogs Tab */}
         {activeTab === 'blogs' && (
           <View style={tw`flex-1 items-center justify-center p-6`}>
-            <Ionicons
-              name="newspaper-outline"
-              size={80}
-              color={colors.primaryDeep}
-            />
+            <Ionicons name="newspaper-outline" size={80} />
             <Text style={tw`text-xl font-syne-bold text-ink mt-4 text-center`}>
               Discover Blogs
             </Text>
