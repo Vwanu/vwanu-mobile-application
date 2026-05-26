@@ -24,6 +24,7 @@ interface ProfAvatarProps {
   showOnlineStatus?: boolean
   disableDefaultNavigation?: boolean
   titleStyles?: StyleProp<TextStyle>
+  badge?: React.ReactNode
 }
 
 const ProfAvatar: React.FC<ProfAvatarProps> = ({
@@ -31,6 +32,7 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
   showOnlineStatus = false,
   disableDefaultNavigation = false,
   size = 50,
+  badge = null,
   ...props
 }) => {
   const navigation = useNavigation()
@@ -75,13 +77,14 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
             }),
           }}
         />
-        {showOnlineStatus && props.user.online !== undefined && (
+        {showOnlineStatus && props.user.online !== undefined && !badge && (
           <View
             style={tw`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${
               props.user.online ? 'bg-green-500' : 'bg-gray-400'
             }`}
           />
         )}
+        {badge && <View style={tw`absolute -bottom-2 right-0 `}>{badge}</View>}
       </View>
       <View style={tw`ml-2 flex justify-center`}>
         <Text
