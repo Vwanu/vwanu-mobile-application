@@ -56,9 +56,9 @@
                     "borderColor": "amber-deep"
                   },
                   "disabled": {
-                    "backgroundColor": "amber-soft",
-                    "borderColor": "amber-soft",
-                    "textColor": "amber-deep"
+                    "backgroundColor": "warm-bg",
+                    "borderColor": "warm-border",
+                    "textColor": "mute"
                   }
                 }
               }

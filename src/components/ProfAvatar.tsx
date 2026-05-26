@@ -67,17 +67,38 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
       disabled={disableDefaultNavigation}
     >
       <View>
-        <Avatar.Image
-          size={size}
-          source={{
-            uri: cdnImageUrl(props.user.profilePicture, {
-              width: size * 2, // 2x for retina
-              height: size * 2,
-              smartCrop: true, // focus on face if Rekognition finds one
-            }),
-          }}
-        />
+        <View
+          style={[
+            tw`rounded-full bg-primary-deep-2 items-center justify-center overflow-hidden`,
+            { width: size, height: size },
+          ]}
+        >
+          {props.user?.profilePicture ? (
+            <Avatar.Image
+              size={size}
+              source={{
+                uri: cdnImageUrl(props.user.profilePicture, {
+                  width: size * 2, // 2x for retina
+                  height: size * 2,
+                  smartCrop: true, // focus on face if Rekognition finds one
+                }),
+              }}
+            />
+          ) : (
+            <Text
+              style={[
+                tw`text-white font-poppins-bold`,
+                { fontSize: Math.round(size * 0.36) },
+              ]}
+            >
+              {(props.user.firstName?.[0] || '').toUpperCase()}
+              {(props.user.lastName?.[0] || '').toUpperCase()}
+            </Text>
+          )}
+        </View>
+
         {showOnlineStatus && props.user.online !== undefined && !badge && (
+
           <View
             style={tw`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${
               props.user.online ? 'bg-green-500' : 'bg-gray-400'

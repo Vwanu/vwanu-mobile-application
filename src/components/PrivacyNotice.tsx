@@ -41,10 +41,10 @@ const PrivacyNotice: React.FC<PrivacyNotice> = ({
         <Ionicons
           name={mapPrivacyNoticeToIcon(props.privacyType)}
           size={13}
-          color={props.canEdit ? tw.color(`gray-500`) : tw.color(`gray-400`)}
+          color={props.canEdit ? tw.color(`black`) : tw.color(`gray-500`)}
         />
         {displayLong && (
-          <Text style={tw`capitalize ml-1 font-thin`}>{props.privacyType}</Text>
+          <Text style={tw`capitalize mx-1 `}>{props.privacyType}</Text>
         )}
       </View>
       {props.canEdit && (
@@ -60,7 +60,7 @@ const PrivacyNotice: React.FC<PrivacyNotice> = ({
               <Ionicons
                 name="chevron-down-outline"
                 size={13}
-                color={tw.color(`gray-500`)}
+                color={props.canEdit ? tw.color(`black`) : tw.color(`gray-500`)}
               />
             </TouchableOpacity>
           )}

@@ -35,7 +35,7 @@ import { useFetchProfileQuery } from 'store/profiles'
 import { RootState } from 'store'
 import { useFormikContext } from 'formik'
 import routes from 'navigation/routes'
-import { useTheme } from 'hooks/useTheme'
+import { colors } from 'components/ui/tokens'
 import { useMediaUploads, MediaItemInput } from '../useMediaUploads'
 import MediaTile from '../MediaTile'
 
@@ -110,12 +110,6 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     postImage: [],
     communityId: communityId,
   }
-  // React.useEffect(() => {
-  //   if (communityId) {
-  //      initialValues.communityId = communityId
-  //   }
-  // }, [communityId])
-  // console.log('communityId', communityId)
 
   React.useEffect(() => {
     if (visible) {
@@ -194,17 +188,9 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     !isPostReady ||
     result.isLoading ||
     (PRESIGN_ENABLED && mediaUploads.isAnyUploading)
-  const { isDarkMode } = useTheme()
 
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      onRequestClose={handleClose}
-      // statusBarTranslucent
-    >
-      {/* <StatusBar barStyle="light-content" backgroundColor="rgba(0,0,0,0.5)" /> */}
-
+    <Modal visible={visible} animationType="fade" onRequestClose={handleClose}>
       <Animated.View
         style={[
           { flex: 1 },
@@ -235,37 +221,35 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           }}
           style={tw`flex-1`}
         >
-          {/* Enhanced Header */}
-          <View
-            style={[
-              styles.header,
-              {
-                backgroundColor: isDarkMode ? 'gray-800' : 'white',
-                borderBottomColor: isDarkMode
-                  ? tw.color('border-primary')
-                  : 'gray-200',
-              },
-            ]}
-          >
+          {/* Header */}
+          <View style={styles.header}>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#374151" />
+              <Ionicons name="close" size={20} color={colors.soft} />
             </TouchableOpacity>
 
-            <Text>Create Post</Text>
+            <Text style={styles.headerTitle}>Create Post</Text>
 
             <Submit
-              title={result.isLoading ? 'Posting...' : 'Post'}
+              title={result.isLoading ? 'Posting…' : 'Post'}
               size="small"
               disabled={isSubmitDisabled}
-              style={[
-                styles.postButton,
-                isPostReady && styles.postButtonActive,
-                result.isLoading && styles.postButtonLoading,
-              ]}
-              textStyle={[
-                styles.postButtonText,
-                isPostReady && styles.postButtonTextActive,
-              ]}
+              style={{
+                backgroundColor: isSubmitDisabled
+                  ? colors.warmBg
+                  : tw.color('secondary'),
+                borderColor: isSubmitDisabled
+                  ? colors.warmBorder
+                  : colors.amber,
+                borderWidth: 1,
+                borderRadius: 9999,
+                paddingHorizontal: 18,
+                minHeight: 36,
+              }}
+              textStyle={{
+                color: isSubmitDisabled ? colors.mute : '#FFFFFF',
+                fontFamily: 'Poppins_700Bold',
+                fontSize: 13,
+              }}
             />
           </View>
 
@@ -273,34 +257,25 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
             style={styles.content}
             showsVerticalScrollIndicator={false}
           >
-            {/* Enhanced User Section */}
-            <View
-              style={[
-                styles.userSection,
-                {
-                  borderBottomColor: isDarkMode
-                    ? tw.color('border-primary')
-                    : 'gray-200',
-                },
-              ]}
-            >
-              <ProfAvatar
-                user={user!}
-                subtitle="Share your thoughts with the community"
-                subtitleParams={{
-                  textStyles: 'text-gray-500 text-sm',
-                }}
-              />
+            {/* User Section */}
 
-              <PrivacyNoticeField
-                displayLong
-                name="privacyType"
-                canEdit={true}
-                isEditing={false}
-              />
+            <View style={styles.userSection}>
+              <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden`}>
+                <ProfAvatar
+                  user={user!}
+                  subtitle="Share your thoughts with the community"
+                />
+              </View>
+              <View style={tw`border p-2 rounded-full border-gray-300`}>
+                <PrivacyNoticeField
+                  displayLong
+                  name="privacyType"
+                  canEdit={true}
+                  isEditing={false}
+                />
+              </View>
             </View>
 
-            {/* Enhanced Text Input */}
             <View style={styles.textInputSection}>
               <MentionInput
                 name="postText"
@@ -334,8 +309,8 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               >
                 <MaterialCommunityIcons
                   name="image-multiple"
-                  size={20}
-                  color="#6B7280"
+                  size={18}
+                  color={colors.soft}
                 />
                 <Text style={styles.actionText}>Add Media</Text>
               </TouchableOpacity>
@@ -343,8 +318,8 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               <TouchableOpacity style={styles.actionButton}>
                 <MaterialCommunityIcons
                   name="map-marker"
-                  size={20}
-                  color="#6B7280"
+                  size={18}
+                  color={colors.soft}
                 />
                 <Text style={styles.actionText}>Location</Text>
               </TouchableOpacity>
@@ -352,8 +327,8 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               <TouchableOpacity style={styles.actionButton}>
                 <MaterialCommunityIcons
                   name="account-group"
-                  size={20}
-                  color="#6B7280"
+                  size={18}
+                  color={colors.soft}
                 />
                 <Text style={styles.actionText}>Tag People</Text>
               </TouchableOpacity>
@@ -409,7 +384,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
                   <MaterialCommunityIcons
                     name="loading"
                     size={40}
-                    color="#3B82F6"
+                    color={colors.primaryDeep}
                     style={styles.loadingIcon}
                   />
                 </Animated.View>
