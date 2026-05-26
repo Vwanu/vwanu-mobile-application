@@ -9,10 +9,10 @@ import FriendRequestIndicator from 'components/FriendRequestIndicator'
 
 const TimelineHeader: React.FC = () => (
   <View
-    style={tw`flex-row items-center justify-between px-4 bg-white dark:bg-gray-900`}
+    style={tw`flex-row items-center justify-between px-4 py-2 border-b border-warm-border`}
   >
     {/* App Name */}
-    <Text style={tw`text-2xl font-bold text-primary`}>Vwanu</Text>
+    <Text style={tw`text-2xl font-syne-bold text-primary-deep`}>Vwanu</Text>
 
     <View style={tw`flex-row items-center`}>
       <FriendRequestIndicator />

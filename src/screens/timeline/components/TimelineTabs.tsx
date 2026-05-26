@@ -1,5 +1,7 @@
 import React from 'react'
 import TabBar, { Tab } from 'components/Tabs/TabBar'
+import { colors } from 'components/ui/tokens'
+import tw from 'lib/tailwind'
 
 interface TimelineTabsProps {
   activeTab: string
@@ -14,23 +16,19 @@ const TimelineTabs: React.FC<TimelineTabsProps> = ({
   const tabs: Tab[] = [
     {
       id: 'main',
-      label: 'Main Feed', // For accessibility, though not displayed
-      icon: activeTab === 'main' ? 'home' : 'home-outline',
+      label: 'Home',
     },
     {
       id: 'people',
-      label: 'People Directory', // For accessibility, though not displayed
-      icon: activeTab === 'people' ? 'people' : 'people-outline',
+      label: 'People',
     },
     {
       id: 'blogs',
-      label: 'Blogs', // For accessibility, though not displayed
-      icon: activeTab === 'blogs' ? 'newspaper' : 'newspaper-outline',
+      label: 'Blogs',
     },
     {
       id: 'forums',
-      label: 'Forums',
-      icon: activeTab === 'forums' ? 'chatbubbles' : 'chatbubbles-outline',
+      label: 'Forum',
     },
   ]
 
@@ -39,7 +37,9 @@ const TimelineTabs: React.FC<TimelineTabsProps> = ({
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={onTabChange}
-      iconOnly={true}
+      activeColor={colors.primaryDeep}
+      inactiveColor={colors.mute}
+      style={tw`border-b border-gray-200 dark:border-gray-700`}
     />
   )
 }

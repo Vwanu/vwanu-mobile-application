@@ -54,7 +54,7 @@ const Screen: React.FC<ScreenProps> = ({
       ) : (
         <>
           {safeArea ? (
-            <SafeAreaView style={tw`flex-1`}>
+            <SafeAreaView style={tw`flex-1 bg-warm-bg`}>
               {messages?.map((msg, index) => (
                 <Toast
                   key={index}
