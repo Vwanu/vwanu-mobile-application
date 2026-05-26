@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 
 import Text from 'components/Text'
 import tw from 'lib/tailwind'
+import { colors } from 'components/ui/tokens'
 
 // The config shape that describes one tab. Re-exported by TabBar for
 // existing callers that still import `Tab` from there.
@@ -35,7 +36,7 @@ const TabItem: React.FC<TabProps> = ({
   isActive,
   onPress,
   iconOnly = false,
-  activeColor = '#3B82F6',
+  activeColor = colors.primaryDeep,
   inactiveColor = '#6B7280',
   underlineColor,
   activeTextColor,

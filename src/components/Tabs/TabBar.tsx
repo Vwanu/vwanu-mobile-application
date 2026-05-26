@@ -3,6 +3,7 @@ import { View, FlatList, ViewStyle, StyleProp } from 'react-native'
 
 import tw from 'lib/tailwind'
 import TabItem, { Tab } from './Tab'
+import { colors } from 'components/ui/tokens'
 
 export type { Tab } from './Tab'
 interface TabBarProps {
@@ -28,7 +29,7 @@ const TabBar: React.FC<TabBarProps> = ({
   iconOnly = false,
   disableTextColor,
   activeTextColor,
-  activeColor = '#3B82F6',
+  activeColor = colors.primaryDeep,
   inactiveColor = '#6B7280',
   underlineColor,
   style,
