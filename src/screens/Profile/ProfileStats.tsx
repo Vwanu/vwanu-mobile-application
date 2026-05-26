@@ -40,7 +40,7 @@ const ProfileHeaderStats: React.FC<ProfileHeaderProps> = ({ user }) => {
   return (
     <View style={tw`flex-row border-t border-warm-border`}>
       <ProfileHeaderStat
-        label="Friends"
+        label="Connections"
         value={user?.amountOfFriends}
         withBorder
       />
