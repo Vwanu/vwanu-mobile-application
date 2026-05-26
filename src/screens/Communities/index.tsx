@@ -4,8 +4,7 @@ import Screen from 'components/screen'
 import CommunityList from './CommunityList'
 import ScreenHeader from 'components/ScreenHeader'
 import tw from 'lib/tailwind'
-import { CommunitySearchBar } from './components'
-import { useDebounce } from 'hooks/useDebounce'
+import SearchBar from 'components/SearchBar'
 
 type TabType = 'mine' | 'others'
 
@@ -16,9 +15,6 @@ const CommunitiesListNavigator: React.FC = () => {
   const handleTabSelect = (index: number) => {
     setSelectedTab(index === 0 ? 'mine' : 'others')
   }
-
-  // Debounce search query to avoid too many API calls
-  const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
   const handleSearchQuery = (text: string) => {
     setSearchQuery(text)
@@ -31,7 +27,7 @@ const CommunitiesListNavigator: React.FC = () => {
         subtitle="Discover . Join. Lead"
         containerStyle={tw`border-t border-warm`}
       />
-      <CommunitySearchBar onSearchChange={handleSearchQuery} />
+      <SearchBar onSearchChange={handleSearchQuery} />
       <TabBar
         fullWidth
         selectedIndex={selectedTab === 'mine' ? 0 : 1}
@@ -44,16 +40,10 @@ const CommunitiesListNavigator: React.FC = () => {
 
       <Layout style={{ flex: 1 }}>
         {selectedTab === 'mine' && (
-          <CommunityList
-            communityListType="mine"
-            searchQuery={debouncedSearchQuery}
-          />
+          <CommunityList communityListType="mine" searchQuery={''} />
         )}
         {selectedTab === 'others' && (
-          <CommunityList
-            communityListType="others"
-            searchQuery={debouncedSearchQuery}
-          />
+          <CommunityList communityListType="others" searchQuery={''} />
         )}
       </Layout>
     </Screen>

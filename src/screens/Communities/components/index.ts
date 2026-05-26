@@ -1,7 +1,6 @@
 export { default as RecentCommunities } from './RecentCommunities'
 export { default as FeaturedCommunity } from './FeaturedCommunity'
 export { default as CommunitiesContent } from './CommunitiesContent'
-export { default as CommunitySearchBar } from './CommunitySearchBar'
 export { default as CategoryTabs } from './CategoryTabs'
 export { default as CommunityGridCard } from './CommunityGridCard'
 export { default as CommunityStats } from './CommunityStats'
