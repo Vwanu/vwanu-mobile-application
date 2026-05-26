@@ -18,6 +18,7 @@ import BlogDetailScreen from '../screens/blogs/BlogDetatails.screen.tsx'
 import CreateBlogScreen from '../screens/blogs/CreateBlog.screen'
 import ForumDetailScreen from '../screens/forums/ForumDetail.screen'
 import ForumScreen from '../screens/forums/ForumScreen'
+import PeopleScreen from '../screens/people/PeopleScreen'
 
 // Types
 import { FeedStackParams } from '../../types'
@@ -93,6 +94,14 @@ const FeedNavigator: React.FC = () => (
       component={ForumDetailScreen}
       options={{
         title: 'Forum',
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name={SCREEN_NAMES.PEOPLE}
+      component={PeopleScreen}
+      options={{
+        title: 'People',
         headerShown: false,
       }}
     />
