@@ -115,6 +115,7 @@ export type FeedStackParams = Record<string, object | undefined> & {
   Blogs: undefined
   BlogDetail: { blogId: string }
   CreateBlog: { blogId?: string } | undefined
+  Forum: undefined
   ForumDetail: { forum: Interest }
 }
 

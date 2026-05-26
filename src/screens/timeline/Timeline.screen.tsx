@@ -14,11 +14,19 @@ import TimelineSkeletone from './TimelineSkeletone'
 import TimelineHeader from './TimelineHeader'
 import TimelineTabs from './components/TimelineTabs'
 import PeopleList from './PeopleList'
-import ForumList from './ForumList'
 
 const Timeline = () => {
   const navigation = useNavigation()
   const [activeTab, setActiveTab] = useState('main')
+
+  const handleTabChange = (id: string) => {
+    if (id === 'forums') {
+      // @ts-ignore
+      navigation.navigate('Forum')
+      return
+    }
+    setActiveTab(id)
+  }
 
   return (
     <Screen loading={false} loadingScreen={<TimelineSkeletone />} error={null}>
@@ -27,7 +35,7 @@ const Timeline = () => {
         <TimelineHeader />
 
         {/* Tab Navigation */}
-        <TimelineTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <TimelineTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
         {/* Main Content */}
         {activeTab === 'main' && (
@@ -45,9 +53,6 @@ const Timeline = () => {
 
         {/* People Tab */}
         {activeTab === 'people' && <PeopleList />}
-
-        {/* Forums Tab */}
-        {activeTab === 'forums' && <ForumList />}
 
         {/* Blogs Tab */}
         {activeTab === 'blogs' && (
