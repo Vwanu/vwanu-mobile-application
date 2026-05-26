@@ -25,6 +25,11 @@ const Timeline = () => {
       navigation.navigate('Forum')
       return
     }
+    if (id === 'people') {
+      // @ts-ignore
+      navigation.navigate('People')
+      return
+    }
     setActiveTab(id)
   }
 

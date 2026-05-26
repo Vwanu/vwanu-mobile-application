@@ -51,6 +51,7 @@ export const SCREEN_NAMES = {
   CREATE_BLOG: 'CreateBlog',
   FORUM: 'Forum',
   FORUM_DETAIL: 'ForumDetail',
+  PEOPLE: 'People',
 
   // Chat Stack
   CHAT: 'Chat',
