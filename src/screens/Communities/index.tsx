@@ -25,7 +25,7 @@ const CommunitiesListNavigator: React.FC = () => {
       <ScreenHeader
         title="Communities"
         subtitle="Discover . Join. Lead"
-        containerStyle={tw`border-t border-warm`}
+        containerStyle={tw`border-t border-warm-border`}
       />
       <SearchBar onSearchChange={handleSearchQuery} />
       <TabBar
