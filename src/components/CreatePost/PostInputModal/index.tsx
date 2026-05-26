@@ -1,23 +1,19 @@
 import React, { useState, useRef } from 'react'
 import { string, object, mixed, InferType, array } from 'yup'
 import { useSelector } from 'react-redux'
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet'
+import BottomSheet from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import {
   View,
   Modal,
   TouchableOpacity,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native'
-import { styles } from './style'
 
 import tw from 'lib/tailwind'
-import ProfAvatar from '../../ProfAvatar'
-import { Form, ImageFields, PrivacyNoticeField, MentionInput } from '../../form'
+import { Form } from '../../form'
 import ModalCloseButton from 'components/ui/ModalCloseButton'
-import ModalActionPill from 'components/ui/ModalActionPill'
 import Text from '../../Text'
 import {
   useCreatePostMutation,
@@ -28,17 +24,20 @@ import extractMentionIds from 'utils/extractMentionIds'
 import { Notice } from '../../../../types'
 import { useFetchProfileQuery } from 'store/profiles'
 import { RootState } from 'store'
-import { useFormikContext } from 'formik'
 import routes from 'navigation/routes'
 import { colors } from 'components/ui/tokens'
 import { useMediaUploads } from '../useMediaUploads'
 
 import FormSubmitPill from './components/FormSubmitPill'
 import PostingInPill from './components/PostingInPill'
+import PostUserRow from './components/PostUserRow'
+import PostEditor from './components/PostEditor'
+import PostActionRow from './components/PostActionRow'
+import PostMediaSheet from './components/PostMediaSheet'
 import PostLoadingOverlay from './components/PostLoadingOverlay'
-import PresignMediaPicker from './components/PresignMediaPicker'
 
 const PRESIGN_ENABLED = process.env.EXPO_PUBLIC_USE_PRESIGN_UPLOAD === 'true'
+const POST_INPUT_MODAL_CLOSE_TIMEOUT = 250
 
 interface PostInputModalInterface {
   visible: boolean
@@ -50,7 +49,6 @@ interface PostInputModalInterface {
 export interface PostInputModalHandle {
   focus: () => void
 }
-const POST_INPUT_MODAL_CLOSE_TIMEOUT = 250
 
 const ValidationSchema = object().shape({
   postText: string().label('Content'),
@@ -69,22 +67,19 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   const { userId } = useSelector((state: RootState) => state.auth)
   const { data: user } = useFetchProfileQuery(userId!)
   const bottomSheetRef = useRef<BottomSheet>(null)
-  const snapPoints = React.useMemo(() => [80, 100], [])
-  const iniTialsnapPointIndex = openBottomSheet ? 1 : 0
   const [createPost, multipartResult] = useCreatePostMutation()
   const [createPostWithMediaKeys, presignResult] =
     useCreatePostWithMediaKeysMutation()
   const mediaUploads = useMediaUploads({ uploadType: 'post' })
 
   const result = PRESIGN_ENABLED ? presignResult : multipartResult
-
   const [postText, setPostText] = useState('')
 
   const initialValues: InferType<typeof ValidationSchema> = {
     postText: '',
     privacyType: 'public',
     postImage: [],
-    communityId: communityId,
+    communityId,
   }
 
   React.useEffect(() => {
@@ -100,9 +95,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
         }
       }, POST_INPUT_MODAL_CLOSE_TIMEOUT)
     }
-    if (result.isError) {
-      console.error(result.error)
-    }
+    if (result.isError) console.error(result.error)
   }, [result.isSuccess, result.isError, navigation])
 
   const handleClose = () => {
@@ -110,11 +103,25 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
     if (onClose) onClose()
   }
 
-  const isPostReady = postText.trim().length > 0
   const isSubmitDisabled =
-    !isPostReady ||
+    !postText.trim() ||
     result.isLoading ||
     (PRESIGN_ENABLED && mediaUploads.isAnyUploading)
+
+  const handleSubmit = async (values: InferType<typeof ValidationSchema>) => {
+    if (PRESIGN_ENABLED) {
+      await createPostWithMediaKeys({
+        postText: values.postText,
+        privacyType: values.privacyType,
+        communityId: values.communityId,
+        mediaKeys: mediaUploads.getCompletedKeys(),
+      })
+      return
+    }
+    const mentions = extractMentionIds(values.postText || '')
+    // @ts-ignore
+    await createPost({ ...values, mentions })
+  }
 
   return (
     <Modal
@@ -135,7 +142,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           />
           <View
             style={[
-              tw` pb-3`,
+              tw`pb-3`,
               {
                 backgroundColor: colors.warmSurface,
                 maxHeight: '92%',
@@ -155,22 +162,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
             <Form
               validationSchema={ValidationSchema}
               initialValues={initialValues}
-              onSubmit={async (values) => {
-                if (PRESIGN_ENABLED) {
-                  await createPostWithMediaKeys({
-                    postText: values.postText,
-                    privacyType: values.privacyType,
-                    communityId: values.communityId,
-                    mediaKeys: mediaUploads.getCompletedKeys(),
-                  })
-                  return
-                }
-
-                const mentions = extractMentionIds(values.postText || '')
-
-                //@ts-ignore
-                await createPost({ ...values, mentions })
-              }}
+              onSubmit={handleSubmit}
               style={tw`flex-1`}
             >
               <View
@@ -187,106 +179,16 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               </View>
 
               <PostingInPill communityId={communityId} />
-
-              <View
-                style={tw`flex-row items-center justify-between px-4 py-2 border-t border-b border-t-warm-border border-b-warm-border`}
-              >
-                <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden`}>
-                  <ProfAvatar
-                    user={user!}
-                    subtitle="Share your thoughts with the community"
-                  />
-                </View>
-                <View
-                  style={[
-                    tw`p-2 rounded-full border`,
-                    { borderColor: colors.warmBorder },
-                  ]}
-                >
-                  <PrivacyNoticeField
-                    displayLong
-                    name="privacyType"
-                    canEdit={true}
-                    isEditing={false}
-                  />
-                </View>
-              </View>
-
-              <ScrollView
-                style={tw`px-2`}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              >
-                <MentionInput
-                  name="postText"
-                  autoFocus
-                  placeholder="What's on your mind?"
-                  autoCapitalize="sentences"
-                  style={[styles.textInput]}
-                  multiline={true}
-                  textAlignVertical="top"
-                />
-
-                <PostTextSync onTextChange={setPostText} />
-
-                <View style={tw`flex-row justify-end pb-2`}>
-                  <Text
-                    style={[
-                      tw`font-poppins-medium text-xs`,
-                      {
-                        color:
-                          postText.length > 280 ? colors.coral : colors.mute,
-                      },
-                    ]}
-                  >
-                    {postText.length}/500
-                  </Text>
-                </View>
-              </ScrollView>
-
-              <View
-                style={[
-                  tw`flex-row h-35 items-start pt-3 px-2 border-t`,
-                  { borderColor: colors.warmBorder },
-                ]}
-              >
-                <ModalActionPill
-                  icon="image-multiple"
-                  iconSet="material-community"
-                  label="Add Media"
-                  onPress={() => bottomSheetRef.current?.expand()}
-                />
-                <ModalActionPill
-                  icon="map-marker"
-                  iconSet="material-community"
-                  label="Location"
-                />
-                <ModalActionPill
-                  icon="account-group"
-                  iconSet="material-community"
-                  label="Tag People"
-                />
-              </View>
-
-              {/*@ts-ignore */}
-              <BottomSheet
+              <PostUserRow user={user!} />
+              <PostEditor onTextChange={setPostText} />
+              <PostActionRow
+                onAddMedia={() => bottomSheetRef.current?.expand()}
+              />
+              <PostMediaSheet
                 ref={bottomSheetRef}
-                snapPoints={snapPoints}
-                index={iniTialsnapPointIndex}
-                enablePanDownToClose={false}
-                style={styles.bottomSheet}
-                handleIndicatorStyle={styles.bottomSheetHandle}
-                backgroundStyle={styles.bottomSheetBackground}
-              >
-                {/*@ts-ignore */}
-                <BottomSheetView style={styles.bottomSheetContent}>
-                  {PRESIGN_ENABLED ? (
-                    <PresignMediaPicker mediaUploads={mediaUploads} />
-                  ) : (
-                    <ImageFields name="postImage" />
-                  )}
-                </BottomSheetView>
-              </BottomSheet>
+                openIndex={openBottomSheet ? 1 : 0}
+                mediaUploads={mediaUploads}
+              />
             </Form>
           </View>
         </View>
@@ -295,16 +197,6 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
       {result.isLoading && <PostLoadingOverlay isSuccess={result.isSuccess} />}
     </Modal>
   )
-}
-
-const PostTextSync: React.FC<{ onTextChange: (text: string) => void }> = ({
-  onTextChange,
-}) => {
-  const { values } = useFormikContext<any>()
-  React.useEffect(() => {
-    onTextChange(values.postText || '')
-  }, [values.postText])
-  return null
 }
 
 export default PostInputModal
