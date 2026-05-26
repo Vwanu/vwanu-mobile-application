@@ -86,7 +86,7 @@ export const styles = {
     maxHeight: 200,
     backgroundColor: 'transparent',
     borderWidth: 0,
-    paddingBottom: 30,
+    // paddingBottom: 30,
   },
   characterCounter: {
     position: 'absolute' as const,
@@ -144,7 +144,7 @@ export const styles = {
   bottomSheetHandle: {
     backgroundColor: colors.warmBorderStrong,
     width: 40,
-    height: 4,
+    height: 1,
     borderRadius: 2,
   },
   bottomSheetBackground: {

@@ -90,7 +90,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
   const { userId } = useSelector((state: RootState) => state.auth)
   const { data: user } = useFetchProfileQuery(userId!)
   const bottomSheetRef = useRef<BottomSheet>(null)
-  const snapPoints = React.useMemo(() => [40, 100], [])
+  const snapPoints = React.useMemo(() => [80, 100], [])
   const iniTialsnapPointIndex = openBottomSheet ? 1 : 0
   const [createPost, multipartResult] = useCreatePostMutation()
   const [createPostWithMediaKeys, presignResult] =
@@ -176,7 +176,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
           />
           <View
             style={[
-              tw`rounded-t-3xl pb-3`,
+              tw` pb-3`,
               {
                 backgroundColor: colors.warmSurface,
                 maxHeight: '92%',
@@ -215,7 +215,8 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               style={tw`flex-1`}
             >
               <View
-                style={tw`flex-row items-center justify-between px-4 pt-3 pb-3`}
+                style={tw`flex-row items-center justify-between mb-2 px-4 pt-3 pb-3 border-b border-b-warm-border
+                `}
               >
                 <ModalCloseButton onPress={handleClose} />
                 <Text style={tw`font-syne-bold text-base text-ink`}>
@@ -229,8 +230,10 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
 
               <PostingInPill communityId={communityId} />
 
-              <View style={tw`flex-row items-center justify-between px-4 py-2`}>
-                <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden`}>
+              <View
+                style={tw`flex-row items-center justify-between px-4 py-2 border-t border-b border-t-warm-border border-b-warm-border`}
+              >
+                <View style={tw`flex-1 min-w-0 mr-3 overflow-hidden `}>
                   <ProfAvatar
                     user={user!}
                     subtitle="Share your thoughts with the community"
@@ -252,15 +255,16 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
               </View>
 
               <ScrollView
-                style={tw`flex-1 px-4`}
+                style={tw`px-2`}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
                 <MentionInput
                   name="postText"
+                  autoFocus
                   placeholder="What's on your mind?"
                   autoCapitalize="sentences"
-                  style={styles.textInput}
+                  style={[styles.textInput]}
                   multiline={true}
                   textAlignVertical="top"
                 />
@@ -284,7 +288,7 @@ const PostInputModal: React.FC<PostInputModalInterface> = ({
 
               <View
                 style={[
-                  tw`flex-row items-center px-4 py-3 border-t`,
+                  tw`flex-row h-35 items-start pt-3 px-2 border-t`,
                   { borderColor: colors.warmBorder },
                 ]}
               >
