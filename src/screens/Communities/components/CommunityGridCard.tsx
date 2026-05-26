@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { View, ImageBackground, TouchableOpacity } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
@@ -19,9 +20,28 @@ import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 type NavigationProp = StackNavigationProp<CommunityStackParams, 'Communities'>
 
+// Pick a deterministic gradient pair per community id so each card has a stable color.
+const STRIP_GRADIENTS: ReadonlyArray<readonly [string, string]> = [
+  ['#2B3180', '#F76C5E'],
+  ['#1B1F5E', '#F4A300'],
+  ['#3B82F6', '#F76C5E'],
+  ['#2B3180', '#C58400'],
+  ['#1B1F5E', '#3B82F6'],
+]
+
+const gradientFor = (id: string | number): readonly [string, string] => {
+  const key = String(id)
+  let hash = 0
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) | 0
+  }
+  return STRIP_GRADIENTS[Math.abs(hash) % STRIP_GRADIENTS.length]
+}
+
 interface Props {
   community: CommunityInterface
   size?: 'small' | 'large' | 'extra-small'
+  variant?: 'grid' | 'strip'
   onCommunityPress?: () => void
   style?: any
   displayDetails?: boolean
@@ -32,6 +52,7 @@ const CommunityGridCard: React.FC<Props> = ({
   displayDetails = false,
   community,
   size = 'small',
+  variant = 'grid',
   onCommunityPress,
   style,
   onError,
@@ -89,6 +110,52 @@ const CommunityGridCard: React.FC<Props> = ({
   }, [size])
 
   if (!community) return null
+
+  // Strip variant: slim gradient card for horizontal Feed strip.
+  // Renders gradient bg + community name + stacked avatars + member count.
+  // No interests, no Join/Invitation actions.
+  if (variant === 'strip') {
+    const gradient = gradientFor(community.id)
+    return (
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.85}
+        style={[tw`rounded-card overflow-hidden h-32 w-48`, style]}
+      >
+        <LinearGradient
+          colors={gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={tw`w-full h-full p-3 justify-between`}
+        >
+          <LongText
+            text={community?.name}
+            textStyles={tw`text-white font-syne-bold text-sm leading-5`}
+            maxLength={40}
+            showShowMoreText={false}
+          />
+          <View style={tw`flex-row items-center justify-between`}>
+            {community?.members ? (
+              <AvatarGroup avatars={community.members} size={20} />
+            ) : (
+              <View />
+            )}
+            {amountOfMembers ? (
+              <Text style={tw`text-white text-[10px] font-poppins-medium`}>
+                {amountOfMembers < 100
+                  ? amountOfMembers
+                  : new Intl.NumberFormat('en-US', {
+                      notation: 'compact',
+                      compactDisplay: 'short',
+                    }).format(amountOfMembers) + '+'}{' '}
+                member{amountOfMembers > 1 ? 's' : ''}
+              </Text>
+            ) : null}
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    )
+  }
 
   return (
     <TouchableOpacity style={[computeStyle, style]} onPress={handlePress}>

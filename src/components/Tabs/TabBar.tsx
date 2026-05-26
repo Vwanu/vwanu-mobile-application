@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react'
+
 import {
   View,
   FlatList,
@@ -25,18 +26,11 @@ interface TabBarProps {
   iconOnly?: boolean
   activeTextColor?: string
   disableTextColor?: string
-  // Optional overrides — defaults preserve legacy behavior.
   activeColor?: string
   inactiveColor?: string
   underlineColor?: string
-  // Container style. Applied to the FlatList (scroll mode) or the
-  // flex-row View (fullWidth mode).
-  style?: StyleProp<ViewStyle>
-  // Per-tab style applied to each tab's TouchableOpacity (after the defaults).
+  style?: ViewStyle | ViewStyle[]
   tabStyle?: StyleProp<ViewStyle>
-  // Render as flex-row View instead of horizontal FlatList. Each tab gets
-  // flex-1 by default so they share the row equally. No scroll, no
-  // auto-scroll-to-active behavior.
   fullWidth?: boolean
 }
 
@@ -89,10 +83,10 @@ const TabBar: React.FC<TabBarProps> = ({
         onPress={() => onTabChange(item.id)}
         activeOpacity={0.7}
         style={[
+
+          tw`mr-3 px-5 py-2.5 ${isDisabled ? 'opacity-40' : ''}`,
           defaultLayout,
           tabStyle,
-          // Active-state underline goes LAST so a consumer-provided `border`
-          // in tabStyle can't override the borderBottom back to 1px.
           {
             borderBottomWidth: 2,
             borderBottomColor: isActive ? activeBorder : 'transparent',
