@@ -8,7 +8,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native'
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { string, object } from 'yup'
 import { useFormikContext } from 'formik'
 
@@ -17,6 +17,9 @@ import Text from 'components/Text'
 import { Form, MentionInput } from 'components/form'
 import extractMentionIds from 'utils/extractMentionIds'
 import { colors } from 'components/ui/tokens'
+import ModalSubmitPill from 'components/ui/ModalSubmitPill'
+import ModalCloseButton from 'components/ui/ModalCloseButton'
+import ModalActionPill from 'components/ui/ModalActionPill'
 
 const BODY_MAX = 1000
 const BODY_NEAR_LIMIT = 900
@@ -59,39 +62,16 @@ const SheetContent: React.FC<SheetContentProps> = ({
       </View>
 
       <View style={tw`flex-row items-center justify-between px-4 pt-3 pb-4`}>
-        <TouchableOpacity
-          onPress={onClose}
-          activeOpacity={0.7}
-          style={tw`w-9 h-9 items-center justify-center`}
-        >
-          <Ionicons name="close" size={22} color={colors.soft} />
-        </TouchableOpacity>
+        <ModalCloseButton onPress={onClose} />
 
         <Text style={tw`font-syne-bold text-base text-ink`}>
           New Discussion
         </Text>
 
-        <TouchableOpacity
+        <ModalSubmitPill
+          enabled={isReady && !overLimit}
           onPress={() => handleSubmit()}
-          disabled={!isReady || overLimit}
-          activeOpacity={0.85}
-          style={[
-            tw`px-4 py-2 rounded-full`,
-            {
-              backgroundColor:
-                isReady && !overLimit ? colors.amber : colors.warmBorder,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              tw`font-poppins-bold text-xs`,
-              { color: isReady && !overLimit ? '#FFFFFF' : colors.mute },
-            ]}
-          >
-            Post
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
 
       {categoryName ? (
@@ -171,57 +151,17 @@ const SheetContent: React.FC<SheetContentProps> = ({
           { borderColor: colors.warmBorder },
         ]}
       >
-        <ActionPill icon="image-outline" label="Photo" />
-        <ActionPill icon="link-outline" label="Link" />
-        <ActionPill mc icon="poll" label="Poll" />
+        <ModalActionPill icon="image-outline" label="Photo" />
+        <ModalActionPill icon="link-outline" label="Link" />
+        <ModalActionPill
+          icon="poll"
+          iconSet="material-community"
+          label="Poll"
+        />
       </View>
     </>
   )
 }
-
-interface ActionPillProps {
-  icon: string
-  label: string
-  mc?: boolean
-  onPress?: () => void
-}
-
-const ActionPill: React.FC<ActionPillProps> = ({
-  icon,
-  label,
-  mc = false,
-  onPress,
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    activeOpacity={0.8}
-    style={[
-      tw`flex-row items-center px-3 py-2 rounded-full mr-2 border`,
-      {
-        backgroundColor: colors.warmSurface,
-        borderColor: colors.warmBorder,
-      },
-    ]}
-  >
-    {mc ? (
-      <MaterialCommunityIcons
-        name={icon as any}
-        size={16}
-        color={colors.primaryDeep}
-      />
-    ) : (
-      <Ionicons name={icon as any} size={16} color={colors.primaryDeep} />
-    )}
-    <Text
-      style={[
-        tw`ml-1.5 font-poppins-medium text-xs`,
-        { color: colors.primaryDeep },
-      ]}
-    >
-      {label}
-    </Text>
-  </TouchableOpacity>
-)
 
 interface Props {
   visible: boolean
