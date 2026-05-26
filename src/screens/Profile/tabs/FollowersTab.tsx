@@ -1,15 +1,13 @@
 import React from 'react'
 import { View, FlatList, ActivityIndicator } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
 
 import tw from 'lib/tailwind'
-import Text from '../../../components/Text'
+import EmptyList from 'components/EmptyList'
 import Follower from '../components/Follower'
 import { useFetchFollowersQuery } from '../../../store/followers-api-slice'
-
 import { TabContentProps } from '../types'
 
-const FollowersTab: React.FC<TabContentProps> = ({ targetUserId, userId }) => {
+const FollowersTab: React.FC<TabContentProps> = ({ targetUserId }) => {
   const {
     data: followersData,
     isLoading,
@@ -38,15 +36,17 @@ const FollowersTab: React.FC<TabContentProps> = ({ targetUserId, userId }) => {
           refreshing={isLoading}
         />
       ) : (
-        <View style={tw`flex-1 justify-center items-center p-8`}>
-          <Ionicons name="people-outline" size={64} color="#9CA3AF" />
-          <Text style={tw`text-gray-500 mt-4 text-center`}>
-            No followers yet
-          </Text>
-          <Text style={tw`text-gray-400 mt-2 text-center text-sm`}>
-            Start connecting with people
-          </Text>
-        </View>
+        <EmptyList
+          icon="people-outline"
+          title="No followers yet"
+          subtitle="Share your profile to start connecting with people"
+          actionBtn={{
+            label: 'Find People',
+            icon: 'search-outline',
+            // TODO: wire to People search route
+            onPress: () => console.log('Find People'),
+          }}
+        />
       )}
     </View>
   )

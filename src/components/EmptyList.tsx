@@ -1,64 +1,84 @@
 import React from 'react'
 import { View, TouchableOpacity } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
-import { Ionicons } from '@expo/vector-icons'
 
 interface ActionBtnProps {
-  label?: string
-  icon?: string | React.ReactNode
+  label: string
+  icon?: React.ComponentProps<typeof Ionicons>['name']
   onPress: () => void
 }
-interface NoPostProps {
-  icon?: string | React.ReactNode
+
+interface EmptyListProps {
+  icon?: React.ComponentProps<typeof Ionicons>['name'] | React.ReactNode
   title?: string
   subtitle?: string
   actionBtn?: ActionBtnProps
 }
 
-interface IconElement {
-  icon?: string | React.ReactNode
-  defaultIconName: string
+const renderIcon = (
+  icon: EmptyListProps['icon'],
+  defaultName: React.ComponentProps<typeof Ionicons>['name']
+) => {
+  if (!icon) {
+    return <Ionicons name={defaultName} size={28} color={tw.color('mute')} />
+  }
+  if (typeof icon === 'string') {
+    return (
+      <Ionicons
+        name={icon as React.ComponentProps<typeof Ionicons>['name']}
+        size={28}
+        color={tw.color('mute')}
+      />
+    )
+  }
+  return icon
 }
 
-const Icon: React.FC<IconElement> = ({ icon, defaultIconName }) =>
-  !icon ? (
-    <Ionicons name={defaultIconName} size={40} color="#9CA3AF" />
-  ) : typeof icon === 'string' ? (
-    <Ionicons name={icon} size={40} color="#9CA#AF" />
-  ) : (
-    icon
-  )
-const EmptyPost: React.FC<NoPostProps> = ({
-  title = 'No posts found',
+const EmptyList: React.FC<EmptyListProps> = ({
+  title = 'Nothing here yet',
   subtitle,
   actionBtn,
   icon,
-}) => {
-  return (
-    <View style={tw`flex-1 items-center justify-center p-8`}>
-      <View
-        style={tw`w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-4`}
-      >
-        {<Icon icon={icon} defaultIconName="mail-open-outline" />}
-      </View>
-      <Text style={tw`text-gray-900 font-semibold text-lg mb-2`}>{title}</Text>
-      <Text style={tw`text-gray-600 text-center text-sm`}>{subtitle}</Text>
-
-      {actionBtn && (
-        <TouchableOpacity
-          onPress={actionBtn?.onPress}
-          style={tw`justify-center items-center mt-5`}
-        >
-          <Text style={tw`text-gray-500 text-thin`}>
-            {actionBtn?.label ? actionBtn?.label : 'Refresh'}
-          </Text>
-          <Icon icon={icon} defaultIconName="refresh" />
-        </TouchableOpacity>
-      )}
+}) => (
+  <View style={tw`flex-1 items-center justify-center px-8 pt-24`}>
+    <View
+      style={tw`w-16 h-16 rounded-full bg-warm-surface border border-warm-border items-center justify-center mb-4`}
+    >
+      {renderIcon(icon, 'mail-open-outline')}
     </View>
-  )
-}
+    <Text style={tw`text-base font-syne-bold text-ink text-center`}>
+      {title}
+    </Text>
+    {subtitle ? (
+      <Text
+        style={tw`text-sm font-poppins text-mute mt-1 text-center leading-5`}
+      >
+        {subtitle}
+      </Text>
+    ) : null}
+    {actionBtn ? (
+      <TouchableOpacity
+        onPress={actionBtn.onPress}
+        style={tw`mt-5 flex-row items-center bg-primary-deep px-5 py-2.5 rounded-full`}
+        activeOpacity={0.85}
+      >
+        {actionBtn.icon ? (
+          <Ionicons
+            name={actionBtn.icon}
+            size={16}
+            color="#FFFFFF"
+            style={tw`mr-2`}
+          />
+        ) : null}
+        <Text style={tw`text-white font-poppins-semibold text-sm`}>
+          {actionBtn.label}
+        </Text>
+      </TouchableOpacity>
+    ) : null}
+  </View>
+)
 
-export default EmptyPost
+export default EmptyList
