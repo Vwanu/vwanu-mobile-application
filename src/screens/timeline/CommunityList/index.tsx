@@ -77,7 +77,6 @@ const CommunityList = () => {
                       <CommunityGridCard
                         community={item}
                         size="extra-small"
-                        variant="strip"
                         onCommunityPress={() =>
                           handleCommunityPress(item.id.toString())
                         }

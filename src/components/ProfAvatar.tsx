@@ -98,7 +98,6 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
         </View>
 
         {showOnlineStatus && props.user.online !== undefined && !badge && (
-
           <View
             style={tw`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-800 ${
               props.user.online ? 'bg-green-500' : 'bg-gray-400'
