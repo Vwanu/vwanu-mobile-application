@@ -115,6 +115,7 @@ export type FeedStackParams = Record<string, object | undefined> & {
   Blogs: undefined
   BlogDetail: { blogId: string }
   CreateBlog: { blogId?: string } | undefined
+  Forum: undefined
   ForumDetail: { forum: Interest }
 }
 
@@ -246,7 +247,7 @@ export interface NotificationInterface {
   type: NotificationType
   title: string
   message: string
-  read: boolean
+  readAt: Date | null
   createdAt: Date
   updatedAt: Date
   userId: string

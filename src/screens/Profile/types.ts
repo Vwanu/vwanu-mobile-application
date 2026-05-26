@@ -16,7 +16,7 @@ export interface TabConfig {
 
 export const TAB_CONFIGS: TabConfig[] = [
   { title: 'Posts', icon: 'document-text-outline' },
-  { title: 'Friends', icon: 'people-outline' },
+  { title: 'Connections', icon: 'people-outline' },
   { title: 'Followers', icon: 'heart-outline' },
   { title: 'Following', icon: 'person-add-outline' },
   { title: 'Communities', icon: 'globe-outline' },
