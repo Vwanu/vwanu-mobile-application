@@ -1,6 +1,5 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { Avatar } from 'react-native-paper'
 import { View, Platform } from 'react-native'
 import { Input } from '@ui-kitten/components'
 
@@ -8,6 +7,7 @@ import tw from 'lib/tailwind'
 import Img from 'assets/svg/Image'
 import useToggle from 'hooks/useToggle'
 import PostInputModal from '../PostInputModal'
+import ProfAvatar from 'components/ProfAvatar'
 import { useFetchProfileQuery } from 'store/profiles'
 import { RootState } from 'store'
 import { useTheme } from 'hooks/useTheme'
@@ -50,14 +50,7 @@ const PostInput: React.FC<PostInputProps> = ({
   return (
     <View style={[tw`px-1 ${!canCreatePost ? 'opacity-50' : ''}`, shadowStyle]}>
       <View style={tw`flex flex-row my-2`}>
-        <Avatar.Image
-          source={{
-            uri:
-              (user?.profilePicture as any)?.original ||
-              `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}`,
-          }}
-          size={50}
-        />
+        {user ? <ProfAvatar user={user} size={50} hideText /> : null}
         <View style={tw`flex-1 ml-2`}>
           <Input
             editable={false}

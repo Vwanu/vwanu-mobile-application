@@ -25,6 +25,7 @@ interface ProfAvatarProps {
   disableDefaultNavigation?: boolean
   titleStyles?: StyleProp<TextStyle>
   badge?: React.ReactNode
+  hideText?: boolean
 }
 
 const ProfAvatar: React.FC<ProfAvatarProps> = ({
@@ -33,6 +34,7 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
   disableDefaultNavigation = false,
   size = 50,
   badge = null,
+  hideText = false,
   ...props
 }) => {
   const navigation = useNavigation()
@@ -106,27 +108,31 @@ const ProfAvatar: React.FC<ProfAvatarProps> = ({
         )}
         {badge && <View style={tw`absolute -bottom-2 right-0 `}>{badge}</View>}
       </View>
-      <View style={tw`ml-2 flex justify-center`}>
-        <Text
-          style={[tw`font-semibold font-poppins-medium`, props.titleStyles]}
-        >
-          {props.user.firstName} {props.user.lastName}
-        </Text>
-        {props.subtitle ? (
-          <LongText
-            textStyles={[
-              tw`font-thin font-poppins-thin`,
-              props.subtitleParams?.textStyles,
-            ]}
-            text={props?.subtitle}
-            maxLength={props?.subtitleParams?.maxLength}
-            showMoreText={props?.subtitleParams?.showMoreText}
-            showLessText={props?.subtitleParams?.showLessText}
-          />
-        ) : (
-          <Text style={tw`font-poppins-medium`}>{props.user.about || ''}</Text>
-        )}
-      </View>
+      {!hideText && (
+        <View style={tw`ml-2 flex justify-center`}>
+          <Text
+            style={[tw`font-semibold font-poppins-medium`, props.titleStyles]}
+          >
+            {props.user.firstName} {props.user.lastName}
+          </Text>
+          {props.subtitle ? (
+            <LongText
+              textStyles={[
+                tw`font-thin font-poppins-thin`,
+                props.subtitleParams?.textStyles,
+              ]}
+              text={props?.subtitle}
+              maxLength={props?.subtitleParams?.maxLength}
+              showMoreText={props?.subtitleParams?.showMoreText}
+              showLessText={props?.subtitleParams?.showLessText}
+            />
+          ) : (
+            <Text style={tw`font-poppins-medium`}>
+              {props.user.about || ''}
+            </Text>
+          )}
+        </View>
+      )}
     </TouchableOpacity>
   )
 }
