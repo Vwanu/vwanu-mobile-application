@@ -66,20 +66,15 @@ const Timeline = () => {
               size={50}
               style={tw`bg-white p-5 rounded-full shadow`}
             />
-            <Text
-              style={tw`text-4xl font-syne-bold font-bold text-ink mt-4 text-center`}
-            >
+            <Text style={tw`text-4xl font-syne-bold text-ink mt-4 text-center`}>
               Discover Blogs
             </Text>
-            <Text style={tw`ont-poppins mt-2 text-center`}>
-              Read stories and insights from
-              <Text style={tw` font-poppins mt-2 text-center`}></Text>
-            </Text>
-            <Text style={tw`font-poppins mt-2 text-center`}>
-              people across the Vwanu
-            </Text>
-            <Text style={tw` px-15 text-soft font-poppins mt-2 text-center`}>
-              community
+            <Text
+              style={tw`text-base font-poppins text-soft mt-2 px-6 text-center`}
+            >
+              {
+                'Read stories and insights from\npeople across the Vwanu\ncommunity'
+              }
             </Text>
             <TouchableOpacity
               style={tw`mt-6 justify-center  items-center  align-middle bg-primary-deep w-[90%] px-6 py-5 rounded-full flex-row items-center`}
@@ -98,7 +93,7 @@ const Timeline = () => {
               style={tw`mt-6 justify-center  items-center  align-middle  bg-transparent border border-warm w-[90%] px-6 py-5 rounded-full flex-row items-center`}
               onPress={() => {
                 // @ts-ignore
-                navigation.navigate(SCREEN_NAMES.CREATE_BLOG_POST)
+                navigation.navigate(SCREEN_NAMES.CREATE_BLOG)
               }}
               activeOpacity={0.7}
             >
