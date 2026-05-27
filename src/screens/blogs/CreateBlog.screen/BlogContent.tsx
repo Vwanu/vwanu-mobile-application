@@ -2,13 +2,15 @@ import * as Yup from 'yup'
 import React, { useRef } from 'react'
 import { View, KeyboardAvoidingView, Platform } from 'react-native'
 import QuillEditor from 'react-native-cn-quill'
-import { FormikProps } from 'formik'
+import { FormikProps, useFormikContext } from 'formik'
 
 import tw from 'lib/tailwind'
+import Text from 'components/Text'
 import { Field, Form } from 'components/form'
 
 import RichToolBar from 'components/form/RichToolBar'
 import RichTextEditor from '../../../components/form/RichTextEditor'
+import { colors } from 'components/ui/tokens'
 
 const ValidationSchema = Yup.object().shape({
   title: Yup.string()
@@ -28,6 +30,33 @@ interface BlogContentProps {
   formRef?: React.Ref<FormikProps<typeof initialValues>>
   onSubmit: (values: typeof initialValues) => void
   values?: typeof initialValues
+}
+
+const WordCounter: React.FC = () => {
+  const { values } = useFormikContext<{ content?: string }>()
+  const text = (values.content || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const words = text ? text.split(' ').length : 0
+  return (
+    <View
+      style={[
+        tw`px-4 py-2 border-t`,
+        { borderColor: colors.warmBorder, backgroundColor: colors.warmSurface },
+      ]}
+    >
+      <Text
+        style={[
+          tw`font-poppins-medium text-xs text-right`,
+          { color: colors.mute },
+        ]}
+      >
+        {words} {words === 1 ? 'word' : 'words'}
+      </Text>
+    </View>
+  )
 }
 
 const BlogContent: React.FC<BlogContentProps> = ({
@@ -52,13 +81,15 @@ const BlogContent: React.FC<BlogContentProps> = ({
         onSubmit={onSubmit}
         innerRef={formRef}
       >
-        <View style={tw`flex-1`}>
-          <View style={tw`border border-t-0 border-r-0 border-b-gray-300`}>
+        <View style={tw`flex-1 bg-warm-bg`}>
+          <View
+            style={tw`bg-warm-surface px-4 pt-2 border-b border-warm-border`}
+          >
             <Field
               name="title"
               placeholder="Title"
-              style={tw`bg-white border-0`}
-              textStyle={tw`text-3xl font-bold`}
+              style={tw`bg-warm-surface border-0`}
+              textStyle={tw`text-3xl font-syne-bold text-ink`}
               required
               autoFocus
               multiline
@@ -71,6 +102,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
             initialValue={formInitialValues.content}
             onFocusChange={setContentFocused}
           />
+          <WordCounter />
         </View>
         {contentFocused && <RichToolBar editor={editorRef} />}
       </Form>

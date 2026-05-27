@@ -8,7 +8,10 @@ import tw from 'lib/tailwind'
 import Screen from 'components/screen'
 import Button from 'components/Button'
 import AppCloseBtn from 'components/AppCloseBtn'
+import ScreenHeader from 'components/ScreenHeader'
+import Text from 'components/Text'
 import Toast, { ToastType } from 'components/Toast'
+import { colors } from 'components/ui/tokens'
 import { FeedStackParams, CreateBlogParams } from '../../../../types'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -129,49 +132,104 @@ const CreateBlogScreen = () => {
 
   return (
     <Screen>
-      <View
-        style={tw`flex-row items-center justify-between px-2 bg-white border-b border-gray-100`}
-      >
-        <AppCloseBtn onPress={handlePreviousOrClose} />
-        {step === 0 ? (
-          <Button
-            title="Next"
-            size="small"
-            onPress={() => handleSave()}
-            style={tw`px-4 py-2 rounded-full`}
-          />
-        ) : (
-          <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#000" />
+      <View style={tw`flex-1 bg-warm-bg`}>
+        <ScreenHeader
+          title={isEditing ? 'Edit Blog' : 'New Blog'}
+          subtitle={
+            step === 0
+              ? 'Step 1 of 2 · Cover & topics'
+              : 'Step 2 of 2 · Write your post'
+          }
+          leftAction={
+            step === 1 ? (
+              <View style={tw`flex-row items-center`}>
+                <AppCloseBtn onPress={handlePreviousOrClose} />
+                <View
+                  style={[
+                    tw`ml-2 px-2.5 py-1 rounded-full`,
+                    { backgroundColor: colors.amberSoft },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      tw`font-poppins-bold text-xs`,
+                      { color: colors.amberDeep },
+                    ]}
+                  >
+                    Draft
+                  </Text>
+                </View>
+              </View>
             ) : (
-              <Ionicons name="save" size={24} />
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={tw`flex-1`}>
-        {step === 0 ? (
-          <BlogImageInterest
-            formRef={formRef}
-            onSubmit={handleSubmit}
-            values={step1Values}
-          />
-        ) : (
-          <BlogContent
-            formRef={formRef}
-            onSubmit={handleSubmit}
-            values={contentValues}
-          />
-        )}
-      </View>
-      {toast.visible && (
-        <Toast
-          type={toast.type}
-          message={toast.message}
-          onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+              <AppCloseBtn onPress={handlePreviousOrClose} />
+            )
+          }
+          rightAction={
+            step === 0 ? (
+              <Button
+                title="Next"
+                size="small"
+                onPress={() => handleSave()}
+                style={tw`px-4 py-2 rounded-full`}
+              />
+            ) : (
+              <View style={tw`flex-row items-center`}>
+                <TouchableOpacity
+                  onPress={handleSave}
+                  disabled={isSubmitting}
+                  style={tw`mr-2 w-9 h-9 items-center justify-center rounded-full`}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color={colors.soft} />
+                  ) : (
+                    <Ionicons
+                      name="save-outline"
+                      size={20}
+                      color={colors.soft}
+                    />
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleSave}
+                  disabled={isSubmitting}
+                  activeOpacity={0.85}
+                  style={[
+                    tw`px-4 py-2 rounded-full`,
+                    { backgroundColor: colors.primaryDeep },
+                  ]}
+                >
+                  <Text style={tw`text-white font-poppins-bold text-xs`}>
+                    Publish
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )
+          }
+          containerStyle={tw`bg-warm-surface border-b border-warm-border`}
         />
-      )}
+        <View style={tw`flex-1`}>
+          {step === 0 ? (
+            <BlogImageInterest
+              formRef={formRef}
+              onSubmit={handleSubmit}
+              values={step1Values}
+            />
+          ) : (
+            <BlogContent
+              formRef={formRef}
+              onSubmit={handleSubmit}
+              values={contentValues}
+            />
+          )}
+        </View>
+        {toast.visible && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+          />
+        )}
+      </View>
     </Screen>
   )
 }

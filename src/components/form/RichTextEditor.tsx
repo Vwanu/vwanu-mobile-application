@@ -5,6 +5,7 @@ import { useFormikContext } from 'formik'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
+import { colors } from 'components/ui/tokens'
 import Error from './Error'
 
 interface Props {
@@ -81,10 +82,14 @@ const RichTextEditor: React.FC<Props> = ({
           initialHtml={initialValue}
           autoSize
           theme={{
-            background: '#ffffff',
-            color: '#1f2937',
-            placeholder: '#9ca3af',
+            background: colors.warmSurface,
+            color: colors.ink,
+            placeholder: colors.mute,
           }}
+          customStyles={[
+            `.ql-editor { line-height: 1.75; font-size: 16px; padding: 16px; font-family: 'Poppins', system-ui, sans-serif; }`,
+            `.ql-editor.ql-blank::before { color: ${colors.mute}; font-style: normal; }`,
+          ]}
         />
       </View>
 
