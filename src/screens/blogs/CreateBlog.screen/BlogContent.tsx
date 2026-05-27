@@ -52,13 +52,15 @@ const BlogContent: React.FC<BlogContentProps> = ({
         onSubmit={onSubmit}
         innerRef={formRef}
       >
-        <View style={tw`flex-1`}>
-          <View style={tw`border border-t-0 border-r-0 border-b-gray-300`}>
+        <View style={tw`flex-1 bg-warm-bg`}>
+          <View
+            style={tw`bg-warm-surface px-4 pt-2 border-b border-warm-border`}
+          >
             <Field
               name="title"
               placeholder="Title"
-              style={tw`bg-white border-0`}
-              textStyle={tw`text-3xl font-bold`}
+              style={tw`bg-warm-surface border-0`}
+              textStyle={tw`text-3xl font-syne-bold text-ink`}
               required
               autoFocus
               multiline

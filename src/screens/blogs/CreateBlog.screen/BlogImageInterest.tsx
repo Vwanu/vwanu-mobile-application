@@ -46,12 +46,14 @@ const BlogImageInterest: React.FC<BlogImage> = ({
       onSubmit={handleSubmit}
       innerRef={formRef}
     >
-      <>
-        <ImageUploadSection
-          name="titlePicture"
-          label="Cover Image"
-          helperText="Tap to upload a cover image for your blog"
-        />
+      <View style={tw`flex-1 bg-warm-bg `}>
+        <View style={tw`px-4 py-6`}>
+          <ImageUploadSection
+            name="titlePicture"
+            label="Cover Image"
+            helperText="Tap to upload a cover image for your blog"
+          />
+        </View>
 
         <View style={tw`px-4 py-6`}>
           <InterestSelector
@@ -62,7 +64,7 @@ const BlogImageInterest: React.FC<BlogImage> = ({
             required={true}
           />
         </View>
-      </>
+      </View>
     </Form>
   )
 }

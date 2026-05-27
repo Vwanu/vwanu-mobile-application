@@ -6,8 +6,9 @@ import { FormikProps } from 'formik'
 
 import tw from 'lib/tailwind'
 import Screen from 'components/screen'
-import Button from 'components/Button'
+import Text from 'components/Text'
 import AppCloseBtn from 'components/AppCloseBtn'
+import ScreenHeader from 'components/ScreenHeader'
 import Toast, { ToastType } from 'components/Toast'
 import { FeedStackParams, CreateBlogParams } from '../../../../types'
 import { Ionicons } from '@expo/vector-icons'
@@ -129,49 +130,58 @@ const CreateBlogScreen = () => {
 
   return (
     <Screen>
-      <View
-        style={tw`flex-row items-center justify-between px-2 bg-white border-b border-gray-100`}
-      >
-        <AppCloseBtn onPress={handlePreviousOrClose} />
-        {step === 0 ? (
-          <Button
-            title="Next"
-            size="small"
-            onPress={() => handleSave()}
-            style={tw`px-4 py-2 rounded-full`}
-          />
-        ) : (
-          <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#000" />
+      <View style={tw`flex-1 bg-warm-bg`}>
+        <ScreenHeader
+          title={isEditing ? 'Edit Blog' : 'New Blog'}
+          subtitle={
+            step === 0
+              ? 'Step 1 of 2 · Cover & topics'
+              : 'Step 2 of 2 · Write your post'
+          }
+          leftAction={<AppCloseBtn onPress={handlePreviousOrClose} />}
+          rightAction={
+            step === 0 ? (
+              <Text
+                onPress={handleSave}
+                style={tw`px-4 py-2 rounded-full text-white bg-primary-deep font-poppins-semibold`}
+              >
+                Next
+              </Text>
             ) : (
-              <Ionicons name="save" size={24} />
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={tw`flex-1`}>
-        {step === 0 ? (
-          <BlogImageInterest
-            formRef={formRef}
-            onSubmit={handleSubmit}
-            values={step1Values}
-          />
-        ) : (
-          <BlogContent
-            formRef={formRef}
-            onSubmit={handleSubmit}
-            values={contentValues}
-          />
-        )}
-      </View>
-      {toast.visible && (
-        <Toast
-          type={toast.type}
-          message={toast.message}
-          onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+              <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#000" />
+                ) : (
+                  <Ionicons name="save" size={24} />
+                )}
+              </TouchableOpacity>
+            )
+          }
+          containerStyle={tw`bg-warm-surface border-b border-warm-border`}
         />
-      )}
+        <View style={tw`flex-1`}>
+          {step === 0 ? (
+            <BlogImageInterest
+              formRef={formRef}
+              onSubmit={handleSubmit}
+              values={step1Values}
+            />
+          ) : (
+            <BlogContent
+              formRef={formRef}
+              onSubmit={handleSubmit}
+              values={contentValues}
+            />
+          )}
+        </View>
+        {toast.visible && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+          />
+        )}
+      </View>
     </Screen>
   )
 }
