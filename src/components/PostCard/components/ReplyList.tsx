@@ -2,11 +2,11 @@ import React from 'react'
 import { View } from 'react-native'
 
 import tw from 'lib/tailwind'
-import { Discussion } from '../../../../types'
+import { DiscussionReply } from '../../../../types'
 
-import ReplyCard from './ReplyCard'
+import ReplyCard, { PostCardReply } from './ReplyCard'
 
-const ReplyList: React.FC<{ replies: Discussion[] }> = ({ replies }) => {
+const ReplyList: React.FC<{ replies: DiscussionReply[] }> = ({ replies }) => {
   return (
     <View
       style={tw`ml-6 mt-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700`}
@@ -16,10 +16,15 @@ const ReplyList: React.FC<{ replies: Discussion[] }> = ({ replies }) => {
           key={reply.id}
           reply={
             {
-              ...reply,
-              handleLike: async () => {},
-              fetchLikers: () => {},
-            } as any
+              id: reply.id,
+              createdAt: new Date(reply.createdAt),
+              user: reply.user,
+              body: reply.body,
+              amountOfLikes: reply.amountOfLikes,
+              isFetchingLikers: false,
+              onLike: async () => {},
+              onFetchLikers: () => {},
+            } satisfies PostCardReply
           }
         />
       ))}

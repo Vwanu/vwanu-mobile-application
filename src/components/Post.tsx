@@ -3,7 +3,7 @@ import React, { memo } from 'react'
 import tw from '../lib/tailwind'
 import ImageGrid from './ImageGrid'
 import { PostProps } from '../../types'
-import PostCard from './PostCard'
+import PostCard, { PostCardReply } from './PostCard'
 import {
   useToggleKoreMutation,
   useLazyFetchPostLikersQuery,
@@ -33,6 +33,18 @@ const Post: React.FC<Props> = (props) => {
       isFetching: isFetchingComments,
     },
   ] = useLazyFetchPostsQuery()
+
+  const mappedReplies: PostCardReply[] = (comments.data || []).map((reply) => ({
+    ...reply,
+    amountOfLikes: reply.amountOfKorems,
+    isFetchingLikers: false,
+    onLike: async (id: string) => {
+      await toggleKore(id)
+    },
+    onFetchLikers: () => {
+      fetchLikers({ postId: reply.id.toString() })
+    },
+  }))
 
   const onLikePress = async (id: string) => {
     await toggleKore(id)
@@ -74,25 +86,31 @@ const Post: React.FC<Props> = (props) => {
   }
   return (
     <PostCard
-      post={props}
+      entity={{
+        id: props.id,
+        createdAt: props.createdAt,
+        user: props.user,
+      }}
+      title={undefined}
       body={props.postText || ' '}
       isReactor={!!props.isReactor}
-      amountOfReplies={props.amountOfComments || 0}
-      amountOfLikes={props.amountOfKorems || 0}
-      handleLike={onLikePress}
-      fetchReplies={onfetchComments}
-      replies={comments.data || []}
+      replyCount={props.amountOfComments || 0}
+      likeCount={props.amountOfKorems || 0}
+      onLike={onLikePress}
+      onFetchReplies={onfetchComments}
+      replies={mappedReplies}
       isLoadingReplies={isLoadingComments || isFetchingComments}
-      fetchLikers={onfetchLikers}
+      onFetchLikers={onfetchLikers}
       isFetchingLikers={isLoadingLikers || isFetchingLikers}
       isSubmittingReply={isSubmittingReply}
-      onSubmitingReply={handleSubmitReply}
+      onSubmitReply={handleSubmitReply}
     >
       {props?.media && props.media.length > 0 && (
         <ImageGrid
           medias={props.media}
           style={tw`w-100% mt-3 rounded-lg overflow-hidden`}
           onImageTouch={(index) => {
+            // @ts-ignore
             navigation.navigate('Gallery', {
               ...props,
               initialSlide: index,

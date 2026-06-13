@@ -12,26 +12,25 @@ import LikerPopover from 'components/LikersPopOver'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
 
-interface Reply {
+export interface PostCardReply {
   id: string | number
   createdAt: Date
   user: User
   body: string
   isReactor?: boolean
   amountOfLikes: number
-  interestId?: string | number
-  parentId?: string | number
-  handleLike: (id: string) => Promise<void>
-  fetchLikers: () => void
+  likers?: Array<{ User: User; createdAt: Date }>
+  isFetchingLikers: boolean
+  onLike: (id: string) => Promise<void>
+  onFetchLikers: () => void
 }
 
-const ReplyCard: React.FC<{ reply: Reply }> = ({ reply }) => {
+const ReplyCard: React.FC<{ reply: PostCardReply }> = ({ reply }) => {
   const navigation = useNavigation()
   const [isShowLikers, toggleShowLikers] = useToggle(false)
   const date = formatDate(new Date(reply.createdAt), 'MMM dd, yyyy')
 
   const handleNavigateToProfile = (id: string) => {
-    // navigate to user profile
     // @ts-ignore
     navigation.navigate(routes.ACCOUNT, {
       screen: routes.PROFILE,
@@ -56,10 +55,10 @@ const ReplyCard: React.FC<{ reply: Reply }> = ({ reply }) => {
         likersCount={reply.amountOfLikes}
         flexDir="row"
         size={15}
-        onLike={reply.handleLike}
+        onLike={reply.onLike}
         onToggleLikers={() => {
           toggleShowLikers()
-          reply.fetchLikers()
+          reply.onFetchLikers()
         }}
       />
 
@@ -67,9 +66,9 @@ const ReplyCard: React.FC<{ reply: Reply }> = ({ reply }) => {
         <LikerPopover
           visible={isShowLikers}
           onDismiss={toggleShowLikers}
-          likers={[]}
-          isFetching={false}
-          onRefetch={reply.fetchLikers}
+          likers={reply.likers || []}
+          isFetching={reply.isFetchingLikers}
+          onRefetch={reply.onFetchLikers}
           anchorContent={
             <TouchableOpacity onPress={toggleShowLikers}>
               <Text style={tw`text-xs text-primary`}>

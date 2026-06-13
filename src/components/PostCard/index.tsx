@@ -8,78 +8,75 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import MentionText from 'components/MentionText'
 import ProfAvatar from 'components/ProfAvatar'
-import ReplyCard from './components/ReplyCard'
-import ReplyForm from './components/ReplyForm'
 import LikeForm from 'components/LikeForm'
-
 import LikerPopover from 'components/LikersPopOver'
 import useToggle from 'hooks/useToggle'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
-import { PostProps } from '../../../types'
+import ReplyForm from './components/ReplyForm'
+import ReplyCard, { PostCardReply } from './components/ReplyCard'
 
-interface Post {
+export interface PostCardEntity {
   id: string | number
   createdAt: Date
   user: User
 }
 
-interface PostCardProps {
-  post: Post
+export interface PostCardProps {
+  entity: PostCardEntity
   title?: string
   body: string
-  handleLike: (id: string) => Promise<void>
-  fetchReplies: () => void
-  fetchLikers: () => void
-  replies: PostProps[]
-  isLoadingReplies: boolean
-  amountOfReplies: number
+  replyLabel?: string
+  replyCount: number
+  likeCount: number
   isReactor: boolean
-  amountOfLikes: number
-  children?: React.ReactNode
+  replies: PostCardReply[]
+  isLoadingReplies: boolean
   likers?: Array<{ User: User; createdAt: Date }>
   isFetchingLikers: boolean
   isSubmittingReply: boolean
-  onSubmitingReply: ({
+  onLike: (id: string) => Promise<void>
+  onFetchReplies: () => void
+  onFetchLikers: () => void
+  onSubmitReply: ({
     content,
     mentions,
   }: {
     content: string
     mentions: string[]
   }) => void
+  children?: React.ReactNode
 }
 
 const PostCard: React.FC<PostCardProps> = ({
-  post,
-  amountOfReplies,
-  amountOfLikes,
+  entity,
   title,
-  isReactor,
   body,
-  children,
-  handleLike,
-  fetchReplies,
+  replyLabel = 'Reply',
+  replyCount,
+  likeCount,
+  isReactor,
   replies,
-  fetchLikers,
-  isFetchingLikers = false,
-  isLoadingReplies = false,
+  isLoadingReplies,
   likers,
-  onSubmitingReply,
+  isFetchingLikers,
   isSubmittingReply,
+  onLike,
+  onFetchReplies,
+  onFetchLikers,
+  onSubmitReply,
+  children,
 }) => {
   const navigation = useNavigation()
   const [expanded, setExpanded] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
-  const date = formatDate(new Date(post.createdAt), 'MMM dd, yyyy')
-  const replyCount = amountOfReplies
   const [isShowLikers, toggleShowLikers] = useToggle(false)
+  const date = formatDate(new Date(entity.createdAt), 'MMM dd, yyyy')
 
   const handleToggleExpand = () => {
     const willExpand = !expanded
     setExpanded(willExpand)
-    if (willExpand) {
-      fetchReplies()
-    }
+    if (willExpand) onFetchReplies()
   }
 
   return (
@@ -89,7 +86,7 @@ const PostCard: React.FC<PostCardProps> = ({
         cardShadow,
       ]}
     >
-      <ProfAvatar user={post.user} size={36} subtitle={date} />
+      <ProfAvatar user={entity.user} size={36} subtitle={date} />
       {title && (
         <Text
           style={tw`font-syne-bold text-ink dark:text-white text-base mt-3`}
@@ -112,9 +109,8 @@ const PostCard: React.FC<PostCardProps> = ({
       </MentionText>
       <View style={tw`overflow-hidden rounded-lg mt-3`}>{children}</View>
 
-      {/* Likes, replies count, and reply button */}
       <View style={tw`flex-row justify-between items-center mt-3 gap-4`}>
-        <>
+        <View style={tw`flex-row items-center gap-3`}>
           {replyCount > 0 && (
             <TouchableOpacity
               style={tw`flex-row items-center`}
@@ -149,57 +145,49 @@ const PostCard: React.FC<PostCardProps> = ({
             <Text
               style={tw`font-poppins-medium text-xs text-primary-deep ml-1`}
             >
-              Reply
+              {replyLabel}
             </Text>
           </TouchableOpacity>
-        </>
-        <>
-          <LikeForm
-            id={post.id.toString()}
-            isReactor={!!isReactor}
-            likersCount={amountOfLikes || 0}
-            flexDir="row"
-            size={15}
-            onLike={handleLike}
-            onToggleLikers={() => {
-              toggleShowLikers()
-              fetchLikers()
-            }}
-          />
-          {isShowLikers && (
-            <LikerPopover
-              visible={isShowLikers}
-              onDismiss={toggleShowLikers}
-              likers={likers || []}
-              isFetching={isFetchingLikers}
-              onRefetch={() => {
-                // fetchLikers({
-                //   interestId: discussion.interestId,
-                //   discussionId: discussion.id,
-                // })
-              }}
-              anchorContent={
-                <TouchableOpacity onPress={toggleShowLikers}>
-                  <Text style={tw`font-poppins-medium text-xs text-primary`}>
-                    {amountOfLikes} {amountOfLikes === 1 ? 'like' : 'likes'}
-                  </Text>
-                </TouchableOpacity>
-              }
-            />
-          )}
-        </>
+        </View>
+        <LikeForm
+          id={entity.id.toString()}
+          isReactor={isReactor}
+          likersCount={likeCount || 0}
+          flexDir="row"
+          size={15}
+          onLike={onLike}
+          onToggleLikers={() => {
+            toggleShowLikers()
+            onFetchLikers()
+          }}
+        />
       </View>
 
-      {/* Inline reply input */}
+      {isShowLikers && (
+        <LikerPopover
+          visible={isShowLikers}
+          onDismiss={toggleShowLikers}
+          likers={likers || []}
+          isFetching={isFetchingLikers}
+          onRefetch={onFetchLikers}
+          anchorContent={
+            <TouchableOpacity onPress={toggleShowLikers}>
+              <Text style={tw`font-poppins-medium text-xs text-primary`}>
+                {likeCount} {likeCount === 1 ? 'like' : 'likes'}
+              </Text>
+            </TouchableOpacity>
+          }
+        />
+      )}
+
       {showReplyInput && (
         <ReplyForm
           onClose={() => setShowReplyInput(false)}
-          submitReply={onSubmitingReply}
+          submitReply={onSubmitReply}
           isSubmitting={isSubmittingReply}
         />
       )}
 
-      {/* Expanded replies */}
       {expanded && isLoadingReplies && (
         <View style={tw`items-center py-4`}>
           <ActivityIndicator
@@ -212,16 +200,7 @@ const PostCard: React.FC<PostCardProps> = ({
       {expanded &&
         !isLoadingReplies &&
         replies.map((reply) => (
-          <ReplyCard
-            key={reply.id.toString()}
-            reply={{
-              ...reply,
-              body: reply.postText || ' ',
-              amountOfLikes: reply.amountOfKorems,
-              handleLike,
-              fetchLikers,
-            }}
-          />
+          <ReplyCard key={reply.id.toString()} reply={reply} />
         ))}
     </View>
   )
@@ -240,4 +219,6 @@ const cardShadow = {
     },
   }),
 }
+
 export default PostCard
+export type { PostCardReply } from './components/ReplyCard'
