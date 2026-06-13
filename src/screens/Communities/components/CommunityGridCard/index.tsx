@@ -58,6 +58,7 @@ const CommunityGridCard: React.FC<Props> = ({
       <CommunityCardMedia
         profilePicture={community?.profilePicture}
         loading={loading}
+        id={community?.id}
       >
         {displayDetails ? <CommunityDetailHeaderButtons /> : <View />}
 

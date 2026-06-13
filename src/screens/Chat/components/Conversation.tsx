@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native'
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import ProfAvatar from 'components/ProfAvatar'
+import { colors } from 'components/ui/tokens'
 import {
   Conversation as ConversationType,
   ChatStackParams,
@@ -48,9 +49,10 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
         )
       }
       activeOpacity={0.7}
-      style={tw`flex-row items-center justify-between py-3 px-2 ${
-        hasUnread ? 'bg-blue-50' : ''
-      }`}
+      style={[
+        tw`flex-row items-center justify-between py-3 px-3 rounded-card`,
+        hasUnread && { backgroundColor: colors.primarySoft },
+      ]}
     >
       <ProfAvatar
         user={isGroup ? ({} as User) : (getOtherUser as User)}
@@ -58,12 +60,13 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
         disableDefaultNavigation
       />
 
-      <View style={tw`items-end`}>
+      <View style={tw`items-end ml-2`}>
         {lastMessage && (
           <Text
-            appearance="hint"
-            category="c1"
-            style={tw`text-xs ${hasUnread ? 'text-primary' : 'text-gray-400'}`}
+            style={[
+              tw`text-xs font-poppins-medium`,
+              { color: hasUnread ? colors.primaryDeep : colors.mute },
+            ]}
           >
             {formatDistanceToNowStrict(new Date(lastMessage?.createdAt), {
               addSuffix: false,
@@ -72,9 +75,12 @@ const Conversation: React.FC<ConversationProps> = ({ conversation }) => {
         )}
         {hasUnread && (
           <View
-            style={tw`bg-primary rounded-full min-w-[20px] h-5 items-center justify-center mt-1 px-1.5`}
+            style={[
+              tw`rounded-full min-w-[20px] h-5 items-center justify-center mt-1 px-1.5`,
+              { backgroundColor: colors.primaryDeep },
+            ]}
           >
-            <Text style={tw`text-white text-xs font-bold`}>
+            <Text style={tw`text-white text-xs font-poppins-bold`}>
               {amountOfUnreadMessages > 9 ? '9+' : amountOfUnreadMessages}
             </Text>
           </View>

@@ -22,6 +22,7 @@ import { FeedStackParams } from '../../../types'
 import { setTabBarVisibility } from 'store/ui-slice'
 import { useDispatch } from 'react-redux'
 import { useToggleKoreMutation } from 'store/post'
+import { cdnImageUrl } from '../../lib/cdnImageUrl'
 
 const IMG_SIZE = 80
 const SPACING = 10
@@ -133,7 +134,14 @@ const ImageGallery: React.FC = () => {
             <View style={{ width, height }}>
               {hasVideoSupport() && isVideo(item.original) ? (
                 <Video
-                  source={{ uri: item.original }}
+                  //   source={{ uri: item.original }}
+                  source={{
+                    uri: cdnImageUrl(item.original, {
+                      width: 1280, // 2x for retina
+                      height: 720,
+                      smartCrop: true,
+                    }),
+                  }}
                   style={[StyleSheet.absoluteFillObject]}
                   resizeMode={ResizeMode.CONTAIN}
                   shouldPlay={true}

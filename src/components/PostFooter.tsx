@@ -116,7 +116,7 @@ const PostFooter: React.FC<PostFooterProps> = (props) => {
   )
 
   return (
-    <View style={tw`flex flex-1 flex-row items-center justify-between`}>
+    <View style={tw`flex flex-1 flex-row items-center justify-between gap-8`}>
       <View>
         {props.amountOfKorems ? (
           <LikerPopover
