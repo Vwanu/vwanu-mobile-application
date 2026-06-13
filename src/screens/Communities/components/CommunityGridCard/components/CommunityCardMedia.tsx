@@ -42,16 +42,14 @@ const CommunityCardMedia: React.FC<Props> = ({
     resizeMode="cover"
   >
     {loading && <ActivityIndicator animating={loading} />}
-       <LinearGradient
-        colors={gradientFor(id)}
-        start={{ x: 0, y: 1 }}
-        end={{ x: 1, y: 0 }}
-        style={tw`flex-1 p-3 justify-end`}
-      >
-    <View style={tw` h-full flex justify-between p-3`}>
-      {children}
-    </View>
-  </LinearGradient>
+    <LinearGradient
+      colors={gradientFor(id ?? 0)}
+      start={{ x: 0, y: 1 }}
+      end={{ x: 1, y: 0 }}
+      style={tw`flex-1 p-3 justify-end`}
+    >
+      <View style={tw`h-full flex justify-between p-3`}>{children}</View>
+    </LinearGradient>
   </ImageBackground>
 )
 

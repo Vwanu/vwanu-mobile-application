@@ -7,33 +7,29 @@ import Text from 'components/Text'
 import MentionText from 'components/MentionText'
 import LikeForm from 'components/LikeForm'
 import ProfAvatar from 'components/ProfAvatar'
-import { Discussion } from '../../../../types'
-import {
-  useLazyFetchDiscussionLikersQuery,
-  useToggleDiscussionLikeMutation,
-} from 'store/discussion-api-slice'
 import useToggle from 'hooks/useToggle'
 import LikerPopover from 'components/LikersPopOver'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
 
-const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
+interface Reply {
+  id: string | number
+  createdAt: Date
+  user: User
+  body: string
+  isReactor?: boolean
+  amountOfLikes: number
+  interestId?: string | number
+  parentId?: string | number
+  handleLike: (id: string) => Promise<void>
+  fetchLikers: () => void
+}
+
+const ReplyCard: React.FC<{ reply: Reply }> = ({ reply }) => {
   const navigation = useNavigation()
   const [isShowLikers, toggleShowLikers] = useToggle(false)
   const date = formatDate(new Date(reply.createdAt), 'MMM dd, yyyy')
 
-  const [toggleDiscussionLike] = useToggleDiscussionLikeMutation()
-
-  const [fetchLikers, { data: likersData, isFetching: isFetchingLikers }] =
-    useLazyFetchDiscussionLikersQuery()
-
-  const handleLike = async (_id: string) => {
-    await toggleDiscussionLike({
-      interestId: reply.interestId,
-      discussionId: reply.id,
-      parentId: reply.parentId,
-    }).unwrap()
-  }
   const handleNavigateToProfile = (id: string) => {
     // navigate to user profile
     // @ts-ignore
@@ -55,18 +51,15 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
         {reply.body}
       </MentionText>
       <LikeForm
-        id={reply.id}
+        id={reply.id.toString()}
         isReactor={!!reply.isReactor}
         likersCount={reply.amountOfLikes}
         flexDir="row"
         size={15}
-        onLike={handleLike}
+        onLike={reply.handleLike}
         onToggleLikers={() => {
           toggleShowLikers()
-          fetchLikers({
-            interestId: reply.interestId,
-            discussionId: reply.id,
-          })
+          reply.fetchLikers()
         }}
       />
 
@@ -74,14 +67,9 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
         <LikerPopover
           visible={isShowLikers}
           onDismiss={toggleShowLikers}
-          likers={likersData?.data || []}
-          isFetching={isFetchingLikers}
-          onRefetch={() => {
-            fetchLikers({
-              interestId: reply.interestId,
-              discussionId: reply.id,
-            })
-          }}
+          likers={[]}
+          isFetching={false}
+          onRefetch={reply.fetchLikers}
           anchorContent={
             <TouchableOpacity onPress={toggleShowLikers}>
               <Text style={tw`text-xs text-primary`}>
@@ -94,8 +82,6 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
       )}
     </View>
   )
-  {
-  }
 }
 
 export default memo(ReplyCard)

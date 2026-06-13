@@ -27,7 +27,7 @@ const CommunityCardBody: React.FC<Props> = ({
   <View>
     <LongText
       text={community?.name}
-      textStyles={{...tw`text-white font-syne-bold`, ...titleStyle}}
+      textStyles={[tw`text-white font-syne-bold`, titleStyle]}
       maxLength={titleMaxLength}
       showShowMoreText={showTitleShowMore}
     />

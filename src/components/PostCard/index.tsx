@@ -16,6 +16,7 @@ import LikerPopover from 'components/LikersPopOver'
 import useToggle from 'hooks/useToggle'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
+import { PostProps } from '../../../types'
 
 interface Post {
   id: string | number
@@ -30,7 +31,7 @@ interface PostCardProps {
   handleLike: (id: string) => Promise<void>
   fetchReplies: () => void
   fetchLikers: () => void
-  replies: PostCardProps[]
+  replies: PostProps[]
   isLoadingReplies: boolean
   amountOfReplies: number
   isReactor: boolean
@@ -72,14 +73,6 @@ const PostCard: React.FC<PostCardProps> = ({
   const date = formatDate(new Date(post.createdAt), 'MMM dd, yyyy')
   const replyCount = amountOfReplies
   const [isShowLikers, toggleShowLikers] = useToggle(false)
-
-  const responseToPost = replies.map((reply) => ({
-    ...reply,
-    // @ts-ignore
-    body: reply!.postText || ' ',
-  })) // Map postText to body for ReplyCard
-
-  console.log('rendering PostCard', [replies])
 
   const handleToggleExpand = () => {
     const willExpand = !expanded
@@ -218,8 +211,17 @@ const PostCard: React.FC<PostCardProps> = ({
       )}
       {expanded &&
         !isLoadingReplies &&
-        responseToPost.map((reply) => (
-          <ReplyCard key={reply.id} reply={reply} />
+        replies.map((reply) => (
+          <ReplyCard
+            key={reply.id.toString()}
+            reply={{
+              ...reply,
+              body: reply.postText || ' ',
+              amountOfLikes: reply.amountOfKorems,
+              handleLike,
+              fetchLikers,
+            }}
+          />
         ))}
     </View>
   )

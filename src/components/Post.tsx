@@ -34,8 +34,8 @@ const Post: React.FC<Props> = (props) => {
     },
   ] = useLazyFetchPostsQuery()
 
-  const onLikePress = async () => {
-    await toggleKore(props.id.toString())
+  const onLikePress = async (id: string) => {
+    await toggleKore(id)
   }
   const onfetchComments = async () => {
     console.log('fetching comments for post', props.id.toString())
@@ -75,8 +75,8 @@ const Post: React.FC<Props> = (props) => {
   return (
     <PostCard
       post={props}
-      body={props.postText || ' '} // Map postText to body for PostCard
-      isReactor={true}
+      body={props.postText || ' '}
+      isReactor={!!props.isReactor}
       amountOfReplies={props.amountOfComments || 0}
       amountOfLikes={props.amountOfKorems || 0}
       handleLike={onLikePress}
@@ -94,9 +94,10 @@ const Post: React.FC<Props> = (props) => {
           style={tw`w-100% mt-3 rounded-lg overflow-hidden`}
           onImageTouch={(index) => {
             navigation.navigate('Gallery', {
-              initialIndex: index,
+              ...props,
+              initialSlide: index,
             })
-          }} // calculate the index of the touched image and pass it to the image viewer
+          }}
         />
       )}
     </PostCard>

@@ -136,11 +136,12 @@ const ImageGallery: React.FC = () => {
                 <Video
                   //   source={{ uri: item.original }}
                   source={{
-                    uri: cdnImageUrl(item.original, {
-                      width: 1280, // 2x for retina
-                      height: 720,
-                      smartCrop: true,
-                    }),
+                    uri:
+                      cdnImageUrl(item.original, {
+                        width: 1280, // 2x for retina
+                        height: 720,
+                        smartCrop: true,
+                      }) ?? item.original,
                   }}
                   style={[StyleSheet.absoluteFillObject]}
                   resizeMode={ResizeMode.CONTAIN}
