@@ -152,7 +152,13 @@ const ImageGallery: React.FC = () => {
                 />
               ) : (
                 <Image
-                  source={{ uri: item.original }}
+                  source={{
+                    uri:
+                      cdnImageUrl(item.original, {
+                        width: Dimensions.get('screen').width * 2, // 2x for retina
+                        height: Dimensions.get('screen').height * 2, // 2x for retina
+                      }) ?? item.original,
+                  }}
                   style={[StyleSheet.absoluteFillObject]}
                 />
               )}
@@ -216,7 +222,12 @@ const ImageGallery: React.FC = () => {
                   </>
                 ) : (
                   <Image
-                    source={{ uri: item.original }}
+                    source={{
+                      uri: cdnImageUrl(item.original, {
+                        width: 200, // smaller size for thumbnail
+                        height: 200,
+                      }),
+                    }}
                     style={{
                       width: IMG_SIZE,
                       height: IMG_SIZE,

@@ -1,5 +1,4 @@
-import React, { memo } from 'react'
-
+import React, { memo, useState } from 'react'
 import tw from '../lib/tailwind'
 import ImageGrid from './ImageGrid'
 import { PostProps } from '../../types'
@@ -8,9 +7,11 @@ import {
   useToggleKoreMutation,
   useLazyFetchPostLikersQuery,
   useLazyFetchPostsQuery,
-  useCreatePostMutation,
 } from 'store/post'
 import { useNavigation } from '@react-navigation/native'
+import CommentForm from './CommentForm'
+import LikeForm from 'components/LikeForm'
+import useToggle from 'hooks/useToggle'
 interface Props extends PostProps {
   showViewComment?: boolean
   disableNavigation?: boolean
@@ -69,21 +70,9 @@ const Post: React.FC<Props> = (props) => {
   const onfetchLikers = () => {
     fetchLikers({ postId: props.id.toString() })
   }
-  const [createPost, { isLoading: isSubmittingReply }] = useCreatePostMutation()
-  const handleSubmitReply = async ({
-    content,
-    mentions,
-  }: {
-    content: string
-    mentions: string[]
-  }) => {
-    await createPost({
-      postText: content,
-      mentions,
-      postId: props.id.toString(),
-    }).unwrap()
-    onfetchComments()
-  }
+  const [isShowLikers, toggleShowLikers] = useToggle(false)
+  const [showReplyInput, setShowReplyInput] = useState(false)
+
   return (
     <PostCard
       entity={{
@@ -91,19 +80,40 @@ const Post: React.FC<Props> = (props) => {
         createdAt: props.createdAt,
         user: props.user,
       }}
+      showReplyInput={showReplyInput}
+      setShowReplyInput={setShowReplyInput}
+      isShowLikers={isShowLikers}
+      toggleShowLikers={toggleShowLikers}
       title={undefined}
       body={props.postText || ' '}
       isReactor={!!props.isReactor}
       replyCount={props.amountOfComments || 0}
       likeCount={props.amountOfKorems || 0}
-      onLike={onLikePress}
       onFetchReplies={onfetchComments}
       replies={mappedReplies}
       isLoadingReplies={isLoadingComments || isFetchingComments}
       onFetchLikers={onfetchLikers}
       isFetchingLikers={isLoadingLikers || isFetchingLikers}
-      isSubmittingReply={isSubmittingReply}
-      onSubmitReply={handleSubmitReply}
+      replyLabel="Comment"
+      replyForm={
+        <CommentForm
+          postId={props.id.toString()}
+          onSubmit={() => setShowReplyInput(false)}
+        />
+      }
+      likeform={
+        <LikeForm
+          id={props.id.toString()}
+          isReactor={!!props.isReactor}
+          likersCount={props.amountOfKorems || 0}
+          flexDir="row"
+          size={15}
+          onLike={onLikePress}
+          onToggleLikers={() => {
+            toggleShowLikers()
+          }}
+        />
+      }
     >
       {props?.media && props.media.length > 0 && (
         <ImageGrid

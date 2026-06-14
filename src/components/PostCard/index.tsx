@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, TouchableOpacity, Platform } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator } from 'react-native-paper'
 import { formatDate } from 'date-fns'
@@ -8,13 +8,12 @@ import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import MentionText from 'components/MentionText'
 import ProfAvatar from 'components/ProfAvatar'
-import LikeForm from 'components/LikeForm'
 import LikerPopover from 'components/LikersPopOver'
-import useToggle from 'hooks/useToggle'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
-import ReplyForm from './components/ReplyForm'
 import ReplyCard, { PostCardReply } from './components/ReplyCard'
+import Card from 'components/Card'
+import CardTitle from 'components/Cardtitle'
 
 export interface PostCardEntity {
   id: string | number
@@ -34,18 +33,15 @@ export interface PostCardProps {
   isLoadingReplies: boolean
   likers?: Array<{ User: User; createdAt: Date }>
   isFetchingLikers: boolean
-  isSubmittingReply: boolean
-  onLike: (id: string) => Promise<void>
   onFetchReplies: () => void
   onFetchLikers: () => void
-  onSubmitReply: ({
-    content,
-    mentions,
-  }: {
-    content: string
-    mentions: string[]
-  }) => void
   children?: React.ReactNode
+  replyForm?: React.ReactNode
+  likeform?: React.ReactNode
+  isShowLikers?: boolean
+  toggleShowLikers?: () => void
+  showReplyInput?: boolean
+  setShowReplyInput?: (show: boolean) => void
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -55,22 +51,23 @@ const PostCard: React.FC<PostCardProps> = ({
   replyLabel = 'Reply',
   replyCount,
   likeCount,
-  isReactor,
   replies,
   isLoadingReplies,
   likers,
   isFetchingLikers,
-  isSubmittingReply,
-  onLike,
   onFetchReplies,
   onFetchLikers,
-  onSubmitReply,
   children,
+  replyForm,
+  likeform,
+  isShowLikers,
+  toggleShowLikers,
+  showReplyInput,
+  setShowReplyInput,
 }) => {
   const navigation = useNavigation()
   const [expanded, setExpanded] = useState(false)
-  const [showReplyInput, setShowReplyInput] = useState(false)
-  const [isShowLikers, toggleShowLikers] = useToggle(false)
+
   const date = formatDate(new Date(entity.createdAt), 'MMM dd, yyyy')
 
   const handleToggleExpand = () => {
@@ -80,20 +77,11 @@ const PostCard: React.FC<PostCardProps> = ({
   }
 
   return (
-    <View
-      style={[
-        tw`bg-white dark:bg-gray-800 mx-3 mb-3 rounded-xl p-4`,
-        cardShadow,
-      ]}
-    >
+    <Card>
       <ProfAvatar user={entity.user} size={36} subtitle={date} />
-      {title && (
-        <Text
-          style={tw`font-syne-bold text-ink dark:text-white text-base mt-3`}
-        >
-          {title}
-        </Text>
-      )}
+      {title && <CardTitle title={title} />}
+
+      {/* Body */}
       <MentionText
         style={tw`font-poppins text-soft dark:text-gray-400 text-sm mt-1 leading-5`}
         numberOfLines={expanded ? undefined : 3}
@@ -108,6 +96,8 @@ const PostCard: React.FC<PostCardProps> = ({
         {body}
       </MentionText>
       <View style={tw`overflow-hidden rounded-lg mt-3`}>{children}</View>
+
+      {/* Footer */}
 
       <View style={tw`flex-row justify-between items-center mt-3 gap-4`}>
         <View style={tw`flex-row items-center gap-3`}>
@@ -149,18 +139,7 @@ const PostCard: React.FC<PostCardProps> = ({
             </Text>
           </TouchableOpacity>
         </View>
-        <LikeForm
-          id={entity.id.toString()}
-          isReactor={isReactor}
-          likersCount={likeCount || 0}
-          flexDir="row"
-          size={15}
-          onLike={onLike}
-          onToggleLikers={() => {
-            toggleShowLikers()
-            onFetchLikers()
-          }}
-        />
+        {likeform}
       </View>
 
       {isShowLikers && (
@@ -180,13 +159,7 @@ const PostCard: React.FC<PostCardProps> = ({
         />
       )}
 
-      {showReplyInput && (
-        <ReplyForm
-          onClose={() => setShowReplyInput(false)}
-          submitReply={onSubmitReply}
-          isSubmitting={isSubmittingReply}
-        />
-      )}
+      {showReplyInput && (replyForm ? replyForm : null)}
 
       {expanded && isLoadingReplies && (
         <View style={tw`items-center py-4`}>
@@ -202,22 +175,8 @@ const PostCard: React.FC<PostCardProps> = ({
         replies.map((reply) => (
           <ReplyCard key={reply.id.toString()} reply={reply} />
         ))}
-    </View>
+    </Card>
   )
-}
-
-const cardShadow = {
-  ...Platform.select({
-    ios: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-    },
-    android: {
-      elevation: 3,
-    },
-  }),
 }
 
 export default PostCard
