@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '../store'
 import { NextActions, checkExistingSession } from '../store/auth-slice'
 import { useTokenMonitoring } from './useTokenMonitoring'
+import { usePushNotifications } from './usePushNotifications'
 import { WebSocketManagerFeathers } from '../services/websocket-manager-feathers'
 import { NotificationSubscriptionManager } from '../services/subscriptions'
 
@@ -51,6 +52,9 @@ export const useAuthSession = (
     checkInterval: tokenMonitoringInterval,
     enabled: enableTokenMonitoring && isAuthenticated,
   })
+
+  // Push notification registration (Expo token → backend)
+  usePushNotifications(isAuthenticated)
 
   // Session check on app start
   useEffect(() => {

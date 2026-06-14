@@ -5,6 +5,8 @@ import { Profile } from '../../types'
 import { AuthTokenService } from '../lib/authTokenService'
 import { WebSocketManagerFeathers } from '../services/websocket-manager-feathers'
 import { NotificationSubscriptionManager } from '../services/subscriptions'
+import { getCachedToken, clearCachedToken } from '../lib/pushTokenCache'
+import { devicesApiSlice } from './devices-api-slice'
 
 import {
   confirmSignUp,
@@ -336,7 +338,7 @@ export const signInUser = createAsyncThunk<
 
 export const signOutUser = createAsyncThunk(
   'auth/signOut',
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     try {
       // Stop notification subscription
       console.log('📡 Stopping notification subscription before sign out')
@@ -345,6 +347,21 @@ export const signOutUser = createAsyncThunk(
       // Disconnect Feathers WebSocket before signing out
       console.log('🔌 Disconnecting Feathers WebSocket before sign out')
       WebSocketManagerFeathers.disconnect()
+
+      // Unregister the device's Expo push token while we still have a valid
+      // session. If this fails (network), the next signin's POST upsert
+      // reassigns ownership (VWA-139), so the privacy hole closes either way.
+      try {
+        const cached = await getCachedToken()
+        if (cached) {
+          await dispatch(
+            devicesApiSlice.endpoints.unregisterPushToken.initiate(cached)
+          ).unwrap()
+          await clearCachedToken()
+        }
+      } catch (err) {
+        console.warn('Push token unregister failed on signout:', err)
+      }
 
       // Sign out from Cognito and clear tokens from secure storage
       await AuthTokenService.forceSignOut()
