@@ -23,6 +23,6 @@ const comment = apiSlice.injectEndpoints({
   }),
 })
 
-const { useFetchCommentsQuery, usePostCommentQuery } = comment
+const { useFetchCommentsQuery, usePostCommentQuery , useLazyFetchCommentsQuery } = comment
 
-export { useFetchCommentsQuery, usePostCommentQuery }
+export { useFetchCommentsQuery, usePostCommentQuery, useLazyFetchCommentsQuery    }

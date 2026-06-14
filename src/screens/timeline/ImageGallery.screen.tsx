@@ -22,6 +22,7 @@ import { FeedStackParams } from '../../../types'
 import { setTabBarVisibility } from 'store/ui-slice'
 import { useDispatch } from 'react-redux'
 import { useToggleKoreMutation } from 'store/post'
+import { cdnImageUrl } from '../../lib/cdnImageUrl'
 
 const IMG_SIZE = 80
 const SPACING = 10
@@ -133,7 +134,15 @@ const ImageGallery: React.FC = () => {
             <View style={{ width, height }}>
               {hasVideoSupport() && isVideo(item.original) ? (
                 <Video
-                  source={{ uri: item.original }}
+                  //   source={{ uri: item.original }}
+                  source={{
+                    uri:
+                      cdnImageUrl(item.original, {
+                        width: 1280, // 2x for retina
+                        height: 720,
+                        smartCrop: true,
+                      }) ?? item.original,
+                  }}
                   style={[StyleSheet.absoluteFillObject]}
                   resizeMode={ResizeMode.CONTAIN}
                   shouldPlay={true}
@@ -143,7 +152,13 @@ const ImageGallery: React.FC = () => {
                 />
               ) : (
                 <Image
-                  source={{ uri: item.original }}
+                  source={{
+                    uri:
+                      cdnImageUrl(item.original, {
+                        width: Dimensions.get('screen').width * 2, // 2x for retina
+                        height: Dimensions.get('screen').height * 2, // 2x for retina
+                      }) ?? item.original,
+                  }}
                   style={[StyleSheet.absoluteFillObject]}
                 />
               )}
@@ -207,7 +222,12 @@ const ImageGallery: React.FC = () => {
                   </>
                 ) : (
                   <Image
-                    source={{ uri: item.original }}
+                    source={{
+                      uri: cdnImageUrl(item.original, {
+                        width: 200, // smaller size for thumbnail
+                        height: 200,
+                      }),
+                    }}
                     style={{
                       width: IMG_SIZE,
                       height: IMG_SIZE,

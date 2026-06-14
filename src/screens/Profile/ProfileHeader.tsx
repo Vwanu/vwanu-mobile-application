@@ -99,7 +99,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = (props) => {
   const isFollowLoading = isFollowing || isUnfollowing
 
   return (
-    <SafeAreaView edges={['top']} style={tw`bg-white  border-warm-bg border-t`}>
+    <SafeAreaView edges={['top']} style={tw`border-warm-bg border-t`}>
       {/* Row 1: Avatar + action pills */}
       <View style={tw`flex-row justify-between pt-1 px-4 pb-3 `}>
         <View

@@ -3,7 +3,6 @@ import Post from 'components/Post'
 import { View } from 'react-native'
 import tw from 'lib/tailwind'
 import NoPost from 'components/EmptyList'
-import Separator from 'components/Separator'
 import { useFetchPostsQuery } from 'store/post'
 import TimelineSkeletone from './TimelineSkeletone'
 import PaginatedList, { PaginationParams } from 'components/PaginatedList'
@@ -84,7 +83,6 @@ const PostList: React.FC<Props> = ({ communityId }) => {
       fetchData={fetchPosts}
       isFetching={posts.isFetching || posts.isLoading}
       contentContainerStyle={tw`pb-34`}
-      ItemSeparatorComponent={() => <Separator style="h-1" />}
       showsVerticalScrollIndicator={false}
       keyExtractor={({ id }) => `post-${id.toString()}`}
       renderItem={(post) => <Post {...post.item} toggleCommenting={() => {}} />}

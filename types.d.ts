@@ -81,7 +81,7 @@ export interface PostProps {
   amountOfKorems: number
   amountOfComments: number
   likers?: User[]
-  user?: User
+  user: User
   reactors: User[]
   id: number | string
   canDelete?: boolean
