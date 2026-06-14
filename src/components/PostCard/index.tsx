@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { ActivityIndicator } from 'react-native-paper'
@@ -35,13 +35,15 @@ export interface PostCardProps {
   isFetchingLikers: boolean
   onFetchReplies: () => void
   onFetchLikers: () => void
-  children?: React.ReactNode
+  onToggleReplies: () => void
+  onToggleReplyInput: () => void
+  isExpanded: boolean
+  showReplyInput?: boolean
   replyForm?: React.ReactNode
   likeform?: React.ReactNode
   isShowLikers?: boolean
   toggleShowLikers?: () => void
-  showReplyInput?: boolean
-  setShowReplyInput?: (show: boolean) => void
+  children?: React.ReactNode
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -51,29 +53,29 @@ const PostCard: React.FC<PostCardProps> = ({
   replyLabel = 'Reply',
   replyCount,
   likeCount,
+  isReactor,
   replies,
   isLoadingReplies,
   likers,
   isFetchingLikers,
   onFetchReplies,
   onFetchLikers,
-  children,
+  onToggleReplies,
+  onToggleReplyInput,
+  isExpanded,
+  showReplyInput,
   replyForm,
   likeform,
   isShowLikers,
   toggleShowLikers,
-  showReplyInput,
-  setShowReplyInput,
+  children,
 }) => {
   const navigation = useNavigation()
-  const [expanded, setExpanded] = useState(false)
-
   const date = formatDate(new Date(entity.createdAt), 'MMM dd, yyyy')
 
   const handleToggleExpand = () => {
-    const willExpand = !expanded
-    setExpanded(willExpand)
-    if (willExpand) onFetchReplies()
+    if (!isExpanded) onFetchReplies()
+    onToggleReplies()
   }
 
   return (
@@ -81,10 +83,9 @@ const PostCard: React.FC<PostCardProps> = ({
       <ProfAvatar user={entity.user} size={36} subtitle={date} />
       {title && <CardTitle title={title} />}
 
-      {/* Body */}
       <MentionText
         style={tw`font-poppins text-soft dark:text-gray-400 text-sm mt-1 leading-5`}
-        numberOfLines={expanded ? undefined : 3}
+        numberOfLines={isExpanded ? undefined : 3}
         onMentionPress={(id) => {
           // @ts-ignore
           navigation.navigate(routes.ACCOUNT, {
@@ -95,9 +96,8 @@ const PostCard: React.FC<PostCardProps> = ({
       >
         {body}
       </MentionText>
-      <View style={tw`overflow-hidden rounded-lg mt-3`}>{children}</View>
 
-      {/* Footer */}
+      <View style={tw`overflow-hidden rounded-lg mt-3`}>{children}</View>
 
       <View style={tw`flex-row justify-between items-center mt-3 gap-4`}>
         <View style={tw`flex-row items-center gap-3`}>
@@ -115,7 +115,7 @@ const PostCard: React.FC<PostCardProps> = ({
                 {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
               </Text>
               <Ionicons
-                name={expanded ? 'chevron-up' : 'chevron-down'}
+                name={isExpanded ? 'chevron-up' : 'chevron-down'}
                 size={14}
                 color={tw.color('primary')}
                 style={tw`ml-1`}
@@ -124,7 +124,7 @@ const PostCard: React.FC<PostCardProps> = ({
           )}
           <TouchableOpacity
             style={tw`flex-row items-center`}
-            onPress={() => setShowReplyInput?.(!showReplyInput)}
+            onPress={onToggleReplyInput}
             activeOpacity={0.7}
           >
             <Ionicons
@@ -142,9 +142,9 @@ const PostCard: React.FC<PostCardProps> = ({
         {likeform}
       </View>
 
-      {isShowLikers && (
+      {isShowLikers && toggleShowLikers && (
         <LikerPopover
-          visible={isShowLikers}
+          visible={!!isShowLikers}
           onDismiss={toggleShowLikers}
           likers={likers || []}
           isFetching={isFetchingLikers}
@@ -161,7 +161,7 @@ const PostCard: React.FC<PostCardProps> = ({
 
       {showReplyInput && (replyForm ? replyForm : null)}
 
-      {expanded && isLoadingReplies && (
+      {isExpanded && isLoadingReplies && (
         <View style={tw`items-center py-4`}>
           <ActivityIndicator
             animating
@@ -170,7 +170,7 @@ const PostCard: React.FC<PostCardProps> = ({
           />
         </View>
       )}
-      {expanded &&
+      {isExpanded &&
         !isLoadingReplies &&
         replies.map((reply) => (
           <ReplyCard key={reply.id.toString()} reply={reply} />

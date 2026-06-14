@@ -25,6 +25,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
     useReplyToDiscussionMutation()
   const [showReplyInput, setShowReplyInput] = useState(false)
   const [isShowLikers, toggleShowLikers] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const replies = repliesData?.data ?? []
 
@@ -79,8 +80,24 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
       isLoadingReplies={isLoadingReplies}
       likers={likersData?.data || []}
       isFetchingLikers={isFetchingLikers}
+      isExpanded={isExpanded}
+      onToggleReplies={() => {
+        setIsExpanded((prev) => !prev)
+        if (!isExpanded) {
+          fetchReplies({
+            interestId: discussion.interestId,
+            discussionId: discussion.id,
+          })
+        }
+      }}
+      onToggleReplyInput={() => setShowReplyInput((prev) => !prev)}
       showReplyInput={showReplyInput}
-      setShowReplyInput={setShowReplyInput}
+      onFetchReplies={() => {
+        fetchReplies({
+          interestId: discussion.interestId,
+          discussionId: discussion.id,
+        })
+      }}
       replyForm={
         <ReplyForm
           onClose={() => setShowReplyInput(false)}
@@ -110,12 +127,6 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
           }}
         />
       }
-      onFetchReplies={() => {
-        fetchReplies({
-          interestId: discussion.interestId,
-          discussionId: discussion.id,
-        })
-      }}
       onFetchLikers={() => {
         fetchLikers({
           interestId: discussion.interestId,

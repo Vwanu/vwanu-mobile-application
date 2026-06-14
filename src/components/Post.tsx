@@ -36,7 +36,11 @@ const Post: React.FC<Props> = (props) => {
   ] = useLazyFetchPostsQuery()
 
   const mappedReplies: PostCardReply[] = (comments.data || []).map((reply) => ({
-    ...reply,
+    id: reply.id,
+    createdAt: reply.createdAt,
+    user: reply.user,
+    body: reply.postText || ' ',
+    isReactor: !!reply.isReactor,
     amountOfLikes: reply.amountOfKorems,
     isFetchingLikers: false,
     onLike: async (id: string) => {
@@ -72,6 +76,7 @@ const Post: React.FC<Props> = (props) => {
   }
   const [isShowLikers, toggleShowLikers] = useToggle(false)
   const [showReplyInput, setShowReplyInput] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   return (
     <PostCard
@@ -80,8 +85,13 @@ const Post: React.FC<Props> = (props) => {
         createdAt: props.createdAt,
         user: props.user,
       }}
+      isExpanded={isExpanded}
+      onToggleReplies={() => {
+        setIsExpanded((prev) => !prev)
+        if (!isExpanded) onfetchComments()
+      }}
+      onToggleReplyInput={() => setShowReplyInput((prev) => !prev)}
       showReplyInput={showReplyInput}
-      setShowReplyInput={setShowReplyInput}
       isShowLikers={isShowLikers}
       toggleShowLikers={toggleShowLikers}
       title={undefined}
