@@ -105,7 +105,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
           interestId={discussion.interestId}
         />
       }
-      likeform={
+      likeForm={
         <LikeForm
           id={discussion.id}
           isReactor={!!discussion.isReactor}

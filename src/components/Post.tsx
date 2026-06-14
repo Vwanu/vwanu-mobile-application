@@ -111,7 +111,7 @@ const Post: React.FC<Props> = (props) => {
           onSubmit={() => setShowReplyInput(false)}
         />
       }
-      likeform={
+      likeForm={
         <LikeForm
           id={props.id.toString()}
           isReactor={!!props.isReactor}

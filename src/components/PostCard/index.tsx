@@ -40,7 +40,7 @@ export interface PostCardProps {
   isExpanded: boolean
   showReplyInput?: boolean
   replyForm?: React.ReactNode
-  likeform?: React.ReactNode
+  likeForm?: React.ReactNode
   isShowLikers?: boolean
   toggleShowLikers?: () => void
   children?: React.ReactNode
@@ -65,7 +65,7 @@ const PostCard: React.FC<PostCardProps> = ({
   isExpanded,
   showReplyInput,
   replyForm,
-  likeform,
+  likeForm,
   isShowLikers,
   toggleShowLikers,
   children,
@@ -139,7 +139,7 @@ const PostCard: React.FC<PostCardProps> = ({
             </Text>
           </TouchableOpacity>
         </View>
-        {likeform}
+        {likeForm}
       </View>
 
       {isShowLikers && toggleShowLikers && (
