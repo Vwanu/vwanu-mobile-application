@@ -1,16 +1,11 @@
 import React, { useRef, useEffect } from 'react'
-import { View, FlatList, TouchableOpacity } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import Text from 'components/Text'
+import { View, FlatList, ViewStyle, StyleProp } from 'react-native'
+
 import tw from 'lib/tailwind'
+import TabItem, { Tab } from './Tab'
+import { colors } from 'components/ui/tokens'
 
-export interface Tab {
-  id: string
-  label: string
-  icon?: string
-  disabled?: boolean
-}
-
+export type { Tab } from './Tab'
 interface TabBarProps {
   tabs: Tab[]
   activeTab: string
@@ -18,6 +13,13 @@ interface TabBarProps {
   iconOnly?: boolean
   activeTextColor?: string
   disableTextColor?: string
+  activeColor?: string
+  inactiveColor?: string
+  underlineColor?: string
+  style?: StyleProp<ViewStyle>
+  tabStyle?: StyleProp<ViewStyle>
+  fullWidth?: boolean
+  isPill?: boolean
 }
 
 const TabBar: React.FC<TabBarProps> = ({
@@ -27,65 +29,53 @@ const TabBar: React.FC<TabBarProps> = ({
   iconOnly = false,
   disableTextColor,
   activeTextColor,
+  activeColor = colors.primaryDeep,
+  inactiveColor = '#6B7280',
+  underlineColor,
+  style,
+  tabStyle,
+  fullWidth = false,
+  isPill = false,
 }) => {
   const flatListRef = useRef<FlatList>(null)
 
-  // Auto-scroll to center the selected tab
+  // Auto-scroll to center the selected tab (scroll mode only).
   useEffect(() => {
+    if (fullWidth) return
     if (activeTab && flatListRef.current) {
       const selectedIndex = tabs.findIndex((tab) => tab.id === activeTab)
-
       if (selectedIndex !== -1 && selectedIndex > 0) {
         setTimeout(() => {
           flatListRef.current?.scrollToIndex({
             index: selectedIndex,
             animated: true,
-            viewPosition: 0.5, // Center the selected item
+            viewPosition: 0.5,
           })
         }, 100)
       }
     }
-  }, [activeTab, tabs])
+  }, [activeTab, tabs, fullWidth])
 
-  const renderTab = ({ item }: { item: Tab }) => {
-    const isActive = activeTab === item.id
-    const isDisabled = item.disabled
+  const renderTab = (item: Tab) => (
+    <TabItem
+      key={item.id}
+      item={item}
+      isActive={activeTab === item.id}
+      onPress={onTabChange}
+      iconOnly={iconOnly}
+      activeColor={activeColor}
+      inactiveColor={inactiveColor}
+      underlineColor={underlineColor}
+      activeTextColor={activeTextColor}
+      disableTextColor={disableTextColor}
+      tabStyle={tabStyle}
+      fullWidth={fullWidth}
+      isPill={isPill}
+    />
+  )
 
-    return (
-      <TouchableOpacity
-        disabled={isDisabled}
-        onPress={() => onTabChange(item.id)}
-        activeOpacity={0.7}
-        style={tw`mr-3 px-5 py-2.5 ${
-          isActive
-            ? 'border-b-2 border-primary'
-            : 'border-b-2 border-b-transparent'
-        } ${isDisabled ? 'opacity-40' : ''}`}
-      >
-        <View style={tw`flex-row items-center`}>
-          {item.icon && (
-            <Ionicons
-              name={item.icon as any}
-              size={iconOnly ? 24 : 20}
-              color={isDisabled ? '#9CA3AF' : isActive ? '#3B82F6' : '#6B7280'}
-            />
-          )}
-          {!iconOnly && (
-            <Text
-              style={tw`font-medium ${item.icon ? 'ml-2' : ''} ${
-                isDisabled
-                  ? disableTextColor || 'text-gray-400'
-                  : isActive
-                  ? activeTextColor || 'text-primary'
-                  : 'text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {item.label}
-            </Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    )
+  if (fullWidth) {
+    return <View style={[tw`flex-row`, style]}>{tabs.map(renderTab)}</View>
   }
 
   return (
@@ -93,13 +83,13 @@ const TabBar: React.FC<TabBarProps> = ({
       <FlatList
         ref={flatListRef}
         data={tabs}
-        renderItem={renderTab}
+        renderItem={({ item }) => renderTab(item)}
         keyExtractor={(item) => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={tw`px-4 `}
+        contentContainerStyle={tw`px-4 items-center`}
+        style={style}
         onScrollToIndexFailed={(info) => {
-          // Fallback if scrollToIndex fails
           const wait = new Promise((resolve) => setTimeout(resolve, 500))
           wait.then(() => {
             flatListRef.current?.scrollToIndex({

@@ -101,7 +101,7 @@ const CommunityDetail = () => {
       <View style={tw`flex-1`}>
         <CommunityGridCard
           community={community as CommunityInterface}
-          size="large"
+          size="xl"
           onCommunityPress={() => {}}
           style={tw`rounded-none`}
           displayDetails={true}

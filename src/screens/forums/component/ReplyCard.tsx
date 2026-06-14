@@ -7,32 +7,42 @@ import Text from 'components/Text'
 import MentionText from 'components/MentionText'
 import LikeForm from 'components/LikeForm'
 import ProfAvatar from 'components/ProfAvatar'
-import { Discussion } from '../../../../types'
-import {
-  useLazyFetchDiscussionLikersQuery,
-  useToggleDiscussionLikeMutation,
-} from 'store/discussion-api-slice'
+
 import useToggle from 'hooks/useToggle'
 import LikerPopover from 'components/LikersPopOver'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
 
-const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
+interface Post {
+  id: string | number
+  createdAt: Date
+  user: User
+}
+
+interface PostCardProps {
+  post: Post
+  title?: string
+  body: string
+  handleLike: () => void
+  fetchReplies: () => void
+  fetchLikers: () => void
+  replies: PostCardProps[]
+  isLoadingReplies: boolean
+  amountOfReplies: number
+  isReactor: boolean
+  amountOfLikes: number
+  children?: React.ReactNode
+  likers: User[]
+  isFetchingLikers: boolean
+}
+
+const ReplyCard: React.FC<{ reply: PostCardProps }> = ({ reply }) => {
   const navigation = useNavigation()
   const [isShowLikers, toggleShowLikers] = useToggle(false)
-  const date = formatDate(new Date(reply.createdAt), 'MMM dd, yyyy')
-
-  const [toggleDiscussionLike] = useToggleDiscussionLikeMutation()
-
-  const [fetchLikers, { data: likersData, isFetching: isFetchingLikers }] =
-    useLazyFetchDiscussionLikersQuery()
+  const date = formatDate(new Date(reply.post.createdAt), 'MMM dd, yyyy')
 
   const handleLike = async (_id: string) => {
-    await toggleDiscussionLike({
-      interestId: reply.interestId,
-      discussionId: reply.id,
-      parentId: reply.parentId,
-    }).unwrap()
+    reply.handleLike()
   }
   const handleNavigateToProfile = (id: string) => {
     // navigate to user profile
@@ -47,7 +57,7 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
     <View
       style={tw`ml-6 mt-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700`}
     >
-      <ProfAvatar user={reply.user} size={28} subtitle={date} />
+      <ProfAvatar user={reply.post.user} size={28} subtitle={date} />
       <MentionText
         style={tw`text-gray-600 dark:text-gray-400 text-sm mt-2 leading-5`}
         onMentionPress={handleNavigateToProfile}
@@ -55,7 +65,7 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
         {reply.body}
       </MentionText>
       <LikeForm
-        id={reply.id}
+        id={reply.post.id.toString()}
         isReactor={!!reply.isReactor}
         likersCount={reply.amountOfLikes}
         flexDir="row"
@@ -63,10 +73,7 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
         onLike={handleLike}
         onToggleLikers={() => {
           toggleShowLikers()
-          fetchLikers({
-            interestId: reply.interestId,
-            discussionId: reply.id,
-          })
+          reply.fetchLikers()
         }}
       />
 
@@ -74,13 +81,10 @@ const ReplyCard: React.FC<{ reply: Discussion }> = ({ reply }) => {
         <LikerPopover
           visible={isShowLikers}
           onDismiss={toggleShowLikers}
-          likers={likersData?.data || []}
-          isFetching={isFetchingLikers}
+          likers={reply.likers || []}
+          isFetching={reply.isFetchingLikers}
           onRefetch={() => {
-            fetchLikers({
-              interestId: reply.interestId,
-              discussionId: reply.id,
-            })
+            reply.fetchLikers()
           }}
           anchorContent={
             <TouchableOpacity onPress={toggleShowLikers}>

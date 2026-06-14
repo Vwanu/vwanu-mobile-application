@@ -81,7 +81,7 @@ export interface PostProps {
   amountOfKorems: number
   amountOfComments: number
   likers?: User[]
-  user?: User
+  user: User
   reactors: User[]
   id: number | string
   canDelete?: boolean
@@ -115,7 +115,9 @@ export type FeedStackParams = Record<string, object | undefined> & {
   Blogs: undefined
   BlogDetail: { blogId: string }
   CreateBlog: { blogId?: string } | undefined
+  Forum: undefined
   ForumDetail: { forum: Interest }
+  People: undefined
 }
 
 export type ProfileStackParams = {
@@ -246,7 +248,7 @@ export interface NotificationInterface {
   type: NotificationType
   title: string
   message: string
-  read: boolean
+  readAt: Date | null
   createdAt: Date
   updatedAt: Date
   userId: string

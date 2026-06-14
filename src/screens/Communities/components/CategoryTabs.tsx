@@ -12,6 +12,7 @@ interface CategoryTabsProps {
   selectedInterest: Interest | null
   onInterestChange: (interest: Interest) => void
   onClear?: () => void
+  tabStyle?: ViewStyle
   style?: ViewStyle
 }
 
@@ -20,6 +21,8 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
   selectedInterest,
   onInterestChange,
   onClear,
+  style,
+  tabStyle,
 }) => {
   if (interests.length === 0) {
     return null
@@ -42,24 +45,14 @@ const CategoryTabs: React.FC<CategoryTabsProps> = ({
   }
 
   return (
-    <View style={tw`flex-row items-center`}>
-      <View style={tw`flex-1`}>
-        <TabBar
-          tabs={tabs}
-          activeTab={selectedInterest?.id || ''}
-          onTabChange={handleTabChange}
-        />
-      </View>
-      {selectedInterest && onClear && (
-        <TouchableOpacity onPress={onClear} style={tw`px-3 py-2`}>
-          <Ionicons
-            name="close-circle"
-            size={20}
-            color={tw.color('gray-400')}
-          />
-        </TouchableOpacity>
-      )}
-    </View>
+    <TabBar
+      tabs={tabs}
+      activeTab={selectedInterest?.id || ''}
+      onTabChange={handleTabChange}
+      tabStyle={tabStyle}
+      style={style}
+      isPill={true}
+    />
   )
 }
 
