@@ -7,45 +7,30 @@ import Text from 'components/Text'
 import MentionText from 'components/MentionText'
 import LikeForm from 'components/LikeForm'
 import ProfAvatar from 'components/ProfAvatar'
-
 import useToggle from 'hooks/useToggle'
 import LikerPopover from 'components/LikersPopOver'
 import routes from 'navigation/routes'
 import { useNavigation } from '@react-navigation/native'
 
-interface Post {
+export interface PostCardReply {
   id: string | number
   createdAt: Date
   user: User
-}
-
-interface PostCardProps {
-  post: Post
-  title?: string
   body: string
-  handleLike: () => void
-  fetchReplies: () => void
-  fetchLikers: () => void
-  replies: PostCardProps[]
-  isLoadingReplies: boolean
-  amountOfReplies: number
-  isReactor: boolean
+  isReactor?: boolean
   amountOfLikes: number
-  children?: React.ReactNode
-  likers: User[]
+  likers?: Array<{ User: User; createdAt: Date }>
   isFetchingLikers: boolean
+  onLike: (id: string) => Promise<void>
+  onFetchLikers: () => void
 }
 
-const ReplyCard: React.FC<{ reply: PostCardProps }> = ({ reply }) => {
+const ReplyCard: React.FC<{ reply: PostCardReply }> = ({ reply }) => {
   const navigation = useNavigation()
   const [isShowLikers, toggleShowLikers] = useToggle(false)
-  const date = formatDate(new Date(reply.post.createdAt), 'MMM dd, yyyy')
+  const date = formatDate(new Date(reply.createdAt), 'MMM dd, yyyy')
 
-  const handleLike = async (_id: string) => {
-    reply.handleLike()
-  }
   const handleNavigateToProfile = (id: string) => {
-    // navigate to user profile
     // @ts-ignore
     navigation.navigate(routes.ACCOUNT, {
       screen: routes.PROFILE,
@@ -57,7 +42,7 @@ const ReplyCard: React.FC<{ reply: PostCardProps }> = ({ reply }) => {
     <View
       style={tw`ml-6 mt-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700`}
     >
-      <ProfAvatar user={reply.post.user} size={28} subtitle={date} />
+      <ProfAvatar user={reply.user} size={28} subtitle={date} />
       <MentionText
         style={tw`text-gray-600 dark:text-gray-400 text-sm mt-2 leading-5`}
         onMentionPress={handleNavigateToProfile}
@@ -65,15 +50,15 @@ const ReplyCard: React.FC<{ reply: PostCardProps }> = ({ reply }) => {
         {reply.body}
       </MentionText>
       <LikeForm
-        id={reply.post.id.toString()}
+        id={reply.id.toString()}
         isReactor={!!reply.isReactor}
         likersCount={reply.amountOfLikes}
         flexDir="row"
         size={15}
-        onLike={handleLike}
+        onLike={reply.onLike}
         onToggleLikers={() => {
           toggleShowLikers()
-          reply.fetchLikers()
+          reply.onFetchLikers()
         }}
       />
 
@@ -83,9 +68,7 @@ const ReplyCard: React.FC<{ reply: PostCardProps }> = ({ reply }) => {
           onDismiss={toggleShowLikers}
           likers={reply.likers || []}
           isFetching={reply.isFetchingLikers}
-          onRefetch={() => {
-            reply.fetchLikers()
-          }}
+          onRefetch={reply.onFetchLikers}
           anchorContent={
             <TouchableOpacity onPress={toggleShowLikers}>
               <Text style={tw`text-xs text-primary`}>
@@ -98,8 +81,6 @@ const ReplyCard: React.FC<{ reply: PostCardProps }> = ({ reply }) => {
       )}
     </View>
   )
-  {
-  }
 }
 
 export default memo(ReplyCard)

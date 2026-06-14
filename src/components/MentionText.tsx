@@ -26,7 +26,7 @@ const MentionText: React.FC<MentionTextProps> = ({
   )
 
   return (
-    <Text style={style} numberOfLines={numberOfLines}>
+    <Text style={[tw`font-poppins`, style]} numberOfLines={numberOfLines}>
       {parts.map((part, index) =>
         part.data ? (
           <Text

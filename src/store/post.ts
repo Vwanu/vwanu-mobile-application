@@ -18,6 +18,7 @@ interface Rep {
 type PostCreationProps = PostProps & {
   postImage: string[]
   mentions?: string[]
+  postId?: string
 }
 type CommentType = Partial<PostProps> & { postId: number; mentions?: string[] }
 
@@ -39,6 +40,10 @@ const _toFormData = (values: Partial<PostCreationProps>): FormData => {
   const formData = new FormData()
   formData.append('postText', values.postText || '')
   formData.append('privacyType', values?.privacyType || 'public')
+
+  if(values?.postId) {
+    formData.append('postId', values?.postId.toString() || '')
+  }
   if (values?.communityId) {
     formData.append('communityId', values?.communityId || '')
   }
@@ -360,6 +365,7 @@ const {
   useFetchPostQuery,
   useDeletePostMutation,
   useLazyFetchPostLikersQuery,
+useLazyFetchPostsQuery
 } = post
 
 export {
@@ -373,4 +379,5 @@ export {
   useFetchPostQuery,
   useDeletePostMutation,
   useLazyFetchPostLikersQuery,
+  useLazyFetchPostsQuery
 }

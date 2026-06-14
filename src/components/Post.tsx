@@ -1,102 +1,147 @@
-import React, { memo, useCallback } from 'react'
-import { useNavigation } from '@react-navigation/native'
-import { TouchableOpacity, View } from 'react-native'
-
+import React, { memo, useState } from 'react'
 import tw from '../lib/tailwind'
 import ImageGrid from './ImageGrid'
-import AvatarGroup from './AvatarGroups'
-import useToggle from '../hooks/useToggle'
-import { useDeletePostMutation, useUpdatePostMutation } from '../store/post'
-import PostHeader from './PostHeader'
-import PostFooter from './PostFooter'
 import { PostProps } from '../../types'
-import LongText from './LongText'
-import { useTheme } from '../hooks/useTheme'
-
-//TO DELETE const { height } = Dimensions.get('screen')
-
+import PostCard, { PostCardReply } from './PostCard'
+import {
+  useToggleKoreMutation,
+  useLazyFetchPostLikersQuery,
+  useLazyFetchPostsQuery,
+} from 'store/post'
+import { useNavigation } from '@react-navigation/native'
+import CommentForm from './CommentForm'
+import LikeForm from 'components/LikeForm'
+import useToggle from 'hooks/useToggle'
 interface Props extends PostProps {
   showViewComment?: boolean
   disableNavigation?: boolean
   toggleCommenting: () => void
 }
-const Post: React.FC<Props> = ({
-  showViewComment = true,
-  toggleCommenting,
-  ...props
-}) => {
+const Post: React.FC<Props> = (props) => {
+  const [toggleKore, {}] = useToggleKoreMutation()
   const navigation = useNavigation()
-  const [modifying, toggleModifying] = useToggle(false)
-  const [seeLikers, toggleLikerPopover] = useToggle(false)
-  const [updatePost, updatePostMeta] = useUpdatePostMutation()
-  const [deletePost, deletePostMeta] = useDeletePostMutation()
-  const { isDarkMode } = useTheme()
 
-  const handleDeletePress = useCallback(() => {
-    deletePost(props.id)
-    toggleModifying()
-  }, [deletePost, props.id, toggleModifying])
+  const [
+    fetchLikers,
+    { isLoading: isLoadingLikers, isFetching: isFetchingLikers },
+  ] = useLazyFetchPostLikersQuery()
 
-  const handleImageTouch = useCallback(
-    (id: number) => {
-      const index = props.media?.findIndex(
-        (media) => media?.id.toString() === id.toString()
-      )
-      //@ts-ignore
-      navigation.navigate('Gallery', { ...props, initialSlide: index })
+  const [
+    fetchComments,
+    {
+      data: comments = { data: [] },
+      isLoading: isLoadingComments,
+      isFetching: isFetchingComments,
     },
-    [navigation, props]
-  )
-  const handlePress = () => {
-    // console.log('props', props)
-    if (!props.disableNavigation) {
-      // @ts-ignore
-      navigation.navigate('SinglePost', { postId: props.id })
-    }
+  ] = useLazyFetchPostsQuery()
+
+  const mappedReplies: PostCardReply[] = (comments.data || []).map((reply) => ({
+    id: reply.id,
+    createdAt: reply.createdAt,
+    user: reply.user,
+    body: reply.postText || ' ',
+    isReactor: !!reply.isReactor,
+    amountOfLikes: reply.amountOfKorems,
+    isFetchingLikers: false,
+    onLike: async (id: string) => {
+      await toggleKore(id)
+    },
+    onFetchLikers: () => {
+      fetchLikers({ postId: reply.id.toString() })
+    },
+  }))
+
+  const onLikePress = async (id: string) => {
+    await toggleKore(id)
   }
+  const onfetchComments = async () => {
+    console.log('fetching comments for post', props.id.toString())
+    console.log({
+      comments,
+      isLoadingComments,
+      isFetchingComments,
+    })
+    const resp = await fetchComments({ postId: props.id.toString() })
+    console.log('fetching comments for post', props.id.toString(), 'done')
+    console.log('comments for post', props.id.toString(), resp)
+    console.log({
+      comments,
+      isLoadingComments,
+      isFetchingComments,
+    })
+  }
+
+  const onfetchLikers = () => {
+    fetchLikers({ postId: props.id.toString() })
+  }
+  const [isShowLikers, toggleShowLikers] = useToggle(false)
+  const [showReplyInput, setShowReplyInput] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+
   return (
-    <View
-      style={tw`static my-3 bg-white p-4 rounded-lg ${
-        isDarkMode ? 'bg-dark-surface' : 'bg-white'
-      }`}
+    <PostCard
+      entity={{
+        id: props.id,
+        createdAt: props.createdAt,
+        user: props.user,
+      }}
+      isExpanded={isExpanded}
+      onToggleReplies={() => {
+        setIsExpanded((prev) => !prev)
+        if (!isExpanded) onfetchComments()
+      }}
+      onToggleReplyInput={() => setShowReplyInput((prev) => !prev)}
+      showReplyInput={showReplyInput}
+      isShowLikers={isShowLikers}
+      toggleShowLikers={toggleShowLikers}
+      title={undefined}
+      body={props.postText || ' '}
+      isReactor={!!props.isReactor}
+      replyCount={props.amountOfComments || 0}
+      likeCount={props.amountOfKorems || 0}
+      onFetchReplies={onfetchComments}
+      replies={mappedReplies}
+      isLoadingReplies={isLoadingComments || isFetchingComments}
+      onFetchLikers={onfetchLikers}
+      isFetchingLikers={isLoadingLikers || isFetchingLikers}
+      replyLabel="Comment"
+      replyForm={
+        <CommentForm
+          postId={props.id.toString()}
+          onSubmit={() => setShowReplyInput(false)}
+        />
+      }
+      likeForm={
+        <LikeForm
+          id={props.id.toString()}
+          isReactor={!!props.isReactor}
+          likersCount={props.amountOfKorems || 0}
+          flexDir="row"
+          size={15}
+          onLike={onLikePress}
+          onToggleLikers={() => {
+            toggleShowLikers()
+          }}
+        />
+      }
     >
-      <PostHeader
-        {...props}
-        updatePostMeta={updatePostMeta}
-        onDeletePress={handleDeletePress}
-        toggleDeleting={toggleModifying}
-        deletingVisible={modifying}
-        updatePost={updatePost}
-      />
-
-      {props.postText && (
-        <TouchableOpacity onPress={handlePress}>
-          <LongText text={props.postText} />
-        </TouchableOpacity>
-      )}
-
       {props?.media && props.media.length > 0 && (
         <ImageGrid
           medias={props.media}
-          style={tw`my-2`}
-          onImageTouch={handleImageTouch}
+          style={tw`w-100% mt-3 rounded-lg overflow-hidden`}
+          onImageTouch={(index) => {
+            // @ts-ignore
+            navigation.navigate('Gallery', {
+              ...props,
+              initialSlide: index,
+            })
+          }}
         />
       )}
-
-      <AvatarGroup avatars={props.reactors || []} style={tw`mt-2`} />
-
-      <PostFooter
-        {...props}
-        toggleCommenting={toggleCommenting}
-        toggleLikerPopover={toggleLikerPopover}
-        seeLikers={seeLikers}
-        showViewComment={showViewComment}
-      />
-    </View>
+    </PostCard>
   )
 }
 
-// Memoize with custom comparison
 const MemoizedPost = memo(Post, (prevProps, nextProps) => {
   // Only re-render if these specific props change
   return (
