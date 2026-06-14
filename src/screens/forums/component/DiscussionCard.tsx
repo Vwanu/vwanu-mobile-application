@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
+import LikeForm from 'components/LikeForm'
+import ReplyForm from './ReplyForm'
 
 import { Discussion } from '../../../../types'
 import {
@@ -21,6 +23,8 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
   const [toggleDiscussionLike] = useToggleDiscussionLikeMutation()
   const [replyToDiscussion, { isLoading: isSubmittingReply }] =
     useReplyToDiscussionMutation()
+  const [showReplyInput, setShowReplyInput] = useState(false)
+  const [isShowLikers, toggleShowLikers] = useState(false)
 
   const replies = repliesData?.data ?? []
 
@@ -75,13 +79,37 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
       isLoadingReplies={isLoadingReplies}
       likers={likersData?.data || []}
       isFetchingLikers={isFetchingLikers}
-      isSubmittingReply={isSubmittingReply}
-      onLike={async (id) => {
-        await toggleDiscussionLike({
-          interestId: discussion.interestId,
-          discussionId: id,
-        }).unwrap()
-      }}
+      showReplyInput={showReplyInput}
+      setShowReplyInput={setShowReplyInput}
+      replyForm={
+        <ReplyForm
+          onClose={() => setShowReplyInput(false)}
+          discussionId={discussion.id}
+          interestId={discussion.interestId}
+        />
+      }
+      likeform={
+        <LikeForm
+          id={discussion.id}
+          isReactor={!!discussion.isReactor}
+          likersCount={discussion.amountOfLikes || 0}
+          flexDir="row"
+          size={15}
+          onLike={async (id) => {
+            await toggleDiscussionLike({
+              interestId: discussion.interestId,
+              discussionId: id,
+            }).unwrap()
+          }}
+          onToggleLikers={() => {
+            toggleShowLikers((prev) => !prev)
+            fetchLikers({
+              interestId: discussion.interestId,
+              discussionId: discussion.id,
+            })
+          }}
+        />
+      }
       onFetchReplies={() => {
         fetchReplies({
           interestId: discussion.interestId,
@@ -93,14 +121,6 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({ discussion }) => {
           interestId: discussion.interestId,
           discussionId: discussion.id,
         })
-      }}
-      onSubmitReply={async ({ content, mentions }) => {
-        await replyToDiscussion({
-          interestId: discussion.interestId,
-          discussionId: discussion.id,
-          body: content,
-          mentions,
-        }).unwrap()
       }}
     />
   )

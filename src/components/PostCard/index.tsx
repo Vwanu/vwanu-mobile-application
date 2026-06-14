@@ -124,7 +124,7 @@ const PostCard: React.FC<PostCardProps> = ({
           )}
           <TouchableOpacity
             style={tw`flex-row items-center`}
-            onPress={() => setShowReplyInput((prev) => !prev)}
+            onPress={() => setShowReplyInput?.(!showReplyInput)}
             activeOpacity={0.7}
           >
             <Ionicons
