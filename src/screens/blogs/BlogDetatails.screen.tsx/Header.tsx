@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, TouchableOpacity, Alert } from 'react-native'
+import { View, TouchableOpacity, Alert, Dimensions } from 'react-native'
 import { ImageBackground } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { Popover } from '@ui-kitten/components'
@@ -22,6 +22,7 @@ import {
   useUpdateBlogMutation,
   useToggleBlogLikeMutation,
 } from '../../../store/blog-api-slice'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 interface Props {
   blog: Blog
@@ -30,6 +31,7 @@ interface Props {
 }
 
 const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
+  const screenWidth = Dimensions.get('window').width
   const [toggleBlogLike] = useToggleBlogLikeMutation()
   const handleLike = async (id: string) => {
     await toggleBlogLike(id).unwrap()
@@ -102,7 +104,10 @@ const BlogHeader: React.FC<Props> = ({ blog, onShowContent, showContent }) => {
   return (
     <View>
       <ImageBackground
-        source={{ uri: blog.titlePicture }}
+        source={cdnImageUrl(blog.titlePicture, {
+          width: screenWidth,
+          height: 350,
+        })}
         style={tw`w-full h-[350px] rounded-b-3xl overflow-hidden`}
         contentFit="cover"
       >

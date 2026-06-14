@@ -351,7 +351,12 @@ export interface FetchBlogsParams {
 export interface CreateBlogParams {
   title: string
   content: string
-  titlePicture?: string
+  /**
+   * S3 key (from /uploads/presign with uploadType: 'blog') of the
+   * blog cover picture. Backend's applyBlogMediaKeys hook resolves
+   * this into the persisted `titlePicture` column.
+   */
+  titlePictureKey?: string
   interests: string[]
 }
 
@@ -359,7 +364,7 @@ export interface UpdateBlogParams {
   id: string
   title?: string
   content?: string
-  titlePicture?: string
+  titlePictureKey?: string
   interests?: string[]
   publishedAt?: string | null
 }

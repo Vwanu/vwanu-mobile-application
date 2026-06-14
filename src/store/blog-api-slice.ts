@@ -1,6 +1,5 @@
 import apiSlice from './api-slice'
 import { endpoints, HttpMethods } from '../config'
-import { AuthTokenService } from '../lib/authTokenService'
 import {
   Blog,
   BlogComment,
@@ -10,47 +9,22 @@ import {
   UpdateBlogParams,
 } from '../../types'
 
-const _toFormData = (
+// Strip undefined fields. The backend now accepts JSON for blog create/patch;
+// multipart upload is gone (VWA-129). Title picture lands via presign +
+// titlePictureKey; backend's applyBlogMediaKeys hook resolves to the
+// persisted titlePicture column.
+const buildBody = (
   values: Partial<CreateBlogParams & Pick<UpdateBlogParams, 'publishedAt'>>
-): FormData => {
-  const formData = new FormData()
-
-  if (values.title) formData.append('title', values.title)
-  if (values.content) formData.append('content', values.content)
-  if ('publishedAt' in values) {
-    formData.append(
-      'publishedAt',
-      values.publishedAt === null ? '' : values.publishedAt!
-    )
+) => {
+  const body: Record<string, unknown> = {}
+  if (values.title !== undefined) body.title = values.title
+  if (values.content !== undefined) body.content = values.content
+  if ('publishedAt' in values) body.publishedAt = values.publishedAt
+  if (values.interests !== undefined) body.interests = values.interests
+  if (values.titlePictureKey !== undefined) {
+    body.titlePictureKey = values.titlePictureKey
   }
-
-  if (values.interests) {
-    values.interests.forEach((interest) => {
-      formData.append('interests', interest)
-    })
-  }
-
-  if (values.titlePicture) {
-    const filename = values.titlePicture.split('/').pop() || 'titlePicture.jpg'
-    let mimeType = 'image/jpeg'
-
-    if (filename.endsWith('.png')) {
-      mimeType = 'image/png'
-    } else if (filename.endsWith('.gif')) {
-      mimeType = 'image/gif'
-    } else if (filename.endsWith('.webp')) {
-      mimeType = 'image/webp'
-    }
-
-    const imageBlob = {
-      uri: values.titlePicture,
-      type: mimeType,
-      name: filename,
-    } as any
-    formData.append('titlePicture', imageBlob)
-  }
-
-  return formData
+  return body
 }
 
 export const blogApiSlice = apiSlice.injectEndpoints({
@@ -111,125 +85,21 @@ export const blogApiSlice = apiSlice.injectEndpoints({
 
     // Create a new blog
     createBlog: builder.mutation<Blog, CreateBlogParams>({
-      async queryFn(blogData) {
-        try {
-          const formData = _toFormData(blogData)
-          const tokens = await AuthTokenService.getValidTokens()
-          const baseUrl = process.env.EXPO_PUBLIC_API_URL?.trim()
-          const appKey = process.env.EXPO_PUBLIC_APP_KEY
-
-          const headers: Record<string, string> = {}
-          if (tokens?.accessToken) {
-            headers['authorization'] = `Bearer ${tokens.accessToken}`
-          }
-          if (tokens?.idToken) {
-            headers['x-id-token'] = tokens.idToken
-          }
-          if (appKey) {
-            headers['x-app-key'] = appKey
-          }
-
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 30000)
-
-          console.log(
-            '📤 Sending blog POST to:',
-            `${baseUrl}${endpoints.BLOGS}`
-          )
-
-          const response = await fetch(`${baseUrl}${endpoints.BLOGS}`, {
-            method: 'POST',
-            headers,
-            body: formData,
-            signal: controller.signal,
-          })
-
-          clearTimeout(timeoutId)
-
-          console.log('📥 Blog POST response status:', response.status)
-
-          if (!response.ok) {
-            const errorText = await response.text()
-            console.error('❌ Blog POST error body:', errorText)
-            return {
-              error: {
-                status: response.status,
-                data: errorText,
-              },
-            }
-          }
-
-          const data = await response.json()
-          console.log('✅ Blog created successfully:', data.id)
-          return { data: data as Blog }
-        } catch (err: any) {
-          console.error('❌ Blog POST exception:', err.name, err.message)
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              error: err.message || 'Failed to create blog',
-            },
-          }
-        }
-      },
+      query: (blogData) => ({
+        url: endpoints.BLOGS,
+        method: HttpMethods.POST,
+        body: buildBody(blogData),
+      }),
       invalidatesTags: [{ type: 'Blog', id: 'LIST' }],
     }),
 
     // Update an existing blog
     updateBlog: builder.mutation<Blog, UpdateBlogParams>({
-      async queryFn({ id, ...data }) {
-        try {
-          const formData = _toFormData(data)
-          const tokens = await AuthTokenService.getValidTokens()
-          const baseUrl = process.env.EXPO_PUBLIC_API_URL?.trim()
-          const appKey = process.env.EXPO_PUBLIC_APP_KEY
-
-          const headers: Record<string, string> = {}
-          if (tokens?.accessToken) {
-            headers['authorization'] = `Bearer ${tokens.accessToken}`
-          }
-          if (tokens?.idToken) {
-            headers['x-id-token'] = tokens.idToken
-          }
-          if (appKey) {
-            headers['x-app-key'] = appKey
-          }
-
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 30000)
-
-          const response = await fetch(`${baseUrl}${endpoints.BLOGS}/${id}`, {
-            method: 'PATCH',
-            headers,
-            body: formData,
-            signal: controller.signal,
-          })
-
-          clearTimeout(timeoutId)
-
-          if (!response.ok) {
-            const errorText = await response.text()
-            console.error('❌ Blog PATCH error body:', errorText)
-            return {
-              error: {
-                status: response.status,
-                data: errorText,
-              },
-            }
-          }
-
-          const responseData = await response.json()
-          return { data: responseData as Blog }
-        } catch (err: any) {
-          console.error('❌ Blog PATCH exception:', err.name, err.message)
-          return {
-            error: {
-              status: 'FETCH_ERROR',
-              error: err.message || 'Failed to update blog',
-            },
-          }
-        }
-      },
+      query: ({ id, ...data }) => ({
+        url: `${endpoints.BLOGS}/${id}`,
+        method: HttpMethods.PATCH,
+        body: buildBody(data),
+      }),
       invalidatesTags: (result, error, { id }) => [
         { type: 'Blog', id },
         { type: 'Blog', id: 'LIST' },

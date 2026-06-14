@@ -11,12 +11,20 @@ interface Props {
   name: string
   label?: string
   helperText?: string
+  /**
+   * Fires with the freshly-picked local file URI whenever the user
+   * selects (or retakes) an image. Use this to kick off the presign +
+   * S3 upload from the parent (the Formik field value still gets
+   * updated for preview rendering).
+   */
+  onImagePicked?: (uri: string) => void
 }
 
 const ImageUploadSection: React.FC<Props> = ({
   name,
   label = 'Community Image',
   helperText,
+  onImagePicked,
 }) => {
   const [imageUri, setImageUri] = useState<string | null>(null)
   const { setFieldValue, values } = useFormikContext()
@@ -31,6 +39,7 @@ const ImageUploadSection: React.FC<Props> = ({
   const onImageSelected = (uri: string) => {
     setImageUri(uri)
     setFieldValue(name, uri)
+    onImagePicked?.(uri)
   }
   const handleImagePicker = async () => {
     try {

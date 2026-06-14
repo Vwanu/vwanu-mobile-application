@@ -13,6 +13,7 @@ import Text from 'components/Text'
 import LikeForm from 'components/LikeForm'
 import { Blog } from '../../../../types'
 import { useToggleBlogLikeMutation } from 'store/blog-api-slice'
+import { cdnImageUrl } from 'lib/cdnImageUrl'
 
 interface BlogCardProps {
   blog: Blog
@@ -63,7 +64,12 @@ const BlogCard: React.FC<BlogCardProps> = ({ blog, onPress }) => {
         <View style={tw`flex-row items-center`}>
           <View style={tw`w-[100px] h-[100px] p-2`}>
             <Image
-              source={{ uri: blog.titlePicture }}
+              source={{
+                uri: cdnImageUrl(blog.titlePicture, {
+                  width: 200,
+                  height: 200,
+                }),
+              }}
               style={tw`w-full h-[100%] rounded-lg`}
             />
           </View>
