@@ -181,6 +181,12 @@ const CreateBlogScreen = () => {
               onSave={handleSave}
               isSubmitting={isSubmitting}
               isDraft={!isEditing || !existingBlog?.publishedAt}
+              onCoverChange={(uri) =>
+                setStep1Values((prev: any) => ({ ...prev, titlePicture: uri }))
+              }
+              onInterestsChange={(ids) =>
+                setStep1Values((prev: any) => ({ ...prev, interests: ids }))
+              }
             />
           )}
         </View>
