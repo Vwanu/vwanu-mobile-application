@@ -129,36 +129,38 @@ const CreateBlogScreen = () => {
   }
 
   return (
-    <Screen>
+    <Screen safeArea={step === 0 ? true : false}>
       <View style={tw`flex-1 bg-warm-bg`}>
-        <ScreenHeader
-          title={isEditing ? 'Edit Blog' : 'New Blog'}
-          subtitle={
-            step === 0
-              ? 'Step 1 of 2 · Cover & topics'
-              : 'Step 2 of 2 · Write your post'
-          }
-          leftAction={<AppCloseBtn onPress={handlePreviousOrClose} />}
-          rightAction={
-            step === 0 ? (
-              <Text
-                onPress={handleSave}
-                style={tw`px-4 py-2 rounded-full text-white bg-primary-deep font-poppins-semibold`}
-              >
-                Next
-              </Text>
-            ) : (
-              <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <ActivityIndicator size="small" color="#000" />
-                ) : (
-                  <Ionicons name="save" size={24} />
-                )}
-              </TouchableOpacity>
-            )
-          }
-          containerStyle={tw`border-b border-t border-warm-border mb-2`}
-        />
+        {step === 0 && (
+          <ScreenHeader
+            title={isEditing ? 'Edit Blog' : 'New Blog'}
+            subtitle={
+              step === 0
+                ? 'Step 1 of 2 · Cover & topics'
+                : 'Step 2 of 2 · Write your post'
+            }
+            leftAction={<AppCloseBtn onPress={handlePreviousOrClose} />}
+            rightAction={
+              step === 0 ? (
+                <Text
+                  onPress={handleSave}
+                  style={tw`px-4 py-2 rounded-full text-white bg-primary-deep font-poppins-semibold`}
+                >
+                  Next
+                </Text>
+              ) : (
+                <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color="#000" />
+                  ) : (
+                    <Ionicons name="save" size={24} />
+                  )}
+                </TouchableOpacity>
+              )
+            }
+            containerStyle={tw`border-b border-t border-warm-border mb-2`}
+          />
+        )}
         <View style={tw`flex-1`}>
           {step === 0 ? (
             <View style={tw`px-3 flex-1`}>
@@ -173,6 +175,11 @@ const CreateBlogScreen = () => {
               formRef={formRef}
               onSubmit={handleSubmit}
               values={contentValues}
+              interestIds={step1Values?.interests}
+              coverImage={step1Values?.titlePicture}
+              onClose={handlePreviousOrClose}
+              onSave={handleSave}
+              isSubmitting={isSubmitting}
             />
           )}
         </View>
