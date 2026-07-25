@@ -1,16 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { FormikProps } from 'formik'
 
 import tw from 'lib/tailwind'
+import Text from 'components/Text'
 import Screen from 'components/screen'
 import Button from 'components/Button'
 import AppCloseBtn from 'components/AppCloseBtn'
 import Toast, { ToastType } from 'components/Toast'
 import { FeedStackParams, CreateBlogParams } from '../../../../types'
 import { Ionicons } from '@expo/vector-icons'
+import { colors } from 'components/ui/tokens'
 import {
   useCreateBlogMutation,
   useUpdateBlogMutation,
@@ -18,6 +20,8 @@ import {
 } from '../../../store/blog-api-slice'
 import BlogContent from './BlogContent'
 import BlogImageInterest from './BlogImageInterest'
+import ScreenHeader from 'components/ScreenHeader'
+import { styles } from 'components/CreatePost/PostInputModal/style'
 
 type NavigationProp = StackNavigationProp<FeedStackParams, 'CreateBlog'>
 
@@ -117,6 +121,14 @@ const CreateBlogScreen = () => {
     step === 1 ? setStep(0) : navigation.goBack()
   }
 
+  const isSubmitDisabled = useCallback(() => {
+    if (step === 0) {
+      return !step1Values?.titlePicture && !step1Values?.interests?.length
+    } else {
+      return !contentValues?.title || !contentValues?.content
+    }
+  }, [step, step1Values, contentValues])
+
   if (isEditing && isFetchingBlog) {
     return (
       <Screen>
@@ -130,15 +142,35 @@ const CreateBlogScreen = () => {
   return (
     <Screen>
       <View
-        style={tw`flex-row items-center justify-between px-2 bg-white border-b border-gray-100`}
+        style={tw`flex-row items-center justify-between px-2 border-b border-t py-2 border-gray-300 mb-4`}
       >
-        <AppCloseBtn onPress={handlePreviousOrClose} />
+        <TouchableOpacity
+          onPress={handlePreviousOrClose}
+          style={styles.closeButton}
+        >
+          <Ionicons name="close" size={20} color={colors.soft} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {step === 0 ? 'Create Blog' : 'Add Content'}
+        </Text>
+        {/* <Text style={tw`text-lg font-semibold`}></Text> */}
+
         {step === 0 ? (
           <Button
             title="Next"
             size="small"
             onPress={() => handleSave()}
-            style={tw`px-4 py-2 rounded-full`}
+            style={{
+              backgroundColor: colors.warmBg,
+              borderColor: isSubmitDisabled()
+                ? colors.warmBorder
+                : tw.color('primary-500'),
+
+              borderWidth: 1,
+              borderRadius: 9999,
+              paddingHorizontal: 18,
+              minHeight: 36,
+            }}
           />
         ) : (
           <TouchableOpacity onPress={handleSave} disabled={isSubmitting}>
@@ -152,11 +184,13 @@ const CreateBlogScreen = () => {
       </View>
       <View style={tw`flex-1`}>
         {step === 0 ? (
-          <BlogImageInterest
-            formRef={formRef}
-            onSubmit={handleSubmit}
-            values={step1Values}
-          />
+          <View style={tw`px-3 flex-1`}>
+            <BlogImageInterest
+              formRef={formRef}
+              onSubmit={handleSubmit}
+              values={step1Values}
+            />
+          </View>
         ) : (
           <BlogContent
             formRef={formRef}
