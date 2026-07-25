@@ -180,6 +180,7 @@ const CreateBlogScreen = () => {
               onClose={handlePreviousOrClose}
               onSave={handleSave}
               isSubmitting={isSubmitting}
+              isDraft={!isEditing || !existingBlog?.publishedAt}
             />
           )}
         </View>

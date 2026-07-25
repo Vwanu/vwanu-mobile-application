@@ -19,6 +19,7 @@ import Text from 'components/Text'
 import StatPill from 'components/StatPill'
 import { Field, Form } from 'components/form'
 import { colors } from 'components/ui/tokens'
+import ReadingStats from '../components/ReadingStats'
 import { useFetchInterestsQuery } from '../../../store/interests'
 
 import RichToolBar from 'components/form/RichToolBar'
@@ -59,28 +60,12 @@ const TitleField = ({ light }: { light?: boolean }) => {
   )
 }
 
-const countWords = (html: string) => {
-  const text = html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&[a-z]+;/gi, ' ')
-    .trim()
-  return text ? text.split(/\s+/).length : 0
-}
-
-const WORDS_PER_MINUTE = 200
-
 const WordCount = () => {
   const { values } = useFormikContext<typeof initialValues>()
-  const words = countWords(values.content || '')
-  const minutesRead = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE))
 
   return (
-    <View style={tw`px-4 py-1.5  border-t border-warm-border `}>
-      <Text style={tw`text-xs font-poppins text-mute text-right`}>
-        {words} {words === 1 ? 'word' : 'words'}
-        {words > 0 ? `  ·  ${minutesRead} min read` : ''}
-      </Text>
+    <View style={tw`px-4 py-1.5 border-t border-warm-border`}>
+      <ReadingStats html={values.content || ''} style={tw`text-right`} />
     </View>
   )
 }
@@ -91,10 +76,12 @@ const HeroActionBar = ({
   onClose,
   onSave,
   isSubmitting,
+  isDraft,
 }: {
   onClose?: () => void
   onSave?: () => void
   isSubmitting?: boolean
+  isDraft?: boolean
 }) => (
   <View style={tw`flex-row items-center justify-between`}>
     <View style={tw`flex-row items-center`}>
@@ -108,18 +95,20 @@ const HeroActionBar = ({
       >
         <Ionicons name="close" size={20} color="#FFFFFF" />
       </TouchableOpacity>
-      <View
-        style={[
-          tw`ml-2 px-2.5 py-1 rounded-full`,
-          { backgroundColor: colors.amberSoft },
-        ]}
-      >
-        <Text
-          style={[tw`font-poppins-bold text-xs`, { color: colors.amberDeep }]}
+      {isDraft && (
+        <View
+          style={[
+            tw`ml-2 px-2.5 py-1 rounded-full`,
+            { backgroundColor: colors.amberSoft },
+          ]}
         >
-          Draft
-        </Text>
-      </View>
+          <Text
+            style={[tw`font-poppins-bold text-xs`, { color: colors.amberDeep }]}
+          >
+            Draft
+          </Text>
+        </View>
+      )}
     </View>
 
     <View style={tw`flex-row items-center`}>
@@ -162,6 +151,7 @@ interface BlogContentProps {
   onClose?: () => void
   onSave?: () => void
   isSubmitting?: boolean
+  isDraft?: boolean
 }
 
 const BlogContent: React.FC<BlogContentProps> = ({
@@ -173,6 +163,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
   onClose,
   onSave,
   isSubmitting,
+  isDraft,
 }) => {
   const editorRef = useRef<QuillEditor>(null)
   const formInitialValues = values || initialValues
@@ -227,6 +218,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
                   onClose={onClose}
                   onSave={onSave}
                   isSubmitting={isSubmitting}
+                  isDraft={isDraft}
                 />
                 <View style={tw`mt-auto`}>
                   {renderInterestPills()}
