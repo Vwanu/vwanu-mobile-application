@@ -115,7 +115,7 @@ const RichToolBar: React.FC<RichToolBarProps> = ({ editor }) => {
   )
 
   return (
-    <View style={tw`bg-warm-bg border-t border-warm-border px-2 py-2`}>
+    <View style={tw`bg-warm-surface border-t border-warm-border px-2 py-2`}>
       <View style={tw`flex-row items-center`}>
         <ScrollView
           horizontal

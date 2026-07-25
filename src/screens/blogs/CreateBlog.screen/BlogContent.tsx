@@ -76,8 +76,8 @@ const WordCount = () => {
   const minutesRead = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE))
 
   return (
-    <View style={tw`px-4 py-1.5  border-t border-warm-border`}>
-      <Text style={tw`text-xs font-poppins text-mute`}>
+    <View style={tw`px-4 py-1.5  border-t border-warm-border `}>
+      <Text style={tw`text-xs font-poppins text-mute text-right`}>
         {words} {words === 1 ? 'word' : 'words'}
         {words > 0 ? `  ·  ${minutesRead} min read` : ''}
       </Text>
@@ -201,7 +201,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
     <KeyboardAvoidingView
       style={tw`flex-1`}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={0}
     >
       <Form
         validationSchema={ValidationSchema}
