@@ -177,6 +177,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
   const editorRef = useRef<QuillEditor>(null)
   const formInitialValues = values || initialValues
   const [contentFocused, setContentFocused] = React.useState(false)
+  const [toolbarBusy, setToolbarBusy] = React.useState(false)
 
   const { data: interests } = useFetchInterestsQuery()
   const selectedInterests = interests?.filter((interest) =>
@@ -244,10 +245,13 @@ const BlogContent: React.FC<BlogContentProps> = ({
             onFocusChange={setContentFocused}
           />
         </View>
-        {contentFocused && (
+        {(contentFocused || toolbarBusy) && (
           <>
             <WordCount />
-            <RichToolBar editor={editorRef} />
+            <RichToolBar
+              editor={editorRef}
+              onInteractingChange={setToolbarBusy}
+            />
           </>
         )}
       </Form>

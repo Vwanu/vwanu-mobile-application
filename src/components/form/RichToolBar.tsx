@@ -18,6 +18,7 @@ import { colors } from 'components/ui/tokens'
 
 interface RichToolBarProps {
   editor: React.RefObject<QuillEditor>
+  onInteractingChange?: (busy: boolean) => void
 }
 
 type MdiName = keyof typeof MaterialCommunityIcons.glyphMap
@@ -41,7 +42,10 @@ const TEXT_STYLES: { label: string; short: string; value: number | false }[] = [
   { label: 'Heading 3', short: 'H3', value: 3 },
 ]
 
-const RichToolBar: React.FC<RichToolBarProps> = ({ editor }) => {
+const RichToolBar: React.FC<RichToolBarProps> = ({
+  editor,
+  onInteractingChange,
+}) => {
   const [activeFormats, setActiveFormats] = useState<Record<string, any>>({})
   const [styleMenuOpen, setStyleMenuOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
@@ -54,6 +58,12 @@ const RichToolBar: React.FC<RichToolBarProps> = ({ editor }) => {
     instance.on('format-change', handler)
     return () => instance.off('format-change', handler)
   }, [editor])
+
+  // Keep the parent from unmounting the toolbar (on editor blur) while a
+  // modal is open, otherwise the modal closes the instant it appears.
+  useEffect(() => {
+    onInteractingChange?.(styleMenuOpen || linkModalOpen)
+  }, [styleMenuOpen, linkModalOpen, onInteractingChange])
 
   const toggle = (name: string, value: any = true) => {
     const isActive = activeFormats[name]
@@ -73,17 +83,24 @@ const RichToolBar: React.FC<RichToolBarProps> = ({ editor }) => {
   }
 
   const pickImage = async () => {
+    // Capture the cursor before the picker steals focus from the editor.
+    const range = await editor.current?.getSelection()
+    const index = range?.index ?? 0
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
+      quality: 0.6,
+      base64: true,
     })
     if (result.canceled || !result.assets[0]) return
-    const range = await editor.current?.getSelection()
-    editor.current?.insertEmbed(
-      range?.index ?? 0,
-      'image',
-      result.assets[0].uri
-    )
+
+    const asset = result.assets[0]
+    // Embed as a data URI so it renders inside the editor WebView (a local
+    // file:// path won't load). TODO: replace with an S3 upload + CDN URL.
+    const source = asset.base64
+      ? `data:${asset.mimeType ?? 'image/jpeg'};base64,${asset.base64}`
+      : asset.uri
+    editor.current?.insertEmbed(index, 'image', source)
   }
 
   const currentStyle =
