@@ -67,6 +67,15 @@ const BlogContent: React.FC<BlogContentProps> = ({
     }
   }
 
+  // Interests are required to publish — prompt for them instead of submitting.
+  const handlePublish = () => {
+    if (onInterestsChange && !interestIds?.length) {
+      setInterestsOpen(true)
+      return
+    }
+    onSave?.()
+  }
+
   return (
     <KeyboardAvoidingView
       style={tw`flex-1`}
@@ -85,9 +94,12 @@ const BlogContent: React.FC<BlogContentProps> = ({
             coverImage={coverImage}
             interests={selectedInterests}
             onClose={onClose}
-            onSave={onSave}
+            onSave={handlePublish}
             onMenu={() => setMenuOpen(true)}
             onChangeCover={onCoverChange ? changeCover : undefined}
+            onAddInterests={
+              onInterestsChange ? () => setInterestsOpen(true) : undefined
+            }
             isSubmitting={isSubmitting}
             isDraft={isDraft}
           />
@@ -118,7 +130,7 @@ const BlogContent: React.FC<BlogContentProps> = ({
         onManageInterests={
           onInterestsChange ? () => setInterestsOpen(true) : undefined
         }
-        onSaveDraft={onSave}
+        onSaveDraft={handlePublish}
       />
 
       <ManageInterestsSheet
