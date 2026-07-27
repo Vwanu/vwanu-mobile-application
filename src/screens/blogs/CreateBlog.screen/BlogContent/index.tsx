@@ -15,6 +15,8 @@ import CoverHero from './CoverHero'
 import WordCountBar from './WordCountBar'
 import OverflowMenu from './OverflowMenu'
 import ManageInterestsSheet from './ManageInterestsSheet'
+import HeroActionBar from './HeroActionBar'
+import TitleField from './TitleField'
 
 interface BlogContentProps {
   formRef?: React.Ref<FormikProps<BlogFormValues>>
@@ -93,15 +95,20 @@ const BlogContent: React.FC<BlogContentProps> = ({
           <CoverHero
             coverImage={coverImage}
             interests={selectedInterests}
-            onClose={onClose}
-            onSave={handlePublish}
-            onMenu={() => setMenuOpen(true)}
             onChangeCover={onCoverChange ? changeCover : undefined}
             onAddInterests={
               onInterestsChange ? () => setInterestsOpen(true) : undefined
             }
-            isSubmitting={isSubmitting}
-            isDraft={isDraft}
+            titleComponent={<TitleField light />}
+            headerComponent={
+              <HeroActionBar
+                onClose={onClose}
+                onSave={handlePublish}
+                onMenu={() => setMenuOpen(true)}
+                isSubmitting={isSubmitting}
+                isDraft={isDraft}
+              />
+            }
           />
           <RichTextEditor
             name="content"

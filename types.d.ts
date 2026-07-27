@@ -337,6 +337,7 @@ export interface Blog {
   content: string
   interests: Interest[]
   amountOfLikes: number
+  amountOfComments?: number
   createdAt: string
   publishedAt: string | null
   updatedAt: string

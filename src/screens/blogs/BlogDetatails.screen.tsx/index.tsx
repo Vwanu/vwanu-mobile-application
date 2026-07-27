@@ -1,25 +1,34 @@
-import React from 'react'
-import { View, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useRef } from 'react'
+import { View } from 'react-native'
 import { StackScreenProps } from '@react-navigation/stack'
+import Animated, { FadeInUp } from 'react-native-reanimated'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import Screen from 'components/screen'
 import { FeedStackParams } from '../../../../types'
-import Header from './Header'
-import Body from './Body'
 import useToggle from 'hooks/useToggle'
 import Comment from './Comment'
-import { useFetchBlogQuery } from 'store/blog-api-slice'
+import BlogHero from './BlogHero'
+import BlogMetaBar from './BlogMetaBar'
+import BlogReadingView from './BlogReadingView'
+import {
+  useFetchBlogQuery,
+  useToggleBlogLikeMutation,
+} from 'store/blog-api-slice'
 
 type Props = StackScreenProps<FeedStackParams, 'BlogDetail'>
 
 const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { blogId } = route.params
-
   const { data: blog, isLoading, isFetching } = useFetchBlogQuery(blogId)
-
   const [content, showContent] = useToggle(true)
+  const heroWasCollapsed = useRef(false)
+  const [toggleBlogLike] = useToggleBlogLikeMutation()
+
+  const handleLike = async (id: string) => {
+    await toggleBlogLike(id).unwrap()
+  }
 
   if (!blog) {
     return (
@@ -33,8 +42,35 @@ const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   return (
     <Screen safeArea={false} loading={isLoading || isFetching}>
-      <Header blog={blog} showContent={content} onShowContent={showContent} />
-      {content ? <Body blog={blog} /> : <Comment blogId={blogId} />}
+      {content ? (
+        <BlogReadingView
+          blog={blog}
+          content={content}
+          onToggle={(heroCollapsed) => {
+            heroWasCollapsed.current = heroCollapsed
+            showContent()
+          }}
+          onLike={handleLike}
+          onClose={() => navigation.goBack()}
+        />
+      ) : (
+        <>
+          <Animated.View
+            entering={
+              heroWasCollapsed.current ? FadeInUp.duration(400) : undefined
+            }
+          >
+            <BlogHero blog={blog} onClose={() => navigation.goBack()} />
+          </Animated.View>
+          <BlogMetaBar
+            blog={blog}
+            content={content}
+            onToggle={showContent}
+            onLike={handleLike}
+          />
+          <Comment blogId={blogId} />
+        </>
+      )}
     </Screen>
   )
 }
