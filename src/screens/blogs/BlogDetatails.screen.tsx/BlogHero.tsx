@@ -1,10 +1,9 @@
 import React from 'react'
 
-import tw from 'lib/tailwind'
-import Text from 'components/Text'
 import CoverHero from '../CreateBlog.screen/BlogContent/CoverHero'
 import { Blog } from '../../../../types'
 import HeroActionBar from './HeroActionBar'
+import BlogTitle from './BlogTitle'
 
 interface Props {
   blog: Blog
@@ -18,15 +17,7 @@ const BlogHero: React.FC<Props> = ({ blog, onClose }) => (
     headerComponent={
       <HeroActionBar onClose={onClose} isDraft={!blog.publishedAt} />
     }
-    titleComponent={
-      <Text
-        style={tw`text-3xl font-syne-bold text-white`}
-        numberOfLines={2}
-        ellipsizeMode="tail"
-      >
-        {blog.title}
-      </Text>
-    }
+    titleComponent={<BlogTitle title={blog.title} />}
   />
 )
 

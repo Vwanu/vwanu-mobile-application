@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { View } from 'react-native'
 import { StackScreenProps } from '@react-navigation/stack'
+import Animated, { FadeInUp } from 'react-native-reanimated'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
@@ -22,6 +23,7 @@ const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { blogId } = route.params
   const { data: blog, isLoading, isFetching } = useFetchBlogQuery(blogId)
   const [content, showContent] = useToggle(true)
+  const heroWasCollapsed = useRef(false)
   const [toggleBlogLike] = useToggleBlogLikeMutation()
 
   const handleLike = async (id: string) => {
@@ -44,13 +46,22 @@ const BlogDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         <BlogReadingView
           blog={blog}
           content={content}
-          onToggle={showContent}
+          onToggle={(heroCollapsed) => {
+            heroWasCollapsed.current = heroCollapsed
+            showContent()
+          }}
           onLike={handleLike}
           onClose={() => navigation.goBack()}
         />
       ) : (
         <>
-          <BlogHero blog={blog} onClose={() => navigation.goBack()} />
+          <Animated.View
+            entering={
+              heroWasCollapsed.current ? FadeInUp.duration(400) : undefined
+            }
+          >
+            <BlogHero blog={blog} onClose={() => navigation.goBack()} />
+          </Animated.View>
           <BlogMetaBar
             blog={blog}
             content={content}

@@ -11,10 +11,10 @@ import Animated, {
 } from 'react-native-reanimated'
 
 import tw from 'lib/tailwind'
-import Text from 'components/Text'
 import { colors } from 'components/ui/tokens'
 import { Blog } from '../../../../types'
 import BlogHero from './BlogHero'
+import BlogTitle from './BlogTitle'
 import BlogMetaBar from './BlogMetaBar'
 import Body from './Body'
 
@@ -24,7 +24,7 @@ const COLLAPSE_DISTANCE = 120
 interface Props {
   blog: Blog
   content: boolean
-  onToggle: () => void
+  onToggle: (heroCollapsed: boolean) => void
   onLike: (id: string) => Promise<void>
   onClose: () => void
 }
@@ -41,6 +41,10 @@ const BlogReadingView: React.FC<Props> = ({
   const scrollHandler = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y
   })
+
+  // Report whether the hero is collapsed when toggling, so the comment view
+  // can animate the cover back in only if it had vanished.
+  const handleToggle = () => onToggle(scrollY.value >= COLLAPSE_DISTANCE)
 
   const heroStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -106,7 +110,7 @@ const BlogReadingView: React.FC<Props> = ({
           <BlogMetaBar
             blog={blog}
             content={content}
-            onToggle={onToggle}
+            onToggle={handleToggle}
             onLike={onLike}
           />
         </Animated.View>
@@ -126,21 +130,16 @@ const BlogReadingView: React.FC<Props> = ({
               <BlogMetaBar
                 blog={blog}
                 content={content}
-                onToggle={onToggle}
+                onToggle={handleToggle}
                 onLike={onLike}
               />
             </View>
           </View>
-          <Text
-            style={[
-              tw`px-4 pb-2 text-lg font-syne-bold`,
-              { color: colors.ink },
-            ]}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {blog.title}
-          </Text>
+          <BlogTitle
+            title={blog.title}
+            color={colors.ink}
+            style={tw`px-4 pb-2`}
+          />
         </SafeAreaView>
       </Animated.View>
     </View>
