@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, useWindowDimensions } from 'react-native'
+import { View, useWindowDimensions } from 'react-native'
 
 import tw from 'lib/tailwind'
 import { Blog } from '../../../../types'
@@ -9,20 +9,17 @@ type Props = {
   blog: Blog
 }
 
-const BlogDetailScreen: React.FC<Props> = ({ blog }) => {
+const Body: React.FC<Props> = ({ blog }) => {
   const { width } = useWindowDimensions()
   return (
-    <ScrollView
-      style={tw`dark:bg-gray-900 px-2`}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={tw`px-4`}>
       <RenderHtml
-        contentWidth={width}
+        contentWidth={width - 32}
         source={{ html: blog.content }}
         baseStyle={tw``}
       />
-    </ScrollView>
+    </View>
   )
 }
 
-export default BlogDetailScreen
+export default Body

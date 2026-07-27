@@ -10,6 +10,8 @@ import InterestPills from './InterestPills'
 
 import CoverCornerButton from './CoverCornerButton'
 
+export const HERO_HEIGHT = 300
+
 interface InterestLike {
   id: string | number
   name: string
@@ -37,7 +39,7 @@ const CoverHero = ({
   return (
     <ImageBackground
       source={coverImage ? { uri: coverImage } : undefined}
-      style={[tw`w-full`, { height: 300 }]}
+      style={[tw`w-full`, { height: HERO_HEIGHT }]}
     >
       <LinearGradient
         colors={['rgba(27,31,94,0.55)', 'rgba(27,31,94,0.92)']}
