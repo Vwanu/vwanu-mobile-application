@@ -13,6 +13,7 @@ import Screen from 'components/screen'
 import { FeedStackParams, Discussion } from '../../../types'
 import CreateDiscussionForm from './component/CreateDiscussionFrom'
 import DiscussionCard from './component/DiscussionCard'
+import StatPill from './component/StatPill'
 import EmptyList from 'components/EmptyList'
 import TabBar, { Tab } from 'components/Tabs/TabBar'
 import { colors } from 'components/ui/tokens'
@@ -137,28 +138,14 @@ const ForumDetailScreen: React.FC = () => {
             ) : null}
 
             <View style={tw`flex-row gap-2 mt-3`}>
-              <View
-                style={[
-                  tw`flex-row items-center px-3 py-1 rounded-full border border-white/30`,
-                  { backgroundColor: 'rgba(255,255,255,0.15)' },
-                ]}
-              >
-                <Ionicons name="chatbubbles-outline" size={12} color="white" />
-                <Text style={tw`text-white text-xs font-poppins-medium ml-1`}>
-                  {mockThreadCount(forum.id)} threads
-                </Text>
-              </View>
-              <View
-                style={[
-                  tw`flex-row items-center px-3 py-1 rounded-full border border-white/30`,
-                  { backgroundColor: 'rgba(255,255,255,0.15)' },
-                ]}
-              >
-                <Ionicons name="people-outline" size={12} color="white" />
-                <Text style={tw`text-white text-xs font-poppins-medium ml-1`}>
-                  {mockMemberCount(forum.id).toLocaleString()} members
-                </Text>
-              </View>
+              <StatPill
+                icon="chatbubbles-outline"
+                label={`${mockThreadCount(forum.id)} threads`}
+              />
+              <StatPill
+                icon="people-outline"
+                label={`${mockMemberCount(forum.id).toLocaleString()} members`}
+              />
             </View>
           </LinearGradient>
         </ImageBackground>

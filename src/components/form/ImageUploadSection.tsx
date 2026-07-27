@@ -6,6 +6,7 @@ import { useFormikContext } from 'formik'
 
 import Text from 'components/Text'
 import tw from 'lib/tailwind'
+import { colors } from 'components/ui/tokens'
 
 interface Props {
   name: string
@@ -109,22 +110,23 @@ const ImageUploadSection: React.FC<Props> = ({
 
   return (
     <View>
+      {label && <Text style={tw`font-poppins-bold mb-1`}>{label}</Text>}
       <TouchableOpacity
-        style={tw`w-full h-48 rounded-2xl border-2 border-dashed border-gray-300`}
+        style={tw`w-full h-48 rounded-2xl  border-2 border-dashed border-gray-300 `}
         onPress={showImageOptions}
       >
         <View style={tw`flex-1 rounded-2xl overflow-hidden`}>
           {imageUri ? (
             <ImageBackground
               source={{ uri: imageUri }}
-              style={tw`w-full h-full`}
+              style={tw`w-full h-full `}
               resizeMode="cover"
             >
               <View
                 style={tw`bg-black bg-opacity-30 w-full h-full flex justify-center items-center`}
               >
                 <TouchableOpacity
-                  style={tw`bg-white bg-opacity-90 w-12 h-12 rounded-full items-center justify-center`}
+                  style={tw` w-12 h-12 rounded-full items-center justify-center`}
                   onPress={showImageOptions}
                 >
                   <Ionicons name="camera" size={24} color="#000" />
@@ -133,7 +135,10 @@ const ImageUploadSection: React.FC<Props> = ({
             </ImageBackground>
           ) : (
             <View
-              style={tw`w-full h-full bg-gray-50 flex justify-center items-center`}
+              style={[
+                tw`w-full h-full flex justify-center items-center`,
+                { backgroundColor: colors.warmBg },
+              ]}
             >
               <View style={tw`items-center`}>
                 <View
