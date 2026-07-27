@@ -6,9 +6,8 @@ import { LinearGradient } from 'expo-linear-gradient'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
-import HeroActionBar from './HeroActionBar'
 import InterestPills from './InterestPills'
-import TitleField from './TitleField'
+
 import CoverCornerButton from './CoverCornerButton'
 
 interface InterestLike {
@@ -19,25 +18,19 @@ interface InterestLike {
 interface Props {
   coverImage?: string
   interests?: InterestLike[]
-  onClose?: () => void
-  onSave?: () => void
-  onMenu?: () => void
   onChangeCover?: () => void
   onAddInterests?: () => void
-  isSubmitting?: boolean
-  isDraft?: boolean
+  headerComponent: React.ReactNode
+  titleComponent: React.ReactNode
 }
 
 const CoverHero = ({
   coverImage,
   interests,
-  onClose,
-  onSave,
-  onMenu,
   onChangeCover,
   onAddInterests,
-  isSubmitting,
-  isDraft,
+  headerComponent: HeaderComponent,
+  titleComponent: TitleComponent,
 }: Props) => {
   const hasInterests = !!interests && interests.length > 0
 
@@ -53,13 +46,7 @@ const CoverHero = ({
         style={tw`flex-1 px-4 pb-2`}
       >
         <SafeAreaView style={tw`flex-1`}>
-          <HeroActionBar
-            onClose={onClose}
-            onSave={onSave}
-            onMenu={onMenu}
-            isSubmitting={isSubmitting}
-            isDraft={isDraft}
-          />
+          {HeaderComponent}
 
           {!coverImage && onChangeCover && (
             <TouchableOpacity
@@ -94,7 +81,7 @@ const CoverHero = ({
               </TouchableOpacity>
             ) : null}
             <View style={{ height: 92, justifyContent: 'flex-end' }}>
-              <TitleField light />
+              {TitleComponent}
             </View>
           </View>
         </SafeAreaView>
