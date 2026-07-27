@@ -5,6 +5,7 @@ import { useFormikContext } from 'formik'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
+import { colors } from 'components/ui/tokens'
 import Error from './Error'
 
 interface Props {
@@ -60,16 +61,21 @@ const RichTextEditor: React.FC<Props> = ({
         </Text>
       )}
 
-      <View style={tw`flex-1`}>
+      <View style={[tw`flex-1`, { backgroundColor: colors.warmBg }]}>
         <QuillEditor
           ref={editorRef}
-          style={tw`flex-1 border-0`}
+          style={[tw`flex-1 border-0`, { backgroundColor: colors.warmBg }]}
           quill={{
             placeholder,
             modules: {
               toolbar: false,
             },
           }}
+          customStyles={[
+            '.ql-editor { line-height: 1.75; font-size: 17px; padding: 16px 16px 80px; }',
+            '.ql-editor p { margin-bottom: 8px; }',
+            '.ql-editor.ql-blank::before { color: #8A8A9E; font-style: normal; left: 16px; right: 16px; }',
+          ]}
           onFocus={() => {
             onFocusChange?.(true)
           }}
@@ -81,9 +87,9 @@ const RichTextEditor: React.FC<Props> = ({
           initialHtml={initialValue}
           autoSize
           theme={{
-            background: '#ffffff',
-            color: '#1f2937',
-            placeholder: '#9ca3af',
+            background: colors.warmBg,
+            color: '#1A1A2E',
+            placeholder: '#8A8A9E',
           }}
         />
       </View>

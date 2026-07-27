@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 
 import tw from 'lib/tailwind'
 import Text from 'components/Text'
 import SelectMultiple from './SelectMultiple'
+import { colors } from 'components/ui/tokens'
 import { useFetchInterestsQuery } from '../../store/interests'
 
 interface Props {
@@ -25,16 +27,31 @@ const InterestPill = ({
 }) => {
   return (
     <View
-      style={tw`flex-row flex-wrapn p-2 rounded-full bg-${
-        isSelected ? 'blue' : 'gray'
-      }-200 mr-2 mb-2 text-center items-center justify-center`}
       key={value}
+      style={[
+        tw`flex-row items-center justify-center px-3.5 py-2 rounded-full border mr-2 mb-2`,
+        {
+          backgroundColor: isSelected ? colors.primarySoft : 'transparent',
+          borderColor: isSelected ? colors.primaryDeep : colors.warmBorder,
+        },
+      ]}
     >
-      {isSelected ? (
-        <Text style={tw`text-blue-700 font-medium text-sm`}>{label}</Text>
-      ) : (
-        <Text style={tw`text-gray-700 font-medium text-sm`}>{label}</Text>
+      {isSelected && (
+        <Ionicons
+          name="checkmark"
+          size={14}
+          color={colors.primaryDeep}
+          style={tw`mr-1`}
+        />
       )}
+      <Text
+        style={[
+          tw`font-poppins-medium text-sm`,
+          { color: isSelected ? colors.primaryDeep : colors.soft },
+        ]}
+      >
+        {label}
+      </Text>
     </View>
   )
 }
@@ -62,12 +79,18 @@ const InterestSelector: React.FC<Props> = ({
         {Label && (
           <Text category="h6" style={tw`font-semibold text-lg`}>
             {Label}
-            {required ? ' *' : ''}
           </Text>
         )}
         {showCount && (
-          <Text style={tw`text-gray-500 text-sm`}>
+          <Text
+            style={tw` text-sm ${
+              selectedInterestsCount > 0 ? 'text-black' : 'text-gray-500'
+            }`}
+          >
             {selectedInterestsCount}/5 selected
+            {selectedInterestsCount > 0 && (
+              <Ionicons name="checkmark" size={14} color={colors.primaryDeep} />
+            )}
           </Text>
         )}
       </View>
